@@ -279,6 +279,7 @@ Splash(SplashIntro, 앱 실행 후 1회)
 | S-6 | 익명 로그인 활성화 시 익명 사용자의 쓰기 허용 **[1A-02 확인]** | 정책 대상이 `authenticated` 역할 전체이고 익명 여부(`is_anonymous`)를 구분하지 않음. 현재 Dashboard 설정상 익명 로그인은 **꺼져 있음** | 익명 로그인을 켜는 순간(PRD FR-AUTH-07) 가입하지 않은 사용자도 `clothes` 저장과 이미지 업로드 가능 | 익명 로그인을 켜기 전에 restrictive 정책 추가(보류 중, 승인 필요) |
 | S-7 | 버킷 업로드 크기·형식 제한 없음 **[1A-02 확인]** | `storage.buckets`의 `file_size_limit`, `allowed_mime_types`가 모두 `null` | 로그인한 사용자가 자기 폴더에 이미지가 아닌 파일이나 큰 파일을 올릴 수 있음(저장 공간·비용 남용) | 버킷 제한 설정(보류 중, 승인 필요) |
 | S-8 | 계정 삭제 시 Storage 파일이 남음 **[1A-02 확인]** | `clothes`는 `auth.users` 삭제 시 CASCADE로 지워지지만 Storage 객체는 함께 지워지지 않음 | 탈퇴 후 착용 사진이 남음 | 계정 삭제 서버 작업에서 사용자 폴더 삭제(PRD SEC-09) |
+| S-10 | 운영 이메일 인증(Confirm email) 꺼짐 **[2026-10-17 Dashboard 확인]** | Auth → Sign In / Providers: Confirm email OFF, 가입 ON | 다른 사람의 이메일 주소로도 가입·로그인 가능. 이메일 소유가 확인되지 않음 | Beta 전 PRD SEC 항목으로 결정(Sprint 1A-2 계획 D3) |
 | S-9 | anon 역할이 `clothes` 테이블 권한을 가짐 **[1A-02 확인]** | `has_table_privilege` 결과 anon·authenticated 모두 SELECT·INSERT·UPDATE·DELETE 가능(Supabase 기본값). anon용 정책이 없어 실제 접근은 0건 | 지금은 영향 없음. RLS가 실수로 꺼지면 바로 노출 | 선택: anon 권한 회수(보류 중) |
 
 비밀값 관리는 양호: `.env`는 gitignore 처리돼 있고 서버 키는 클라이언트 번들에 포함되지 않는다.
