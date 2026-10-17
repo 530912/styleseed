@@ -10,6 +10,19 @@ npm run test:backend   # 백엔드 테스트 (Node 내장 테스트 러너, 외�
 npm run test:client    # 앱 오류 처리 단위 테스트
 ```
 
+### 실연동 E2E (QA Supabase 프로젝트 전용)
+
+```bash
+E2E_SUPABASE_URL=https://<qa-ref>.supabase.co \
+E2E_SUPABASE_PUBLISHABLE_KEY=sb_publishable_... \
+npm run test:e2e
+```
+
+- 실제 QA Supabase(Auth·DB·Storage), Gemini, 로컬 SlimSAM(실패 시 BRIA)을 호출한다. 운영 프로젝트 주소면 실행을 거부한다.
+- QA 프로젝트는 운영과 같은 정책(`supabase/migrations/20261017000000_baseline_clothes_rls_storage.sql`)을 적용하고, **이메일 인증을 꺼 둔** 상태여야 한다.
+- 실행마다 테스트 계정 2개를 새로 만든다. 옷 행·Storage 파일은 끝에서 지우지만 Auth 사용자 행은 관리자 키가 없어 QA 프로젝트에 남는다.
+- Gemini 무료 등급 호출을 1~3회 쓴다.
+
 환경변수는 루트 `.env`를 읽는다. 키 목록은 루트 `.env.example`을 본다.
 
 ## 엔드포인트와 인증 (Sprint 1A-1)

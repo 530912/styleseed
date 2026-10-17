@@ -300,6 +300,7 @@ Splash(SplashIntro, 앱 실행 후 1회)
 | T-11 | Gemini 요청 MIME 타입 `image/jpeg` 고정 | `backend/server.js:267` |
 | T-12 | 오류 모니터링·로깅 수집 없음(`console`만 사용) | 저장소 전체 |
 | T-13 | Supabase Free 플랜 자동 일시정지 **[1A-02 확인]**: 2026-10-17 점검 시 프로젝트가 Paused 상태였고, 그동안 DB·Auth·Storage가 모두 멈춰 있었음. 승인 후 Resume으로 복구 | Supabase Dashboard(조직 플랜 Free) |
+| T-14 | 로컬 SlimSAM이 옷 대신 일부(단추 등)만 잘라내는 경우 **[2026-10-17 E2E 확인]**: 옷 중심점 프롬프트가 작은 부분 위에 놓이면 그 부분만 마스크로 선택되고, 서버는 성공(200)으로 응답해 BRIA 대체가 일어나지 않음. 흰 셔츠 이미지에서 14×16 픽셀 결과 | `backend/server.js` `/segment-garment-local`, `docs/sprints/sprint-1a-1-result.md` D-1 |
 
 ---
 
@@ -379,7 +380,7 @@ Splash(SplashIntro, 앱 실행 후 1회)
 |---|---|---|---|
 | V-1 | `clothes` 테이블 RLS 활성화 여부와 SELECT·INSERT·UPDATE·DELETE 정책이 `auth.uid() = user_id`로 제한되는지 | 읽기 전용 `pg_policies` 조회(Supabase MCP) | **[1A-02 확인] 충족** (2026-10-17) |
 | V-2 | `clothing-images` 버킷의 비공개 여부와, Storage 정책이 경로 첫 폴더를 `auth.uid()`와 대조하는지 | 읽기 전용 `storage.buckets`·`pg_policies` 조회 | **[1A-02 확인] 충족** (2026-10-17) |
-| V-3 | 다른 계정으로 상대방 옷 `id`를 조회·삭제할 수 없는지 | 테스트 계정 2개로 교차 시도 | [미검증] 정책 정의상으로는 차단됨. 동작 테스트는 테스트 환경 결정 후 진행 |
+| V-3 | 다른 계정으로 상대방 옷 `id`를 조회·삭제할 수 없는지 | 테스트 계정 2개로 교차 시도 | **충족 (2026-10-17, QA 프로젝트)**: 운영과 같은 정책을 적용한 `styleseed-qa`에서 조회·수정·삭제·타인 명의 저장·사진 다운로드·업로드·삭제 모두 차단(`backend/test/e2e/sprint-1a-1.e2e.js` E2E-07). 운영 인스턴스 자체에서의 실행은 아님 |
 | V-4 | 실기기(iOS·Android)에서 분석·저장 흐름이 동작하는지 | 실기기 실행 | [미검증] |
 | V-5 | 로컬 SlimSAM의 첫 로딩 시간과 1건당 처리 시간, BRIA로 넘어가는 비율 | 백엔드 로그 계측 | [미검증] |
 | V-6 | 착용샷·제품샷별 Gemini 분석 정확도(category, color 등) | 샘플 이미지셋으로 평가 | [미검증] |

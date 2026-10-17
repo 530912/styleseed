@@ -54,7 +54,8 @@
     "lint": "expo lint",
     "backend": "node backend/server.js",
     "test:backend": "node --test \"backend/test/**/*.test.js\"",
-    "test:client": "node --test \"src/lib/__tests__/**/*.test.mjs\""
+    "test:client": "node --test \"src/lib/__tests__/**/*.test.mjs\"",
+    "test:e2e": "node --test --test-timeout=600000 \"backend/test/e2e/**/*.e2e.js\""
   },
   "private": true
 }
