@@ -19,8 +19,8 @@ Sprint를 넘어 이어지는 결함(Known Issue)과 아직 확인하지 못한 
 | PQ-1 | 앱 화면 기준 "로그인 후 배경 제거 + 옷장 저장" | Pending QA | High | Sprint 1A-1 | **Sprint 1A-2 시작 조건(G0)** |
 | PQ-2 | iOS 시뮬레이터에서 Styling / Looks / Today 점수 화면 | Pending QA | Medium | Sprint 1A-1 | Sprint 1A-2 시작 조건(G0) |
 | PQ-3 | 잘못된 비밀번호 입력 시 오류 안내 | Pending QA | Low | Sprint 1A-1 | Sprint 1A-2 시작 조건(G0) |
-| KI-1 | 배경 제거 "성공" 응답인데 결과가 잘못됨(흰 셔츠 → 단추만 남음) | Known Issue | **High** | Sprint 1A-1 E2E | Sprint 1A-2 (작업 D) |
-| KI-2 | PRD SEC-01 응답 코드와 구현 차이 | Known Issue(요구사항 차이) | Medium | Sprint 1A-1 | Sprint 1A-2 (작업 B에서 정렬) |
+| KI-1 | 배경 제거 "성공" 응답인데 결과가 잘못됨(흰 셔츠 → 단추만 남음) | Known Issue | **High** | Sprint 1A-1 E2E | **Sprint 1A-3 첫 작업**(1A-2 계획 D6) |
+| KI-2 | PRD SEC-01 응답 코드와 구현 차이 | Known Issue(요구사항 차이) | Medium | Sprint 1A-1 | Sprint 1A-2 (S2-05) |
 | PQ-4 | 앱 30초 타임아웃의 실제 중단 동작 | Pending QA | Low | Sprint 1A-1 TS-11 | 화면 테스트 도구 도입 시(1B-01) |
 | PQ-5 | 저장 실패 안내 화면의 버튼 동작([다시 시도] / [나중에]) | Pending QA | Medium | Sprint 1A-1 TS-15·16 | 화면 테스트 도구 도입 시(1B-01) |
 | PQ-6 | 실제 휴대폰 사진의 base64 크기(10MB 제한 적정성) | Pending QA | Medium | Sprint 1A-1, 1A-10 | PQ-1 확인 때 함께 측정(백엔드 로그) |
@@ -66,7 +66,7 @@ Sprint를 넘어 이어지는 결함(Known Issue)과 아직 확인하지 못한 
 | 핵심 교훈 | **API 성공(HTTP 200)은 분리 품질을 보장하지 않는다.** 배경 제거 결과는 응답 코드가 아니라 결과 이미지 자체로 평가해야 한다 |
 | 필요한 품질 평가 | ① **서버 측 품질 게이트:** 마스크(또는 결과 이미지)가 Gemini box 면적의 기준 비율(초안 25%) 미만이거나, 투명 비율이 극단적(5% 미만·95% 초과)이면 "저품질"로 응답 → 앱이 BRIA로 대체 ② **품질 기록:** 처리 경로(sam/bria/original)와 품질 지표(box 대비 면적, 투명 비율)를 로그·이벤트로 남겨 실제 비율을 측정(PRD NFR-08, FR-UPL-01 ⑤) ③ **평가 세트:** 다양한 옷·배경(흰 옷+흰 배경, 착용샷, 패턴, 작은 액세서리) 이미지로 경로별 성공률을 정기 측정(AUDIT V-7) |
 | 영향 | 일부 사용자 옷이 단추·로고 조각 이미지로 저장됨. 옷장 신뢰도 하락. PRD FR-UPL-03, NFR-08 |
-| 처리 계획 | Sprint 1A-2 작업 D |
+| 처리 계획 | Sprint 1A-3 첫 작업(인증·보안 주제인 1A-2와 분리. 품질 평가 세트·BRIA 비용 판단 필요) |
 | 닫는 조건 | E2E-09가 일반 테스트로 통과(흰 셔츠가 셔츠로 분리되거나, 저품질로 판정되어 BRIA로 대체), 품질 지표 기록 |
 
 ## KI-2 PRD SEC-01 응답 코드와 구현 차이
@@ -76,7 +76,7 @@ Sprint를 넘어 이어지는 결함(Known Issue)과 아직 확인하지 못한 
 | PRD | SEC-01 AC ① 토큰 없는 요청은 5개 엔드포인트 모두 401 ② 익명 토큰은 `/analyze-clothing`만 허용, 이미지 처리 엔드포인트는 **403** |
 | 구현(Sprint 1A-1) | ① `/analyze-clothing`은 토큰 없는 요청도 허용(guest, IP당 시간당 10회, 임시) ② 익명 토큰의 이미지 처리 요청은 **401 `AUTH_REQUIRED`** |
 | 이유 | 운영 Supabase의 익명 로그인이 꺼져 있어 로그인 전 분석을 유지하려면 임시 guest 허용이 필요했다 |
-| 처리 계획 | Sprint 1A-2 작업 B: 익명 세션 도입 후 토큰 없는 분석을 401로 바꾸고, 익명 토큰의 이미지 처리 거절을 403 `ANONYMOUS_NOT_ALLOWED`로 맞춘다 |
+| 처리 계획 | Sprint 1A-2 S2-05: 익명 토큰의 이미지 처리 거절을 403 `ANONYMOUS_NOT_ALLOWED`로 맞춘다. 토큰 없는 분석은 로그인 전 분석 보호를 위해 `ALLOW_TOKENLESS_GUEST` 플래그로 남기고, 끄는 시점은 PO 결정(1A-2 계획 D3) |
 | 닫는 조건 | AC-G3 ①~③ 자동 테스트 + QA E2E 통과 |
 
 ## PQ-4 앱 30초 타임아웃 · PQ-5 저장 실패 안내 버튼 · PQ-6 실제 사진 크기
