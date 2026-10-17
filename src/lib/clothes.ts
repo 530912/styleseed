@@ -2,13 +2,18 @@ import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 
 import type { Clothing } from "../types";
 
+import { apiPost } from "./api";
+
 import { supabase } from "./supabase";
 
 const STORAGE_BUCKET = "clothing-images";
 
 const USE_GEMINI_SEGMENTATION = false;
 
-const BACKEND_URL = "http://localhost:3001";
+// 이미지 처리 요청 대기 시간. 로컬 SlimSAM은 첫 요청에서 모델을 불러오므로 길게 잡는다.
+const LOCAL_SEGMENT_TIMEOUT_MS = 90_000;
+
+const IMAGE_TASK_TIMEOUT_MS = 60_000;
 
 const cropMainGarment = async (
   imageUri: string,
@@ -168,26 +173,18 @@ const segmentGarmentLocally = async (
   imageUrl: string,
   box2d: [number, number, number, number],
 ) => {
-  const response = await fetch(`${BACKEND_URL}/segment-garment-local`, {
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-    },
-
-    body: JSON.stringify({
+  return await apiPost(
+    "/segment-garment-local",
+    {
       imageUrl,
       box2d,
-    }),
-  });
-
-  if (!response.ok) {
-    const data = await response.json();
-
-    throw new Error(data.message ?? "로컬 의류 분리에 실패했습니다.");
-  }
-
-  return await response.arrayBuffer();
+    },
+    {
+      auth: "required",
+      timeoutMs: LOCAL_SEGMENT_TIMEOUT_MS,
+      responseType: "arrayBuffer",
+    },
+  );
 };
 
 const createGarmentCutout = async (
@@ -195,27 +192,19 @@ const createGarmentCutout = async (
   box2d: [number, number, number, number],
   mask: [number, number][],
 ) => {
-  const response = await fetch(`${BACKEND_URL}/apply-garment-mask`, {
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-    },
-
-    body: JSON.stringify({
+  return await apiPost(
+    "/apply-garment-mask",
+    {
       imageUrl,
       box2d,
       mask,
-    }),
-  });
-
-  if (!response.ok) {
-    const data = await response.json();
-
-    throw new Error(data.message ?? "의류 이미지 생성에 실패했습니다.");
-  }
-
-  return await response.arrayBuffer();
+    },
+    {
+      auth: "required",
+      timeoutMs: IMAGE_TASK_TIMEOUT_MS,
+      responseType: "arrayBuffer",
+    },
+  );
 };
 
 const getImageDimensions = async (imageUri: string) => {
@@ -235,28 +224,21 @@ const segmentGarment = async (
   imageWidth: number,
   imageHeight: number,
 ) => {
-  const response = await fetch(`${BACKEND_URL}/segment-garment`, {
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-    },
-
-    body: JSON.stringify({
+  const data = (await apiPost(
+    "/segment-garment",
+    {
       imageUrl,
       box2d,
       imageWidth,
       imageHeight,
-    }),
-  });
+    },
+    {
+      auth: "required",
+      timeoutMs: IMAGE_TASK_TIMEOUT_MS,
+    },
+  )) as { cutoutImageUrl?: string } | null;
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message ?? "의류 분리에 실패했습니다.");
-  }
-
-  if (!data.cutoutImageUrl) {
+  if (!data?.cutoutImageUrl) {
     throw new Error("의류 분리 결과 이미지가 없습니다.");
   }
 
@@ -267,25 +249,18 @@ const segmentGarment = async (
  * 우리 backend의 배경 제거 API 호출
  */
 const removeBackground = async (imageUrl: string) => {
-  const response = await fetch(`${BACKEND_URL}/remove-background`, {
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-    },
-
-    body: JSON.stringify({
+  const data = (await apiPost(
+    "/remove-background",
+    {
       imageUrl,
-    }),
-  });
+    },
+    {
+      auth: "required",
+      timeoutMs: IMAGE_TASK_TIMEOUT_MS,
+    },
+  )) as { cutoutUrl?: string } | null;
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message ?? "배경 제거에 실패했습니다.");
-  }
-
-  if (!data.cutoutUrl) {
+  if (!data?.cutoutUrl) {
     throw new Error("배경 제거 결과 이미지가 없습니다.");
   }
 

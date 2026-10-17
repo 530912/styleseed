@@ -31,6 +31,10 @@ import {
 
 import { palette } from "../constants/ui";
 
+import { apiPost } from "../lib/api";
+
+import { getApiErrorMessage, isApiError } from "../lib/apiErrors";
+
 import { saveClothingToSupabase } from "../lib/clothes";
 
 import { supabase } from "../lib/supabase";
@@ -53,33 +57,16 @@ const STEP_INTERVAL_MS = 450;
 
 type EditableField = "category" | "color" | "fit" | "material" | "style";
 
-type AnalyzeErrorBody = {
-  code?: string;
-  message?: string;
-  retryAfterSeconds?: number | null;
-};
+// 로그인 전에도 분석할 수 있다(guest). 백엔드 Gemini 제한 시간(25초)보다 길게 기다린다.
+const ANALYZE_TIMEOUT_MS = 30_000;
 
-// 백엔드 실패 응답을 사용자가 이해할 수 있는 원인별 문구로 바꾼다.
-const getAnalysisErrorMessage = async (response: Response) => {
-  let body: AnalyzeErrorBody = {};
-
-  try {
-    body = (await response.json()) as AnalyzeErrorBody;
-  } catch {
-    // JSON이 아닌 응답은 기본 문구로 처리
+// 백엔드 실패를 사용자가 이해할 수 있는 원인별 문구로 바꾼다.
+const getAnalysisErrorMessage = (error: unknown) => {
+  if (isApiError(error) && error.code === "NETWORK") {
+    return "분석 서버에 연결하지 못했어요. 백엔드 실행 상태를 확인해주세요.";
   }
 
-  if (response.status === 429 || body.code === "AI_RATE_LIMITED") {
-    return body.retryAfterSeconds
-      ? `AI 요청 한도에 도달했어요. ${body.retryAfterSeconds}초 후 다시 시도해주세요.`
-      : "AI 요청 한도에 도달했어요. 1분 정도 후 다시 시도해주세요.";
-  }
-
-  if (response.status === 503 || body.code === "AI_BUSY") {
-    return "AI 서버가 혼잡해요. 잠시 후 다시 시도해주세요.";
-  }
-
-  return "옷 분석 중 오류가 발생했습니다.";
+  return getApiErrorMessage(error, "옷 분석 중 오류가 발생했습니다.");
 };
 
 export default function AnalyzeScreen() {
@@ -148,28 +135,16 @@ export default function AnalyzeScreen() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch("http://localhost:3001/analyze-clothing", {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
+      const data = (await apiPost(
+        "/analyze-clothing",
+        {
           imageBase64,
-        }),
-      });
-
-      if (!response.ok) {
-        // 서버 혼잡·한도 초과는 예상 가능한 실패라 개발용 오류 팝업 대신 화면 문구로 안내
-        console.log("분석 요청 실패:", response.status);
-
-        setError(await getAnalysisErrorMessage(response));
-
-        return;
-      }
-
-      const data = (await response.json()) as ClothingAnalysis;
+        },
+        {
+          auth: "optional",
+          timeoutMs: ANALYZE_TIMEOUT_MS,
+        },
+      )) as ClothingAnalysis;
 
       setAnalysisResult(data);
 
@@ -180,14 +155,13 @@ export default function AnalyzeScreen() {
       setSelectedMaterial(data.material);
       setSelectedStyles(data.style);
     } catch (error) {
-      console.error(error);
-
-      // fetch 자체가 실패하면 TypeError (백엔드가 꺼져 있거나 연결 불가)
-      setError(
-        error instanceof TypeError
-          ? "분석 서버에 연결하지 못했어요. 백엔드 실행 상태를 확인해주세요."
-          : "옷 분석 중 오류가 발생했습니다.",
+      // 서버 혼잡·한도 초과·연결 실패는 예상 가능한 실패라 개발용 오류 팝업 대신 화면 문구로 안내
+      console.log(
+        "분석 요청 실패:",
+        isApiError(error) ? `${error.code} ${error.status ?? ""}` : error,
       );
+
+      setError(getAnalysisErrorMessage(error));
     } finally {
       setLoading(false);
     }

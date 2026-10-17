@@ -352,7 +352,7 @@ Splash → Home(Today's Look 카드)
 | **처리 로직** | 첫 실행 → 익명 세션 → 분석(SEC-01·02 한도 적용) → 저장 시 가입/로그인 → 보류 중인 옷이 있으면 `saveClothingToSupabase` → Closet 이동 |
 | **출력** | 세션, 저장된 옷, 단계별 상태 문구 |
 | **AC** | ① 로그인 성공 후 저장이 실패하면 "로그인됨 / 저장 실패"로 구분 안내한다(현재 "로그인 실패"로 표시됨, `login.tsx:116-121`) ② 탈퇴 시 SEC-09 AC를 충족한다 ③ 재설정 메일 링크로 비밀번호를 바꿀 수 있다 ④ 보류 중인 옷의 사진 파일이 사라졌으면 사용자에게 재등록을 안내한다 ⑤ 가입하지 않은 사용자도 익명 세션으로 분석 한도까지 AI 분석을 쓸 수 있다 ⑥ 익명 세션 사용자는 `clothes`에 저장할 수 없고, 가입 후 저장된 행의 `user_id`는 정식 계정 ID다 |
-| **현재 상태** | 01·02 Implemented / 03 결함 / 04·05·06·07 Planned |
+| **현재 상태** | 01·02 Implemented / 03 **코드 수정 완료(Sprint 1A-1, `src/hooks/use-save-pending-clothing.ts`), 실기기 확인 대기** / 04·05·06·07 Planned |
 | **관련 코드** | `src/app/login.tsx`, `src/app/signup.tsx`, `src/store/usePendingClothingStore.ts`, `src/lib/supabase.ts`, `src/app/analyze.tsx:282-286` |
 | **기술 의존성** | Supabase Auth(익명 로그인 활성화 필요. 2026-10-17 현재 **꺼져 있음** [1A-02 확인]), **익명 사용자 쓰기 차단 restrictive 정책을 익명 로그인 활성화보다 먼저 적용**(현재 정책은 익명 사용자도 `authenticated`로 허용, AUDIT S-6),  딥링크(`scheme: styleseed`, `app.json`), 05는 서버 관리자 권한 엔드포인트(SEC-09) |
 | **우선순위** | 03·05·07: **P0**(Phase 1A. 05는 개인정보 처리 요건, 07은 SEC-01과 가입 전 체험을 함께 지키는 전제) / 04·06: P1 |
@@ -405,7 +405,7 @@ Splash → Home(Today's Look 카드)
 | **처리 로직** | 백엔드에서 Gemini 호출(responseSchema enum) → 좌표 보정 → 앱에 반환 → 사용자 수정 |
 | **출력** | `ClothingAnalysis` {category, subCategory, color, colorTone, fit, material, season[], tpo[], style[], box2d, mask} (`src/types/index.ts:105-117`) |
 | **AC** | ① `top` + `sneakers` 같은 불일치 응답은 저장 전에 보정되거나 사용자에게 확인을 요청한다 ② 정해진 시간 안에 응답이 없으면 재시도 안내를 표시한다(시간값 [제안] 30초, 합의 필요) ③ 9개 속성 모두 수정 UI가 있다 ④ 사용자가 바꾼 필드와 원래 AI 값이 이벤트로 기록된다 ⑤ 익명 세션 사용자의 분석 호출은 SEC-02의 익명 한도를 넘으면 429와 가입 안내를 받는다 |
-| **현재 상태** | 01·02·03 Implemented / 04·05·06·07 Planned |
+| **현재 상태** | 01·02·03 Implemented / 05 **Implemented (Sprint 1A-1)**: 서버 Gemini 25초 전체 제한(재시도 포함) → 504 `AI_TIMEOUT`, 앱 30초 제한 / 04·06·07 Planned |
 | **관련 코드** | `backend/server.js:113-174,182-550`, `src/app/analyze.tsx:55-210` |
 | **기술 의존성** | Gemini API(모델은 환경변수 `GEMINI_MODEL`, 무료 등급 하루 20회 주석 `server.js:111`. 실제 모델·요금 등급은 미확인). Phase 2 진입 전 유료 등급 전환과 호출량 산정 필요(NFR-05, SEC-11, AC-G7) |
 | **우선순위** | 05: P0(Phase 1A) / 07: P1(Phase 1B, 정확도 지표) / 04·06: P1(Phase 2) |
@@ -720,7 +720,7 @@ Splash → Home(Today's Look 카드)
 
 | ID | 요구사항 | 현재 [CODE] | 우선순위 |
 |---|---|---|---|
-| TR-01 | 백엔드 주소를 환경변수로 설정(`EXPO_PUBLIC_API_URL` 등) | `localhost:3001` 고정(`src/lib/clothes.ts:11`, `src/app/analyze.tsx:151`) | **P0(1A)** |
+| TR-01 | 백엔드 주소를 환경변수로 설정(`EXPO_PUBLIC_API_URL` 등) | **Implemented (Sprint 1A-1)**: `src/lib/api.ts`의 `EXPO_PUBLIC_API_URL`(기본 `http://localhost:3001`). 모든 백엔드 호출이 `apiPost`를 거침 | **P0(1A)** |
 | TR-02 | 백엔드 배포 환경(HTTPS) 구성 | 로컬 실행만 | **P0(1A)** |
 | TR-03 | 이미지 처리 작업 큐(비동기) 또는 별도 워커 | 저장 요청 안에서 동기 실행 | P1(Phase 2 이후, FR-UPL-04와 함께) |
 | TR-04 | SlimSAM 모델 사전 로딩(warm-up) | 첫 요청 때 로딩(`backend/server.js:84-109`) | P1(1B) |
@@ -742,12 +742,12 @@ Splash → Home(Today's Look 카드)
 
 | ID | 요구사항 | 근거 [CODE/AUDIT] | AC | 상태 | 우선순위 |
 |---|---|---|---|---|---|
-| **SEC-01** | 백엔드 모든 엔드포인트에 Supabase JWT 인증. **정식 계정 토큰 또는 익명 세션 토큰(FR-AUTH-07)**을 요구한다. 가입 전 분석 체험은 익명 토큰으로 허용하되 SEC-02 익명 한도를 적용한다. 허용 Origin 외 요청 차단 | 인증 없음, `cors()` 전체 허용(`backend/server.js:14`). 가입 전 분석 흐름 존재(`src/app/analyze.tsx:282-286`) | ① 토큰 없는 요청은 401 ② 익명 토큰은 `/analyze-clothing`만 익명 한도까지 허용, 이미지 저장·분리 엔드포인트는 403 ③ 정식 계정 토큰은 사용자 한도까지 허용 | Planned | **P0(1A)** |
+| **SEC-01** | 백엔드 모든 엔드포인트에 Supabase JWT 인증. **정식 계정 토큰 또는 익명 세션 토큰(FR-AUTH-07)**을 요구한다. 가입 전 분석 체험은 익명 토큰으로 허용하되 SEC-02 익명 한도를 적용한다. 허용 Origin 외 요청 차단 | 인증 없음, `cors()` 전체 허용(`backend/server.js:14`). 가입 전 분석 흐름 존재(`src/app/analyze.tsx:282-286`) | ① 토큰 없는 요청은 401 ② 익명 토큰은 `/analyze-clothing`만 익명 한도까지 허용, 이미지 저장·분리 엔드포인트는 403 ③ 정식 계정 토큰은 사용자 한도까지 허용 | **Partial (Sprint 1A-1, 2026-10-17)**: `backend/auth.js` JWT 검증(`getClaims`), 이미지 처리 4종 로그인 필수(401), 무효 토큰 401, CORS 허용 목록. **임시 차이:** 익명 로그인이 꺼져 있어 `/analyze-clothing`은 토큰 없는 요청도 허용(IP당 시간당 10회, `backend/guestLimiter.js`, 서버 메모리, 프록시 헤더 미신뢰). 익명 토큰의 이미지 처리 거절은 403이 아니라 401 `AUTH_REQUIRED`. 로그인 토큰 실사용 E2E는 미확인 | **P0(1A)** |
 | **SEC-02** | 사용량 제한(rate limit)과 AI 호출 한도: 익명 세션별·기기/IP별·정식 사용자별로 하루 한도를 분리. 한도 값은 OQ-04 | 없음 | 한도 초과 시 429 + 안내(익명 사용자는 가입 안내 포함) | Planned | **P0(1A)** |
 | **SEC-03** | SSRF 차단: `imageUrl`은 Supabase Storage 도메인만 허용 | 검증 없이 서버가 요청(`backend/server.js:615,680,744,847`) | 외부·내부 IP URL 요청은 400 | Planned | **P0(1A)** |
 | **SEC-04** | `clothes` RLS: SELECT/INSERT/UPDATE/DELETE 모두 `auth.uid() = user_id` | **[1A-02 확인]** RLS 켜짐. 정책 4종 모두 `authenticated` 대상, `(select auth.uid()) = user_id`(추가·수정은 `with check` 포함). anon 정책 없음. 클라이언트 쿼리에는 `user_id` 조건 없음(`src/lib/clothes.ts:495-500,622-652`), 즉 RLS 단일 방어 | 테스트 계정 2개로 교차 조회·삭제 시 0건(**동작 테스트 미완료**). 익명 세션으로 `clothes` 쓰기 시 0건(**현재 정책으로는 미충족**: 익명 로그인 활성화 전 restrictive 정책 필요) | 정책 확인 / 동작 테스트 미완료 | **P0(1A)** |
 | **SEC-05** | Storage 정책: 경로 첫 폴더 = `auth.uid()`, 버킷 비공개 | 경로를 클라이언트가 결정(`src/lib/clothes.ts:96,130,310,327`). **[1A-02 확인]** 버킷 `public = false`, Storage 정책 4종이 버킷 일치 + `(storage.foldername(name))[1] = auth.uid()` 조건. 버킷 크기·MIME 제한 없음(AUDIT S-7, 보류) | 다른 사용자 폴더로 업로드·조회 시 거부(**동작 테스트 미완료**) | 정책 확인 / 동작 테스트 미완료 | **P0(1A)** |
-| **SEC-06** | 요청 본문 크기 축소(현재 50MB) | `backend/server.js:22-26` | 기준 초과 요청은 413 | Planned | **P0(1A)** |
+| **SEC-06** | 요청 본문 크기 축소(현재 50MB) | ~~`backend/server.js:22-26`~~ → 경로별 제한(분석 10mb, 이미지 처리 1mb) | 기준 초과 요청은 413 | **Implemented (Sprint 1A-1, 자동 테스트 TS-08·09)** | **P0(1A)** |
 | **SEC-07** | 비밀값 서버 보관 유지, 클라이언트에는 Publishable key만 | 현재 준수(`.gitignore:34`, `src/lib/supabase.ts`) | 앱 번들에서 서버 키 문자열 0건 | Implemented | P0(1A 유지 확인) |
 | SEC-08 | 개인정보 처리방침·이용약관 화면과 동의. Beta 참가 동의서에는 운영자의 옷장 데이터 열람 범위(FR-WDM-07 Concierge)를 포함 | 없음 | 가입 시 동의 기록 | Planned | **P0**(Phase 2 진입 전) |
 | SEC-09 | 계정 삭제 시 DB·Storage·이벤트 일괄 삭제(FR-AUTH-05·FR-DATA-06의 정의 원본) | 없음 | 삭제 후 해당 `user_id`의 `clothes`·Storage 파일·이벤트 0건(이벤트는 익명화 허용) | Planned | **P0(1A)**. 의존성: TR-13 서버 관리자 권한 엔드포인트(SEC-01 인증 필수) |

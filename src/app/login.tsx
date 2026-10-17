@@ -1,9 +1,3 @@
-import { saveClothingToSupabase } from "../lib/clothes";
-
-import { usePendingClothingStore } from "../store/usePendingClothingStore";
-
-import { useClosetStore } from "../store/useClosetStore";
-
 import {
   Alert,
   Pressable,
@@ -12,7 +6,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useAnalysisStore } from "../store/useAnalysisStore";
 
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -21,16 +14,14 @@ import { supabase } from "../lib/supabase";
 
 import { TopBar } from "../components/styleseed/ui";
 
+import { useSavePendingClothing } from "../hooks/use-save-pending-clothing";
+
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
 
-  type LoginStatus =
-    | "idle"
-    | "loggingIn"
-    | "processingImage"
-    | "savingClothing";
+  type LoginStatus = "idle" | "loggingIn" | "processingImage";
 
   const [loginStatus, setLoginStatus] = useState<LoginStatus>("idle");
 
@@ -44,9 +35,6 @@ export default function LoginScreen() {
       case "processingImage":
         return "옷 이미지를 정리하고 있어요...";
 
-      case "savingClothing":
-        return "옷장에 저장하고 있어요...";
-
       default:
         return "로그인";
     }
@@ -56,17 +44,7 @@ export default function LoginScreen() {
     redirectTo?: string;
   }>();
 
-  const pendingClothing = usePendingClothingStore(
-    (state) => state.pendingClothing,
-  );
-
-  const clearPendingClothing = usePendingClothingStore(
-    (state) => state.clearPendingClothing,
-  );
-
-  const addClothing = useClosetStore((state) => state.addClothing);
-
-  const clearImage = useAnalysisStore((state) => state.clearImage);
+  const { pendingClothing, savePendingClothing } = useSavePendingClothing();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -75,6 +53,9 @@ export default function LoginScreen() {
       return;
     }
 
+    let userId: string;
+
+    // 1) 인증: 여기서 실패한 경우만 "로그인 실패"
     try {
       setLoginStatus("loggingIn");
 
@@ -87,42 +68,48 @@ export default function LoginScreen() {
         throw error;
       }
 
-      Alert.alert("로그인 완료", "STYLESEED에 로그인했어요.");
-
-      if (data.session && pendingClothing) {
-        setLoginStatus("processingImage");
-        const savedClothing = await saveClothingToSupabase(
-          pendingClothing,
-          data.session.user.id,
-        );
-
-        addClothing(savedClothing);
-
-        clearPendingClothing();
-
-        clearImage();
-
-        router.replace("/closet");
-
-        return;
-      }
-
-      if (redirectTo === "closet") {
-        router.replace("/closet");
-        return;
-      }
-
-      router.replace("/");
+      userId = data.user.id;
     } catch (error) {
+      setLoginStatus("idle");
+
       Alert.alert(
         "로그인 실패",
         error instanceof Error
           ? error.message
           : "로그인 중 오류가 발생했습니다.",
       );
-    } finally {
-      setLoginStatus("idle");
+
+      return;
     }
+
+    // 2) 로그인 전에 분석한 옷 저장: 실패해도 로그인은 유지되고 따로 안내한다
+    if (pendingClothing) {
+      setLoginStatus("processingImage");
+
+      const saved = await savePendingClothing(userId, "로그인");
+
+      setLoginStatus("idle");
+
+      if (saved) {
+        Alert.alert("로그인 완료", "분석한 옷을 옷장에 저장했어요.");
+
+        router.replace("/closet");
+      }
+
+      return;
+    }
+
+    setLoginStatus("idle");
+
+    Alert.alert("로그인 완료", "STYLESEED에 로그인했어요.");
+
+    if (redirectTo === "closet") {
+      router.replace("/closet");
+
+      return;
+    }
+
+    router.replace("/");
   };
 
   return (

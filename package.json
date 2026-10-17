@@ -51,7 +51,10 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "backend": "node backend/server.js",
+    "test:backend": "node --test \"backend/test/**/*.test.js\"",
+    "test:client": "node --test \"src/lib/__tests__/**/*.test.mjs\""
   },
   "private": true
 }

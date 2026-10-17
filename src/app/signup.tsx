@@ -1,9 +1,3 @@
-import { saveClothingToSupabase } from "../lib/clothes";
-
-import { usePendingClothingStore } from "../store/usePendingClothingStore";
-
-import { useClosetStore } from "../store/useClosetStore";
-
 import {
     Alert,
     Pressable,
@@ -12,7 +6,6 @@ import {
     TextInput,
     View,
 } from "react-native";
-import { useAnalysisStore } from "../store/useAnalysisStore";
 
 import { router } from "expo-router";
 import { useState } from "react";
@@ -21,18 +14,10 @@ import { supabase } from "../lib/supabase";
 
 import { TopBar } from "../components/styleseed/ui";
 
+import { useSavePendingClothing } from "../hooks/use-save-pending-clothing";
+
 export default function SignupScreen() {
-  const pendingClothing = usePendingClothingStore(
-    (state) => state.pendingClothing,
-  );
-
-  const clearPendingClothing = usePendingClothingStore(
-    (state) => state.clearPendingClothing,
-  );
-
-  const addClothing = useClosetStore((state) => state.addClothing);
-
-  const clearImage = useAnalysisStore((state) => state.clearImage);
+  const { pendingClothing, savePendingClothing } = useSavePendingClothing();
 
   const [email, setEmail] = useState("");
 
@@ -47,6 +32,9 @@ export default function SignupScreen() {
       return;
     }
 
+    let userId: string;
+
+    // 1) 가입: 여기서 실패한 경우만 "회원가입 실패"
     try {
       setLoading(true);
 
@@ -59,8 +47,10 @@ export default function SignupScreen() {
         throw error;
       }
 
-      // 이메일 인증이 필요한 경우
+      // 이메일 인증이 필요한 경우(보류 중인 옷은 로그인 후 저장된다)
       if (!data.session) {
+        setLoading(false);
+
         Alert.alert("회원가입 완료", "이메일 인증 후 로그인해주세요.");
 
         router.replace("/login");
@@ -68,37 +58,40 @@ export default function SignupScreen() {
         return;
       }
 
-      // 이메일 인증 없이 바로 세션이 생성된 경우
-      Alert.alert("회원가입 완료", "로그인되었습니다.");
-
-      if (data.session && pendingClothing) {
-        const savedClothing = await saveClothingToSupabase(
-          pendingClothing,
-          data.session.user.id,
-        );
-
-        addClothing(savedClothing);
-
-        clearPendingClothing();
-
-        clearImage();
-
-        router.replace("/closet");
-
-        return;
-      }
-
-      router.replace("/");
+      userId = data.session.user.id;
     } catch (error) {
+      setLoading(false);
+
       Alert.alert(
         "회원가입 실패",
         error instanceof Error
           ? error.message
           : "회원가입 중 오류가 발생했습니다.",
       );
-    } finally {
-      setLoading(false);
+
+      return;
     }
+
+    // 2) 이메일 인증 없이 바로 세션이 생긴 경우: 분석한 옷 저장(실패해도 가입은 유지)
+    if (pendingClothing) {
+      const saved = await savePendingClothing(userId, "회원가입");
+
+      setLoading(false);
+
+      if (saved) {
+        Alert.alert("회원가입 완료", "분석한 옷을 옷장에 저장했어요.");
+
+        router.replace("/closet");
+      }
+
+      return;
+    }
+
+    setLoading(false);
+
+    Alert.alert("회원가입 완료", "로그인되었습니다.");
+
+    router.replace("/");
   };
 
   return (
