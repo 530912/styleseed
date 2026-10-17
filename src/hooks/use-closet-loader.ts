@@ -4,6 +4,8 @@ import { useCallback, useState } from "react";
 
 import { fetchClothesFromSupabase } from "../lib/clothes";
 
+import { isSignedIn } from "../lib/sessionPolicy";
+
 import { supabase } from "../lib/supabase";
 
 import { useClosetStore } from "../store/useClosetStore";
@@ -41,8 +43,8 @@ export function useClosetLoader() {
           throw sessionError;
         }
 
-        // 로그인하지 않았다면 개인 옷장을 비워둠
-        if (!session) {
+        // 로그인하지 않았다면(익명 세션 포함) 개인 옷장을 비워둠
+        if (!isSignedIn(session)) {
           lastSync = null;
 
           setClothes([]);

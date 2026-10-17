@@ -35,6 +35,53 @@ const FAKE_TOKENS = {
 const fakeVerifyToken = async (token) =>
   FAKE_TOKENS[token] ?? { ok: false, reason: "invalid" };
 
+// 메모리 사용량 저장소(Supabase consume_ai_quota 대역). failing이면 장애를 흉내낸다
+const createFakeQuotaStore = () => {
+  const counts = new Map();
+
+  const store = {
+    failing: false,
+    calls: 0,
+    async consume(accessToken) {
+      store.calls += 1;
+
+      if (store.failing) {
+        const error = new Error("store down");
+        error.code = "FAKE_DOWN";
+        throw error;
+      }
+
+      const used = (counts.get(accessToken) ?? 0) + 1;
+      counts.set(accessToken, used);
+
+      return { used, windowStart: Date.now() };
+    },
+    reset() {
+      counts.clear();
+      store.calls = 0;
+      store.failing = false;
+    },
+  };
+
+  return store;
+};
+
+// 사용자 권한 Supabase 클라이언트 대역: Storage 서명 URL만 흉내낸다
+const TEST_SUPABASE_URL = "https://test-project.supabase.co";
+
+const fakeUserClientFactory = () => ({
+  storage: {
+    from: () => ({
+      createSignedUrl: async (path) => ({
+        data: {
+          signedUrl: `${TEST_SUPABASE_URL}/storage/v1/object/sign/clothing-images/${path}?token=fake`,
+        },
+        error: null,
+      }),
+    }),
+  },
+});
+
 const post = (baseUrl, path, { token, body, rawBody, headers = {} } = {}) =>
   realFetch(`${baseUrl}${path}`, {
     method: "POST",
@@ -73,6 +120,9 @@ const captureConsole = () => {
 };
 
 module.exports = {
+  TEST_SUPABASE_URL,
+  createFakeQuotaStore,
+  fakeUserClientFactory,
   realFetch,
   startServer,
   stopServer,

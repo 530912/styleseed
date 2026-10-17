@@ -1,4 +1,6 @@
 // Sprint 1A-1: 본문 크기·타임아웃·Gemini 응답 처리 (TS-08, TS-09, TS-10, 분석 회귀)
+process.env.SUPABASE_URL = "https://test-project.supabase.co";
+process.env.SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
 process.env.GEMINI_TIMEOUT_MS = "400";
 process.env.GUEST_ANALYZE_LIMIT_PER_HOUR = "100";
 
@@ -6,6 +8,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const {
+  createFakeQuotaStore,
+  fakeUserClientFactory,
   realFetch,
   startServer,
   stopServer,
@@ -76,6 +80,8 @@ let baseUrl;
 
 test.before(async () => {
   app.locals.verifyToken = fakeVerifyToken;
+  app.locals.quotaStore = createFakeQuotaStore();
+  app.locals.getUserClient = fakeUserClientFactory;
 
   ({ server, baseUrl } = await startServer(app));
 });
@@ -86,7 +92,7 @@ test.after(async () => {
 
 test.beforeEach(() => {
   geminiCalls = 0;
-  app.locals.guestAnalyzeLimiter.reset();
+  app.locals.resetQuotaCounters();
 });
 
 test("TS-08 10MB를 넘는 분석 요청은 413 PAYLOAD_TOO_LARGE(JSON)", async () => {

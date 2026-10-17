@@ -10,10 +10,17 @@ const { fal } = require("@fal-ai/client");
 const {
   createSupabaseTokenVerifier,
   createAuthenticate,
+  createAllowAnalyze,
   requireUser,
 } = require("./auth");
 
-const { createGuestLimiter } = require("./guestLimiter");
+const { createFixedWindowCounter } = require("./guestLimiter");
+
+const { createAnalyzeQuota, createSupabaseQuotaStore } = require("./quota");
+
+const { createResolveImagePath } = require("./storagePaths");
+
+const { createUserSupabaseFactory } = require("./userSupabase");
 
 const app = express();
 
@@ -23,6 +30,15 @@ const readPositiveInt = (value, fallback) => {
   const parsed = Number.parseInt(value ?? "", 10);
 
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+// "false" / "0" / "off"만 끔으로 본다. 값이 없으면 fallback
+const readFlag = (value, fallback) => {
+  if (value === undefined || value === "") {
+    return fallback;
+  }
+
+  return !["false", "0", "off", "no"].includes(String(value).toLowerCase());
 };
 
 // 프록시 헤더(X-Forwarded-For)는 기본으로 신뢰하지 않는다.
@@ -54,7 +70,7 @@ console.log("FAL key loaded:", Boolean(process.env.FAL_KEY));
 
 // 요청 본문 크기 제한
 // - 분석: 앱이 원본 사진을 base64로 보낸다(upload.tsx quality 0.7)
-// - 이미지 처리: Storage 서명 URL과 좌표만 보낸다
+// - 이미지 처리: Storage 경로와 좌표만 보낸다
 const ANALYZE_BODY_LIMIT = process.env.ANALYZE_BODY_LIMIT || "10mb";
 
 const IMAGE_TASK_BODY_LIMIT = process.env.IMAGE_TASK_BODY_LIMIT || "1mb";
@@ -73,32 +89,83 @@ const IMAGE_DOWNLOAD_TIMEOUT_MS = readPositiveInt(
   15000,
 );
 
-// 로그인 토큰 검증 (server.js와 같은 .env의 공개 Supabase URL·Publishable key 사용)
+// Supabase 연결 (server.js와 같은 .env의 공개 Supabase URL·Publishable key 사용, Secret 불필요)
+const SUPABASE_URL =
+  process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
+
+const SUPABASE_PUBLISHABLE_KEY =
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+// 로그인·익명 토큰 검증
 app.locals.verifyToken = createSupabaseTokenVerifier({
-  url: process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL,
-  publishableKey:
-    process.env.SUPABASE_PUBLISHABLE_KEY ||
-    process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  url: SUPABASE_URL,
+  publishableKey: SUPABASE_PUBLISHABLE_KEY,
+});
+
+// 요청한 사용자 본인 권한의 Supabase 클라이언트(사용량 기록, Storage 서명)
+app.locals.getUserClient = createUserSupabaseFactory({
+  url: SUPABASE_URL,
+  publishableKey: SUPABASE_PUBLISHABLE_KEY,
 });
 
 const authenticate = createAuthenticate({
   getVerifier: () => app.locals.verifyToken,
 });
 
-// 로그인하지 않은 사용자의 분석 한도 (임시 정책, guestLimiter.js 참고)
-const GUEST_ANALYZE_LIMIT_PER_HOUR = readPositiveInt(
-  process.env.GUEST_ANALYZE_LIMIT_PER_HOUR,
-  10,
+// 토큰 없는 guest 분석: 임시 호환 모드(PRD SEC-01과 다름). 익명 세션이 안정화되면 false로 끈다
+app.locals.allowTokenlessGuest = readFlag(
+  process.env.ALLOW_TOKENLESS_GUEST,
+  true,
 );
 
-const guestAnalyzeLimiter = createGuestLimiter({
-  limit: GUEST_ANALYZE_LIMIT_PER_HOUR,
+const allowAnalyze = createAllowAnalyze({
+  isTokenlessGuestAllowed: () => app.locals.allowTokenlessGuest,
 });
 
-app.locals.guestAnalyzeLimiter = guestAnalyzeLimiter;
+// AI 분석 한도 (개발·QA 초기 가설, 운영은 환경변수로 따로 지정)
+app.locals.analyzeLimits = {
+  anonymousLimit: readPositiveInt(process.env.ANON_ANALYZE_LIMIT_PER_HOUR, 30),
+  userLimit: readPositiveInt(process.env.USER_ANALYZE_LIMIT_PER_HOUR, 30),
+  ipLimit: readPositiveInt(process.env.IP_ANALYZE_LIMIT_PER_HOUR, 30),
+  guestLimit: readPositiveInt(process.env.GUEST_ANALYZE_LIMIT_PER_HOUR, 10),
+};
 
-// 이미지 처리 경로: 로그인 사용자만 → 본문 파싱
-const imageTaskGuards = [authenticate, requireUser, parseImageTaskBody];
+app.locals.quotaStore = createSupabaseQuotaStore({
+  getUserClient: (token) => app.locals.getUserClient(token),
+});
+
+const quotaCounters = {
+  ipCounter: createFixedWindowCounter(),
+  guestCounter: createFixedWindowCounter(),
+  fallbackCounter: createFixedWindowCounter(),
+};
+
+app.locals.resetQuotaCounters = () => {
+  for (const counter of Object.values(quotaCounters)) {
+    counter.reset();
+  }
+};
+
+const analyzeQuota = createAnalyzeQuota({
+  getConfig: () => app.locals.analyzeLimits,
+  getStore: () => app.locals.quotaStore,
+  ...quotaCounters,
+});
+
+// 이미지 처리 입력: Storage 경로 → 서버가 서명 URL 생성(요청 본문의 URL은 쓰지 않음)
+const resolveImagePath = createResolveImagePath({
+  getUserClient: (token) => app.locals.getUserClient(token),
+  getSupabaseUrl: () => SUPABASE_URL,
+});
+
+// 이미지 처리 경로: 정식 로그인 사용자만 → 본문 파싱 → 경로 검사·서명
+const imageTaskGuards = [
+  authenticate,
+  requireUser,
+  parseImageTaskBody,
+  resolveImagePath,
+];
 
 const buildFalImageInput = ({
   imageUrl,
@@ -302,11 +369,12 @@ app.get("/", (req, res) => {
   });
 });
 
-// 분석: 로그인 전 사용자도 허용(guest 한도 적용), 무효 토큰은 401
+// 분석: 정식·익명 사용자 허용(사용량 한도), 토큰 없는 guest는 임시 호환 모드에서만, 무효 토큰은 401
 app.post(
   "/analyze-clothing",
   authenticate,
-  guestAnalyzeLimiter,
+  allowAnalyze,
+  analyzeQuota,
   parseAnalyzeBody,
   async (req, res) => {
     try {
@@ -690,14 +758,12 @@ app.post(
 
 app.post("/segment-garment", ...imageTaskGuards, async (req, res) => {
   try {
-    const { imageUrl, imageBase64, mimeType, box2d, imageWidth, imageHeight } =
-      req.body;
+    // 이미지는 서버가 만든 서명 URL만 쓴다(resolveImagePath)
+    const imageUrl = req.imageUrl;
 
-    const falImageInput = buildFalImageInput({
-      imageUrl,
-      imageBase64,
-      mimeType,
-    });
+    const { box2d, imageWidth, imageHeight } = req.body;
+
+    const falImageInput = buildFalImageInput({ imageUrl });
 
     const boxPrompt = normalizeBoxPrompt(box2d, imageWidth, imageHeight);
 
@@ -735,13 +801,10 @@ app.post("/segment-garment", ...imageTaskGuards, async (req, res) => {
 
 app.post("/segment-garment-local", ...imageTaskGuards, async (req, res) => {
   try {
-    const { imageUrl, box2d } = req.body;
+    // 이미지는 서버가 만든 서명 URL만 쓴다(resolveImagePath)
+    const imageUrl = req.imageUrl;
 
-    if (!imageUrl) {
-      return res.status(400).json({
-        message: "이미지 URL이 필요합니다.",
-      });
-    }
+    const { box2d } = req.body;
 
     if (!Array.isArray(box2d) || box2d.length !== 4) {
       return res.status(400).json({
@@ -875,10 +938,12 @@ app.post("/segment-garment-local", ...imageTaskGuards, async (req, res) => {
 
 app.post("/apply-garment-mask", ...imageTaskGuards, async (req, res) => {
   try {
-    const { imageUrl, box2d, mask } = req.body;
+    // 이미지는 서버가 만든 서명 URL만 쓴다(resolveImagePath)
+    const imageUrl = req.imageUrl;
+
+    const { box2d, mask } = req.body;
 
     if (
-      !imageUrl ||
       !Array.isArray(box2d) ||
       box2d.length !== 4 ||
       !Array.isArray(mask) ||
@@ -982,13 +1047,8 @@ app.post("/apply-garment-mask", ...imageTaskGuards, async (req, res) => {
 
 app.post("/remove-background", ...imageTaskGuards, async (req, res) => {
   try {
-    const { imageUrl } = req.body;
-
-    if (!imageUrl) {
-      return res.status(400).json({
-        message: "이미지 URL이 필요합니다.",
-      });
-    }
+    // 이미지는 서버가 만든 서명 URL만 쓴다(resolveImagePath)
+    const imageUrl = req.imageUrl;
 
     const response = await fetchWithTimeout(
       "https://engine.prod.bria-api.com/v2/image/edit/remove_background",

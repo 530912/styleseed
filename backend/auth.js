@@ -1,8 +1,9 @@
 const { createClient } = require("@supabase/supabase-js");
 
-// 요청 인증 등급
-// - user: 유효한 Supabase 로그인 토큰
-// - guest: 토큰 없음. 또는 익명 세션 토큰(is_anonymous). 현재 익명 로그인은 꺼져 있다(PRD FR-AUTH-07)
+// 요청 인증 등급 (PRD SEC-01)
+// - user:      정식 로그인 토큰
+// - anonymous: Supabase 익명 세션 토큰(is_anonymous). 로그인 전 분석에 쓴다
+// - guest:     토큰 없음. 임시 호환 모드(ALLOW_TOKENLESS_GUEST)에서만 분석을 허용한다
 //
 // 토큰이 "있는데 무효"이면 guest로 내려보내지 않고 401로 거절한다.
 
@@ -72,7 +73,7 @@ const createAuthenticate =
     const token = readBearerToken(req);
 
     if (token === null) {
-      req.auth = { tier: "guest", userId: null };
+      req.auth = { tier: "guest", userId: null, accessToken: null };
 
       return next();
     }
@@ -109,27 +110,57 @@ const createAuthenticate =
       );
     }
 
-    const isAnonymous = result.claims.is_anonymous === true;
-
+    // 검증된 토큰은 이후 Supabase 호출(사용량 기록, Storage 서명)에 사용자 권한으로 쓴다
     req.auth = {
-      tier: isAnonymous ? "guest" : "user",
+      tier: result.claims.is_anonymous === true ? "anonymous" : "user",
       userId: result.claims.sub,
+      accessToken: token,
     };
 
     return next();
   };
 
+// 정식 로그인 사용자만 (이미지 처리·저장 관련)
 const requireUser = (req, res, next) => {
-  if (req.auth?.tier === "user") {
+  const tier = req.auth?.tier;
+
+  if (tier === "user") {
     return next();
+  }
+
+  if (tier === "anonymous") {
+    return sendAuthError(
+      res,
+      403,
+      "ANONYMOUS_NOT_ALLOWED",
+      "로그인한 사용자만 이용할 수 있습니다.",
+    );
   }
 
   return sendAuthError(res, 401, "AUTH_REQUIRED", "로그인이 필요합니다.");
 };
 
+// 분석: user·anonymous 허용. 토큰 없는 guest는 임시 호환 모드에서만 허용
+const createAllowAnalyze =
+  ({ isTokenlessGuestAllowed }) =>
+  (req, res, next) => {
+    const tier = req.auth?.tier;
+
+    if (tier === "user" || tier === "anonymous") {
+      return next();
+    }
+
+    if (tier === "guest" && isTokenlessGuestAllowed()) {
+      return next();
+    }
+
+    return sendAuthError(res, 401, "AUTH_REQUIRED", "로그인이 필요합니다.");
+  };
+
 module.exports = {
   createSupabaseTokenVerifier,
   createAuthenticate,
+  createAllowAnalyze,
   requireUser,
   readBearerToken,
 };

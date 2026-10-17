@@ -16,6 +16,8 @@ import { useClosetLoader } from "../hooks/use-closet-loader";
 
 import { useWeather } from "../hooks/use-weather";
 
+import { isSignedIn } from "../lib/sessionPolicy";
+
 import { supabase } from "../lib/supabase";
 
 import { useClosetStore } from "../store/useClosetStore";
@@ -64,7 +66,7 @@ function HomeScreen() {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (!session) {
+    if (!isSignedIn(session)) {
       router.push({
         pathname: "/login",
         params: {

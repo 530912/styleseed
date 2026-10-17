@@ -29,6 +29,8 @@ import { useClosetLoader } from "../hooks/use-closet-loader";
 
 import { replaceClothingImage } from "../lib/clothes";
 
+import { isSignedIn } from "../lib/sessionPolicy";
+
 import { supabase } from "../lib/supabase";
 
 import { useClosetStore } from "../store/useClosetStore";
@@ -123,7 +125,7 @@ export default function ClothingImageScreen() {
         throw sessionError;
       }
 
-      if (!session) {
+      if (!isSignedIn(session)) {
         Alert.alert("로그인 필요", "다시 로그인한 뒤 시도해주세요.");
 
         return;

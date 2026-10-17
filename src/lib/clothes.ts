@@ -126,9 +126,12 @@ const uploadOriginalImage = async (imageUri: string, userId: string) => {
 
   const arrayBuffer = await response.arrayBuffer();
 
-  const contentType = response.headers.get("content-type") ?? "image/jpeg";
+  // 버킷은 이미지 형식만 허용한다(Sprint 1A-2 DB-3). 형식을 알 수 없으면 JPEG로 올린다.
+  const reportedType = response.headers.get("content-type") ?? "";
 
-  const extension = contentType.includes("png") ? "png" : "jpg";
+  const contentType = reportedType.includes("png") ? "image/png" : "image/jpeg";
+
+  const extension = contentType === "image/png" ? "png" : "jpg";
 
   const fileName = `${Date.now()}.${extension}`;
 
@@ -148,35 +151,16 @@ const uploadOriginalImage = async (imageUri: string, userId: string) => {
   return filePath;
 };
 
-/**
- * Private Storage의 원본 사진을
- * BRIA가 읽을 수 있도록 임시 Signed URL 생성
- */
-const createImageSignedUrl = async (imagePath: string) => {
-  const { data, error } = await supabase.storage
-    .from(STORAGE_BUCKET)
-    .createSignedUrl(
-      imagePath,
-
-      // 10분
-      60 * 10,
-    );
-
-  if (error) {
-    throw error;
-  }
-
-  return data.signedUrl;
-};
-
+// 이미지 처리 요청에는 URL 대신 Storage 경로를 보낸다.
+// 서버가 경로 소유자를 확인하고 서명 URL을 직접 만든다(Sprint 1A-2 S2-09, SSRF 차단).
 const segmentGarmentLocally = async (
-  imageUrl: string,
+  imagePath: string,
   box2d: [number, number, number, number],
 ) => {
   return await apiPost(
     "/segment-garment-local",
     {
-      imageUrl,
+      imagePath,
       box2d,
     },
     {
@@ -188,14 +172,14 @@ const segmentGarmentLocally = async (
 };
 
 const createGarmentCutout = async (
-  imageUrl: string,
+  imagePath: string,
   box2d: [number, number, number, number],
   mask: [number, number][],
 ) => {
   return await apiPost(
     "/apply-garment-mask",
     {
-      imageUrl,
+      imagePath,
       box2d,
       mask,
     },
@@ -219,7 +203,7 @@ const getImageDimensions = async (imageUri: string) => {
 };
 
 const segmentGarment = async (
-  imageUrl: string,
+  imagePath: string,
   box2d: [number, number, number, number],
   imageWidth: number,
   imageHeight: number,
@@ -227,7 +211,7 @@ const segmentGarment = async (
   const data = (await apiPost(
     "/segment-garment",
     {
-      imageUrl,
+      imagePath,
       box2d,
       imageWidth,
       imageHeight,
@@ -248,11 +232,11 @@ const segmentGarment = async (
 /**
  * 우리 backend의 배경 제거 API 호출
  */
-const removeBackground = async (imageUrl: string) => {
+const removeBackground = async (imagePath: string) => {
   const data = (await apiPost(
     "/remove-background",
     {
-      imageUrl,
+      imagePath,
     },
     {
       auth: "required",
@@ -334,10 +318,8 @@ export const saveClothingToSupabase = async (
 
     if (clothing.box2d) {
       try {
-        const originalSignedUrl = await createImageSignedUrl(originalImagePath);
-
         const cutoutBuffer = await segmentGarmentLocally(
-          originalSignedUrl,
+          originalImagePath,
           clothing.box2d,
         );
 
@@ -369,9 +351,7 @@ export const saveClothingToSupabase = async (
           userId,
         );
 
-        const signedUrl = await createImageSignedUrl(processingImagePath);
-
-        const cutoutUrl = await removeBackground(signedUrl);
+        const cutoutUrl = await removeBackground(processingImagePath);
 
         cutoutImagePath = await uploadCutoutImage(cutoutUrl, userId);
 

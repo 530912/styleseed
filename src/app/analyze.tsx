@@ -35,6 +35,8 @@ import { apiPost } from "../lib/api";
 
 import { getApiErrorMessage, isApiError } from "../lib/apiErrors";
 
+import { isSignedIn } from "../lib/sessionPolicy";
+
 import { saveClothingToSupabase } from "../lib/clothes";
 
 import { supabase } from "../lib/supabase";
@@ -141,7 +143,7 @@ export default function AnalyzeScreen() {
           imageBase64,
         },
         {
-          auth: "optional",
+          auth: "session",
           timeoutMs: ANALYZE_TIMEOUT_MS,
         },
       )) as ClothingAnalysis;
@@ -253,7 +255,8 @@ export default function AnalyzeScreen() {
         throw error;
       }
 
-      if (!session) {
+      // 익명 세션(로그인 전 분석용)은 로그아웃과 같이 취급해 가입·로그인 화면으로 보낸다
+      if (!isSignedIn(session)) {
         setPendingClothing(newClothing);
 
         router.push("/signup");

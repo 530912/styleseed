@@ -10,7 +10,7 @@ import {
 import { router } from "expo-router";
 import { useState } from "react";
 
-import { supabase } from "../lib/supabase";
+import { signUpWithEmail } from "../lib/authActions";
 
 import { TopBar } from "../components/styleseed/ui";
 
@@ -38,17 +38,11 @@ export default function SignupScreen() {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) {
-        throw error;
-      }
+      // 로그인 전 분석으로 생긴 익명 세션이 있으면 같은 사용자 ID로 정식 계정 전환
+      const { session } = await signUpWithEmail(email, password);
 
       // 이메일 인증이 필요한 경우(보류 중인 옷은 로그인 후 저장된다)
-      if (!data.session) {
+      if (!session) {
         setLoading(false);
 
         Alert.alert("회원가입 완료", "이메일 인증 후 로그인해주세요.");
@@ -58,7 +52,7 @@ export default function SignupScreen() {
         return;
       }
 
-      userId = data.session.user.id;
+      userId = session.user.id;
     } catch (error) {
       setLoading(false);
 

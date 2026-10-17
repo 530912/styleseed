@@ -5,6 +5,8 @@ export type ApiErrorCode =
   | "AUTH_REQUIRED"
   | "AUTH_INVALID"
   | "AUTH_UNAVAILABLE"
+  | "ANONYMOUS_NOT_ALLOWED"
+  | "USER_RATE_LIMITED"
   | "PAYLOAD_TOO_LARGE"
   | "TIMEOUT"
   | "AI_TIMEOUT"
@@ -24,6 +26,8 @@ const KNOWN_CODES: readonly ApiErrorCode[] = [
   "AUTH_REQUIRED",
   "AUTH_INVALID",
   "AUTH_UNAVAILABLE",
+  "ANONYMOUS_NOT_ALLOWED",
+  "USER_RATE_LIMITED",
   "PAYLOAD_TOO_LARGE",
   "TIMEOUT",
   "AI_TIMEOUT",
@@ -115,6 +119,14 @@ export const getSaveAfterAuthFailureAlert = (
   laterLabel: "나중에",
 });
 
+// 대기 시간을 읽기 쉬운 문구로(예: 49초, 약 5분, 약 16시간)
+export const formatRetryAfter = (seconds: number) => {
+  if (seconds < 120) return `${seconds}초`;
+  if (seconds < 3600) return `약 ${Math.ceil(seconds / 60)}분`;
+
+  return `약 ${Math.ceil(seconds / 3600)}시간`;
+};
+
 // 사용자에게 보여줄 문구. fallback은 화면별 기본 문구.
 export const getApiErrorMessage = (error: unknown, fallback: string) => {
   if (!isApiError(error)) {
@@ -124,7 +136,7 @@ export const getApiErrorMessage = (error: unknown, fallback: string) => {
   switch (error.code) {
     case "AI_RATE_LIMITED":
       return error.retryAfterSeconds
-        ? `AI 요청 한도에 도달했어요. ${error.retryAfterSeconds}초 후 다시 시도해주세요.`
+        ? `AI 요청 한도에 도달했어요. ${formatRetryAfter(error.retryAfterSeconds)} 후 다시 시도해주세요.`
         : "AI 요청 한도에 도달했어요. 1분 정도 후 다시 시도해주세요.";
 
     case "GUEST_RATE_LIMITED": {
@@ -136,6 +148,11 @@ export const getApiErrorMessage = (error: unknown, fallback: string) => {
         ? `로그인 없이 쓸 수 있는 분석 횟수를 모두 사용했어요. 로그인하면 바로 계속 분석할 수 있어요. (또는 약 ${minutes}분 후 다시 시도)`
         : "로그인 없이 쓸 수 있는 분석 횟수를 모두 사용했어요. 로그인하면 바로 계속 분석할 수 있어요.";
     }
+
+    case "USER_RATE_LIMITED":
+      return error.retryAfterSeconds
+        ? `분석 요청이 많아요. 약 ${Math.ceil(error.retryAfterSeconds / 60)}분 후 다시 시도해주세요.`
+        : "분석 요청이 많아요. 잠시 후 다시 시도해주세요.";
 
     case "AI_BUSY":
       return "AI 서버가 혼잡해요. 잠시 후 다시 시도해주세요.";
@@ -152,6 +169,7 @@ export const getApiErrorMessage = (error: unknown, fallback: string) => {
 
     case "AUTH_REQUIRED":
     case "AUTH_INVALID":
+    case "ANONYMOUS_NOT_ALLOWED":
       return "로그인이 필요해요. 다시 로그인해주세요.";
 
     case "AUTH_UNAVAILABLE":
