@@ -1,0 +1,8 @@
+# 배포 이미지에는 backend/만 넣는다(앱 소스·에셋·비밀값 제외)
+*
+!backend/
+backend/node_modules
+backend/test
+backend/.env
+backend/.env.*
+**/.DS_Store

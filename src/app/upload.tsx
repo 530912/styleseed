@@ -19,6 +19,8 @@ import { palette } from "../constants/ui";
 
 import { useAnalysisStore } from "../store/useAnalysisStore";
 
+import { hasAiConsent } from "../lib/aiConsent";
+
 export default function UploadScreen() {
   const [pickingImage, setPickingImage] = useState(false);
 
@@ -57,8 +59,15 @@ export default function UploadScreen() {
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!imageUri) {
+      return;
+    }
+
+    // 첫 분석 전 사진 AI 전송 동의(Beta Launch). 동의 화면이 분석 화면으로 이어준다
+    if (!(await hasAiConsent())) {
+      router.push({ pathname: "/ai-consent", params: { next: "analyze" } });
+
       return;
     }
 

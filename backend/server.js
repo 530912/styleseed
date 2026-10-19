@@ -1109,6 +1109,14 @@ app.post("/remove-background", ...imageTaskGuards, async (req, res) => {
   }
 });
 
+// 출시 준비 라우트: 헬스 체크, 계정 삭제(앱·웹). 내용은 backend/accountRoutes.js
+require("./accountRoutes").registerAccountRoutes(app, {
+  authenticate,
+  requireUser,
+  supabaseUrl: SUPABASE_URL,
+  publishableKey: SUPABASE_PUBLISHABLE_KEY,
+});
+
 // 본문 파싱 오류를 JSON으로 응답한다(라우트 뒤에 등록해야 한다)
 app.use((error, req, res, next) => {
   if (error?.type === "entity.too.large") {

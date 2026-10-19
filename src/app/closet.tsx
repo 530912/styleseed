@@ -239,6 +239,10 @@ export default function ClosetScreen() {
                 <Text style={styles.headerLink}>+ 추가</Text>
               </Pressable>
 
+              <Pressable onPress={() => router.push("/account")} hitSlop={8}>
+                <Text style={styles.headerLink}>계정</Text>
+              </Pressable>
+
               <Pressable onPress={handleLogout} hitSlop={8}>
                 <Text style={styles.headerLink}>로그아웃</Text>
               </Pressable>

@@ -1,0 +1,22 @@
+{
+  "name": "styleseed-backend",
+  "private": true,
+  "description": "배포 이미지(Dockerfile) 전용 의존성 목록. 버전은 루트 package-lock.json과 같아야 한다(backend/test/deps.test.js가 확인).",
+  "main": "server.js",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "prefetch-models": "node scripts/prefetch-models.mjs"
+  },
+  "dependencies": {
+    "@fal-ai/client": "1.10.1",
+    "@huggingface/transformers": "4.2.0",
+    "@supabase/supabase-js": "2.116.0",
+    "cors": "2.8.6",
+    "dotenv": "17.4.2",
+    "express": "5.2.1",
+    "sharp": "0.35.4"
+  }
+}

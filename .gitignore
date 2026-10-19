@@ -42,3 +42,11 @@ example
 # generated native folders
 /ios
 /android
+
+# release secrets (Beta Launch): store credentials and non-.local env files
+.env.*
+!.env.example
+google-services.json
+GoogleService-Info.plist
+*service-account*.json
+credentials.json
