@@ -61,6 +61,7 @@
     "fkd:validate": "node scripts/fkd/cli.mjs validate",
     "fkd:build": "node scripts/fkd/cli.mjs build",
     "fkd:compare": "node scripts/fkd/cli.mjs compare",
+    "test:round1": "node --test \"scripts/round1/__tests__/*.test.mjs\"",
     "test:quality": "node --test --test-timeout=600000 \"backend/test/quality/**/*.test.js\""
   },
   "private": true
