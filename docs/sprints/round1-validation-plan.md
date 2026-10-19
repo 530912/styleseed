@@ -1,6 +1,6 @@
 # 모두의 창업 2기 1라운드 — 실증 중심 재설계안
 
-- 작성: 2026-10-19 (Claude A, 개발 트랙) · 상태: **제안 — PO 승인 전.** 이 문서를 승인받기 전에는 코드 변경·새 Sprint를 시작하지 않는다
+- 작성: 2026-10-19 (Claude A, 개발 트랙) · 상태: **대체됨(2026-10-19).** PO가 1라운드 목표를 수익모델 검증 중심으로 확정해 `docs/round1/BM_VALIDATION_PLAN.md`·`SPRINT_ROADMAP.md`·`PLUS_PRICING_EXPERIMENT.md`가 이 문서를 대신한다. 기록용으로 남긴다
 - 기준 문서: `PRD.md` v0.2.1, `docs/sprints/phase-1b-plan.md` v2, Sprint 1A-1~1A-3 결과, `docs/sprints/known-issues.md`, `docs/launch/DEPLOYMENT_PLAN.md`
 - 다른 트랙 확인: Claude B `release/beta-prep`(`8703008`), `integration/beta-rc1.1`(`b24b33c`)의 `docs/launch/BETA_LAUNCH_STATUS.md`, `docs/handoff/release-beta-prep-handoff.md`, `docs/funding/*` / Claude C 저장소(`styleseed-knowledge-lab`, 첫 커밋만 있음)
 - 주의: 아래 목표 수치(90%, 60개, 15~20명, 10~30개, 1~2개)는 **팀이 정한 계획 목표**다. 공식 평가기관의 통과 기준이 아니다
