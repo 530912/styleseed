@@ -50,6 +50,7 @@ Railway는 저장소 루트에 `Dockerfile`이 있으면 그것으로 빌드한�
 | `GEMINI_MODEL`, `GEMINI_THINKING_LEVEL` | 모델 실험 결과에 따라 | | |
 | `GEMINI_REQUEST_MASK` | 비워 둠(개발 트랙 1A-3 이후 변수) | | |
 | `SUPPORT_EMAIL` | 확정 후 | | 웹 삭제 페이지에 표시 |
+| `OPS_METRICS_TOKEN` | 검증 기간에만(32자 이상 무작위) | 🔒 | `/healthz`에 `X-Ops-Token`으로 메모리·bootId·클라이언트 IP 공개. 검증 후 교체·삭제(`RAILWAY_DEPLOY_RUNBOOK.md`) |
 | `ACCOUNT_DELETE_REAUTH_MAX_AGE_SECONDS`, `ACCOUNT_DELETE_WEB_ATTEMPTS_PER_HOUR` | 기본 600 / 5 | | |
 
 비밀값(🔒)은 Railway 변수에만 넣는다. 이미지·저장소·로그에 남기지 않는다(`.dockerignore`가 `.env` 제외, 계정 삭제 로그는 사용자 ID 해시만).

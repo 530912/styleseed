@@ -1,3 +1,5 @@
+const crypto = require("node:crypto");
+
 const express = require("express");
 
 const { createClient } = require("@supabase/supabase-js");
@@ -15,7 +17,7 @@ const { createFixedWindowCounter } = require("./guestLimiter");
 const { renderDeletionPage } = require("./webPages");
 
 // 출시 준비용 라우트 (Beta Launch)
-// - GET  /healthz            배포 헬스 체크
+// - GET  /healthz            배포 헬스 체크. X-Ops-Token이 OPS_METRICS_TOKEN과 같을 때만 메모리 지표 포함
 // - POST /account/delete     앱 내 회원 탈퇴(정식 로그인 + 최근 비밀번호 확인)
 // - GET  /account-deletion   웹 계정 삭제 요청 페이지(Google Play 요구사항)
 // - POST /account-deletion   웹에서 이메일·비밀번호로 본인 확인 후 삭제
@@ -24,6 +26,24 @@ const { renderDeletionPage } = require("./webPages");
 // 테스트는 app.locals.getAdminClient / app.locals.verifyPassword를 가짜로 바꾼다.
 
 const CONFIRM_PHRASE = "DELETE";
+
+// 프로세스마다 새로 만든다. 값이 바뀌면 서버가 재시작된 것이다(배포 검증 R-7)
+const BOOT_ID = crypto.randomUUID();
+
+const BOOTED_AT = new Date().toISOString();
+
+const toMB = (bytes) => Math.round((bytes / 1024 / 1024) * 10) / 10;
+
+// 운영 지표 토큰 비교(길이가 달라도 시간 차이가 나지 않게 해시끼리 비교)
+const isOpsTokenValid = (provided, expected) => {
+  if (!expected || typeof provided !== "string" || provided.length === 0) {
+    return false;
+  }
+
+  const digest = (value) => crypto.createHash("sha256").update(value).digest();
+
+  return crypto.timingSafeEqual(digest(provided), digest(expected));
+};
 
 const readPositiveInt = (value, fallback) => {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -139,7 +159,29 @@ const registerAccountRoutes = (
   app.get("/healthz", (req, res) => {
     res.set("Cache-Control", "no-store");
 
-    res.json({ status: "ok", uptimeSeconds: Math.round(process.uptime()) });
+    const body = { status: "ok", uptimeSeconds: Math.round(process.uptime()) };
+
+    // 배포 검증용 지표. 토큰이 없거나 틀리면 기본 응답과 똑같이 보낸다(지표의 존재를 드러내지 않음)
+    if (isOpsTokenValid(req.get("x-ops-token"), env.OPS_METRICS_TOKEN)) {
+      const memory = process.memoryUsage();
+
+      body.ops = {
+        bootId: BOOT_ID,
+        bootedAt: BOOTED_AT,
+        node: process.version,
+        // R-8: 서버가 본 클라이언트 IP. 프록시 주소(사설 대역)면 TRUST_PROXY가 빠진 것
+        clientIp: req.ip,
+        trustProxy: app.get("trust proxy") || 0,
+        memoryMB: {
+          rss: toMB(memory.rss),
+          heapUsed: toMB(memory.heapUsed),
+          external: toMB(memory.external),
+          arrayBuffers: toMB(memory.arrayBuffers),
+        },
+      };
+    }
+
+    res.json(body);
   });
 
   // 앱 내 회원 탈퇴

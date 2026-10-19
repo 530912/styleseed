@@ -495,3 +495,53 @@ test("AD-21 GET /healthz 는 인증 없이 200", async () => {
   assert.equal(response.status, 200);
   assert.equal((await response.json()).status, "ok");
 });
+
+test("AD-22 /healthz 운영 지표: 토큰이 없거나 틀리면 숨기고, 맞으면 메모리·bootId를 준다", async () => {
+  process.env.OPS_METRICS_TOKEN = "ops-test-token-1234";
+
+  try {
+    const plain = await (await realFetch(`${baseUrl}/healthz`)).json();
+    const wrong = await (
+      await realFetch(`${baseUrl}/healthz`, { headers: { "X-Ops-Token": "ops-test-token-123" } })
+    ).json();
+
+    assert.equal(plain.ops, undefined);
+    assert.equal(wrong.ops, undefined);
+    assert.deepEqual(Object.keys(wrong).sort(), ["status", "uptimeSeconds"]);
+
+    const first = await (
+      await realFetch(`${baseUrl}/healthz`, { headers: { "X-Ops-Token": "ops-test-token-1234" } })
+    ).json();
+    const second = await (
+      await realFetch(`${baseUrl}/healthz`, { headers: { "X-Ops-Token": "ops-test-token-1234" } })
+    ).json();
+
+    assert.ok(first.ops.memoryMB.rss > 0);
+    assert.match(first.ops.bootId, /^[0-9a-f-]{36}$/);
+    assert.equal(first.ops.bootId, second.ops.bootId, "같은 프로세스면 bootId 유지");
+    assert.equal(first.ops.clientIp, "127.0.0.1");
+    assert.equal(first.ops.trustProxy, 0, "테스트 서버는 프록시 헤더를 믿지 않음");
+
+    const spoofed = await (
+      await realFetch(`${baseUrl}/healthz`, {
+        headers: { "X-Ops-Token": "ops-test-token-1234", "X-Forwarded-For": "203.0.113.7" },
+      })
+    ).json();
+
+    assert.equal(spoofed.ops.clientIp, "127.0.0.1", "X-Forwarded-For로 IP를 바꿀 수 없음");
+  } finally {
+    delete process.env.OPS_METRICS_TOKEN;
+  }
+});
+
+test("AD-23 OPS_METRICS_TOKEN이 비어 있으면 어떤 토큰으로도 지표가 나오지 않는다", async () => {
+  delete process.env.OPS_METRICS_TOKEN;
+
+  for (const token of ["", "undefined", "anything"]) {
+    const body = await (
+      await realFetch(`${baseUrl}/healthz`, { headers: token ? { "X-Ops-Token": token } : {} })
+    ).json();
+
+    assert.equal(body.ops, undefined, token);
+  }
+});
