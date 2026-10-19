@@ -1,5 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 
+import { isEmailAlreadyRegistered } from "./authErrors";
+
 import { isAnonymousSession, isConvertedFromAnonymous } from "./sessionPolicy";
 
 import { supabase } from "./supabase";
@@ -10,9 +12,6 @@ type SignUpResult = {
   // 익명 세션을 같은 사용자 ID의 정식 계정으로 전환했는지
   convertedFromAnonymous: boolean;
 };
-
-const isAlreadyRegistered = (message: string) =>
-  /already (been )?registered|already exists|email_exists/i.test(message);
 
 // 회원가입 (Sprint 1A-2 S2-08)
 // - 로그인 전 분석으로 익명 세션이 있으면, 그 사용자를 이메일·비밀번호 계정으로 전환한다
@@ -29,7 +28,7 @@ export const signUpWithEmail = async (
   if (isAnonymousSession(current)) {
     const { error } = await supabase.auth.updateUser({ email, password });
 
-    if (error && isAlreadyRegistered(error.message)) {
+    if (error && isEmailAlreadyRegistered(error)) {
       // 이미 가입된 이메일: 기존 계정으로 로그인하도록 안내(회원가입 실패로 표시)
       throw error;
     }

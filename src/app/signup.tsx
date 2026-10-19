@@ -16,6 +16,8 @@ import { TopBar } from "../components/styleseed/ui";
 
 import { useSavePendingClothing } from "../hooks/use-save-pending-clothing";
 
+import { getAuthErrorMessage } from "../lib/authErrors";
+
 export default function SignupScreen() {
   const { pendingClothing, savePendingClothing } = useSavePendingClothing();
 
@@ -58,9 +60,7 @@ export default function SignupScreen() {
 
       Alert.alert(
         "회원가입 실패",
-        error instanceof Error
-          ? error.message
-          : "회원가입 중 오류가 발생했습니다.",
+        getAuthErrorMessage(error, "회원가입 중 오류가 발생했어요. 잠시 후 다시 시도해주세요."),
       );
 
       return;

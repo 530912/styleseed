@@ -16,6 +16,8 @@ import { TopBar } from "../components/styleseed/ui";
 
 import { useSavePendingClothing } from "../hooks/use-save-pending-clothing";
 
+import { getAuthErrorMessage } from "../lib/authErrors";
+
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
 
@@ -74,9 +76,7 @@ export default function LoginScreen() {
 
       Alert.alert(
         "로그인 실패",
-        error instanceof Error
-          ? error.message
-          : "로그인 중 오류가 발생했습니다.",
+        getAuthErrorMessage(error, "로그인 중 오류가 발생했어요. 잠시 후 다시 시도해주세요."),
       );
 
       return;
