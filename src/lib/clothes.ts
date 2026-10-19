@@ -4,6 +4,8 @@ import type { Clothing } from "../types";
 
 import { apiPost } from "./api";
 
+import { now, perfLog } from "./perf";
+
 import { supabase } from "./supabase";
 
 const STORAGE_BUCKET = "clothing-images";
@@ -307,16 +309,26 @@ export const saveClothingToSupabase = async (
 
   let cutoutImagePath: string | null = null;
 
+  const saveStartedAt = now();
+
+  let cutoutVia = "none";
+
   /**
    * 1. 이미지가 있을 때만
    * 원본 업로드 + 의류 분리 실행
    */
   if (clothing.imageUri) {
+    const uploadStartedAt = now();
+
     originalImagePath = await uploadOriginalImage(clothing.imageUri, userId);
+
+    perfLog("save.uploadOriginal", uploadStartedAt);
 
     let localSamSucceeded = false;
 
     if (clothing.box2d) {
+      const samStartedAt = now();
+
       try {
         const cutoutBuffer = await segmentGarmentLocally(
           originalImagePath,
@@ -327,8 +339,12 @@ export const saveClothingToSupabase = async (
 
         localSamSucceeded = true;
 
-        console.log("Local SlimSAM 의류 분리 성공");
+        cutoutVia = "slimsam";
+
+        perfLog("save.slimsam", samStartedAt, { ok: true });
       } catch (error) {
+        perfLog("save.slimsam", samStartedAt, { ok: false });
+
         console.warn("Local SlimSAM 실패 - BRIA fallback:", error);
       }
     }
@@ -339,6 +355,8 @@ export const saveClothingToSupabase = async (
      */
     if (!localSamSucceeded) {
       let processingImagePath: string | null = null;
+
+      const briaStartedAt = now();
 
       try {
         const croppedImageUri = await cropMainGarment(
@@ -355,8 +373,14 @@ export const saveClothingToSupabase = async (
 
         cutoutImagePath = await uploadCutoutImage(cutoutUrl, userId);
 
-        console.log("BRIA fallback 성공");
+        cutoutVia = "bria";
+
+        perfLog("save.bria", briaStartedAt, { ok: true });
       } catch (error) {
+        cutoutVia = "original";
+
+        perfLog("save.bria", briaStartedAt, { ok: false });
+
         console.error("BRIA fallback 실패 - 원본 이미지로 저장:", error);
       } finally {
         if (processingImagePath) {
@@ -412,6 +436,8 @@ export const saveClothingToSupabase = async (
   if (error) {
     throw error;
   }
+
+  perfLog("save.total", saveStartedAt, { cutoutVia });
 
   /**
    * 4. 반드시 Clothing 반환

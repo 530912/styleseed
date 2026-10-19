@@ -39,6 +39,8 @@ import { isSignedIn } from "../lib/sessionPolicy";
 
 import { saveClothingToSupabase } from "../lib/clothes";
 
+import { now, perfLog } from "../lib/perf";
+
 import { supabase } from "../lib/supabase";
 
 import { useAnalysisStore } from "../store/useAnalysisStore";
@@ -137,6 +139,8 @@ export default function AnalyzeScreen() {
       setLoading(true);
       setError(null);
 
+      const analyzeStartedAt = now();
+
       const data = (await apiPost(
         "/analyze-clothing",
         {
@@ -147,6 +151,10 @@ export default function AnalyzeScreen() {
           timeoutMs: ANALYZE_TIMEOUT_MS,
         },
       )) as ClothingAnalysis;
+
+      perfLog("analyze.request", analyzeStartedAt, {
+        base64Bytes: imageBase64.length,
+      });
 
       setAnalysisResult(data);
 

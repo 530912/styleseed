@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -16,6 +17,8 @@ import {
 import { Button, Screen, ScreenHeader } from "../components/styleseed/ui";
 
 import { palette } from "../constants/ui";
+
+import { prepareClothingImage } from "../lib/imagePrep";
 
 import { useAnalysisStore } from "../store/useAnalysisStore";
 
@@ -34,11 +37,11 @@ export default function UploadScreen() {
     try {
       setPickingImage(true);
 
+      // 원본은 압축 없이 받고, 아래 prepareClothingImage에서 한 번만 줄이고 압축한다(KI-9)
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: true,
-        quality: 0.7,
-        base64: true,
+        quality: 1,
       });
 
       if (result.canceled) {
@@ -47,11 +50,19 @@ export default function UploadScreen() {
 
       const asset = result.assets[0];
 
-      if (!asset.base64) {
-        return;
-      }
+      // 분석과 저장에 같은 처리 이미지를 쓴다(긴 변 최대 1600px, JPEG)
+      const prepared = await prepareClothingImage(asset.uri);
 
-      setImage(asset.uri, asset.base64);
+      setImage(prepared.uri, prepared.base64);
+    } catch (error) {
+      console.warn("사진 준비 실패:", error);
+
+      Alert.alert(
+        "사진을 불러오지 못했어요",
+        error instanceof Error && error.name === "ImageTooLargeError"
+          ? error.message
+          : "다른 사진을 선택해주세요.",
+      );
     } finally {
       setPickingImage(false);
     }

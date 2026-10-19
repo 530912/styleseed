@@ -457,8 +457,7 @@ test("E2E-08 실서버 요청 크기·Guest 한도", async () => {
 });
 
 test(
-  "E2E-09 [알려진 결함] 흰 셔츠: SlimSAM이 단추만 잘라내 옷 영역 25% 미만",
-  { todo: "SlimSAM 중심 점 프롬프트 결함(Sprint 1A-1 범위 밖, 결과 문서 참고)" },
+  "E2E-09 흰 셔츠(KI-1): SlimSAM이 옷 전체를 분리한다 (Sprint 1A-3에서 해결, 이전에는 단추만 남음)",
   async () => {
     const token = userA.session.access_token;
     const buffer = fs.readFileSync(KNOWN_DEFECT.image);
@@ -481,6 +480,7 @@ test(
       coverageOfBox: Number(((info.width * info.height) / boxArea).toFixed(4)),
     });
 
+    assert.equal(response.status, 200);
     assert.ok(isBackgroundRemoved(info, boxArea));
   },
 );
