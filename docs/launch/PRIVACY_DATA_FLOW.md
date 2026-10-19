@@ -66,6 +66,8 @@
 | BRIA 호출(서명 URL 전달) | `backend/server.js` `/remove-background` |
 | 서명 URL 10분 | `backend/storagePaths.js` `SIGNED_URL_TTL_SECONDS` |
 
+개발 트랙 Sprint 1A-3(`b721f7b`)부터 SlimSAM 결과가 품질 기준에 못 미치면 422(`LOW_QUALITY_CUTOUT`)를 돌려주고 앱이 BRIA로 대체한다 → BRIA로 가는 사진 비율이 늘 수 있다. "서버 배경 제거가 실패한 경우에만"이라는 고지는 그대로 맞다.
+
 ### 2.3 사용하지 않는 경로
 
 | 경로 | 상태 | 권장 |
