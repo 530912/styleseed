@@ -57,6 +57,10 @@
     "test:client": "node --test \"src/lib/__tests__/**/*.test.mjs\"",
     "test:e2e": "node --test --test-timeout=600000 \"backend/test/e2e/**/*.e2e.js\"",
     "test:engine": "node --test \"src/utils/__tests__/**/*.test.mjs\"",
+    "test:fkd": "node --test \"scripts/fkd/__tests__/*.test.mjs\"",
+    "fkd:validate": "node scripts/fkd/cli.mjs validate",
+    "fkd:build": "node scripts/fkd/cli.mjs build",
+    "fkd:compare": "node scripts/fkd/cli.mjs compare",
     "test:quality": "node --test --test-timeout=600000 \"backend/test/quality/**/*.test.js\""
   },
   "private": true
