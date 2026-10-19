@@ -352,7 +352,7 @@ Splash → Home(Today's Look 카드)
 | **처리 로직** | 첫 실행 → 익명 세션 → 분석(SEC-01·02 한도 적용) → 저장 시 가입/로그인 → 보류 중인 옷이 있으면 `saveClothingToSupabase` → Closet 이동 |
 | **출력** | 세션, 저장된 옷, 단계별 상태 문구 |
 | **AC** | ① 로그인 성공 후 저장이 실패하면 "로그인됨 / 저장 실패"로 구분 안내한다(현재 "로그인 실패"로 표시됨, `login.tsx:116-121`) ② 탈퇴 시 SEC-09 AC를 충족한다 ③ 재설정 메일 링크로 비밀번호를 바꿀 수 있다 ④ 보류 중인 옷의 사진 파일이 사라졌으면 사용자에게 재등록을 안내한다 ⑤ 가입하지 않은 사용자도 익명 세션으로 분석 한도까지 AI 분석을 쓸 수 있다 ⑥ 익명 세션 사용자는 `clothes`에 저장할 수 없고, 가입 후 저장된 행의 `user_id`는 정식 계정 ID다 |
-| **현재 상태** | 01·02 Implemented / 03 **코드 수정 완료(Sprint 1A-1, `src/hooks/use-save-pending-clothing.ts`), 실기기 확인 대기** / 04·05·06·07 Planned |
+| **현재 상태** | 01·02 Implemented / 03 **코드 수정 완료(Sprint 1A-1, `src/hooks/use-save-pending-clothing.ts`), 실기기 확인 대기** / 07 **Implemented(Sprint 1A-2)**: 첫 분석 시 익명 세션 자동 생성, 가입 시 같은 ID로 전환(QA E2E 확인, 앱 화면은 PO 확인 대기) / 04·05·06 Planned |
 | **관련 코드** | `src/app/login.tsx`, `src/app/signup.tsx`, `src/store/usePendingClothingStore.ts`, `src/lib/supabase.ts`, `src/app/analyze.tsx:282-286` |
 | **기술 의존성** | Supabase Auth(익명 로그인 활성화 필요. 2026-10-17 현재 **꺼져 있음** [1A-02 확인]), **익명 사용자 쓰기 차단 restrictive 정책을 익명 로그인 활성화보다 먼저 적용**(현재 정책은 익명 사용자도 `authenticated`로 허용, AUDIT S-6),  딥링크(`scheme: styleseed`, `app.json`), 05는 서버 관리자 권한 엔드포인트(SEC-09) |
 | **우선순위** | 03·05·07: **P0**(Phase 1A. 05는 개인정보 처리 요건, 07은 SEC-01과 가입 전 체험을 함께 지키는 전제) / 04·06: P1 |
@@ -755,6 +755,17 @@ Splash → Home(Today's Look 카드)
 | SEC-11 | 이미지 제3자 전송과 AI 요금 등급: ① Gemini, BRIA(fal 사용 시 fal)로 이미지가 전송됨을 처리방침에 명시 ② **Phase 2 진입 전 Gemini 유료 등급으로 전환**한다. 전환하지 못하면 무료 등급 사용 사실과, 입력·출력이 제공자의 제품 개선에 쓰이고 사람이 검토할 수 있다는 점을 처리방침과 Beta 동의서에 명시하고 얼굴 포함 착용 사진 업로드를 제한한다 | `backend/server.js:192-480,836-855`. 무료 등급 주석(`server.js:111`). 실제 요금 등급은 미확인(OQ-26) | ① 처리방침에 수탁·제3자 항목 기재 ② 운영 환경의 Gemini 요금 등급이 문서로 기록됨(AC-G7) | Planned | **P0**(Phase 2 진입 전) |
 | SEC-12 | 얼굴이 포함된 착용 사진 처리 정책(원본 보관 기간, 삭제 요청) | 원본을 영구 저장(`original_image_path`) | 정책 문서화 + 사용자 삭제 가능 | Planned | P1(Phase 2) |
 | SEC-13 | 결제 상태 서버 검증 — **FR-SUB-04 참조**(정의 중복하지 않음) | — | FR-SUB-04 AC | Planned | Phase 5 P0 |
+
+> **Sprint 1A-2 반영 (2026-10-19, `docs/sprints/sprint-1a-2-result.md`)**
+>
+> | ID | 상태 | 내용 |
+> |---|---|---|
+> | SEC-01 | **Partial → 대부분 충족** | 익명 토큰의 이미지 처리 403 `ANONYMOUS_NOT_ALLOWED`(AC ②), 정식 토큰 허용(AC ③), 무효 토큰 401. **남은 차이:** 토큰 없는 분석은 임시 호환 모드(`ALLOW_TOKENLESS_GUEST`, 켜짐)로 허용 중 → 끄면 AC ① 충족 |
+> | SEC-02 | **Implemented** | 익명·정식 사용자 사용량을 `ai_usage`에 영구 기록(서버 재시작 후 유지), IP 상한, 한도 환경변수화. 값은 개발 가설(익명 30·사용자 30·IP 30/시간) |
+> | SEC-03 | **Implemented** | 이미지 처리는 Storage 경로만 받고 서버가 사용자 토큰으로 서명 URL 생성. 요청 본문 URL 무시 |
+> | SEC-04 | **Implemented + 보완** | 운영에 익명 사용자 차단 restrictive 정책 추가(DB-1), anon 역할 권한 회수(DB-5) |
+> | SEC-05 | **Implemented + 보완** | 익명 사용자 차단(DB-1), 버킷 10MB·이미지 형식 제한(DB-3) |
+> | 운영 Auth | 변경 | 익명 로그인 켜짐(DB-4). 이메일 인증 꺼짐 유지(AUDIT S-10) |
 
 > 개인정보 보호 관련 법적 요건(국내 개인정보보호법, 위치정보법 등)의 구체적 적용 범위는 법률 검토가 필요하다(OQ-20). 이 PRD는 법률 자문이 아니다.
 >

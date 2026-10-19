@@ -282,6 +282,8 @@ Splash(SplashIntro, 앱 실행 후 1회)
 | S-10 | 운영 이메일 인증(Confirm email) 꺼짐 **[2026-10-17 Dashboard 확인]** | Auth → Sign In / Providers: Confirm email OFF, 가입 ON | 다른 사람의 이메일 주소로도 가입·로그인 가능. 이메일 소유가 확인되지 않음 | Beta 전 PRD SEC 항목으로 결정(Sprint 1A-2 계획 D3) |
 | S-9 | anon 역할이 `clothes` 테이블 권한을 가짐 **[1A-02 확인]** | `has_table_privilege` 결과 anon·authenticated 모두 SELECT·INSERT·UPDATE·DELETE 가능(Supabase 기본값). anon용 정책이 없어 실제 접근은 0건 | 지금은 영향 없음. RLS가 실수로 꺼지면 바로 노출 | 선택: anon 권한 회수(보류 중) |
 
+**[Sprint 1A-2 반영, 2026-10-19]** S-2 해소(이미지 처리는 Storage 경로만, 서버가 사용자 토큰으로 서명). S-6 해소(운영에 익명 사용자 차단 restrictive 정책, DB-1). S-7 해소(버킷 10MB·이미지 형식 제한, DB-3). S-9 해소(anon 권한 회수, DB-5). S-1의 남은 부분(사용자별 영구 한도) 해소(`ai_usage`, DB-2). 남은 것: 토큰 없는 분석 임시 호환 모드, S-8(계정 삭제), S-10(이메일 인증 꺼짐). 상세 `docs/sprints/sprint-1a-2-result.md`.
+
 비밀값 관리는 양호: `.env`는 gitignore 처리돼 있고 서버 키는 클라이언트 번들에 포함되지 않는다.
 
 ### 7.2 기술적 문제
