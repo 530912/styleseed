@@ -7,7 +7,7 @@ import path from "node:path";
 
 import { ROOT, loadContract } from "./lib.mjs";
 
-export const DOC_PATH = path.join(ROOT, "docs/recommendation/DATA_CONTRACT_V0.1.md");
+export const DOC_PATH = path.join(ROOT, "docs/handoff/fkd-data-contract-v0.1/README.md");
 const BEGIN = "<!-- BEGIN GENERATED: scripts/fkd/gen-contract-doc.mjs -->";
 const END = "<!-- END GENERATED -->";
 
@@ -48,6 +48,18 @@ export const renderGenerated = (contract) => {
     out.push("");
   }
 
+  out.push("### 점수 차원", "", "| 키 | 이름 | 평가 필드 | 규칙 ID 약자 | Match Score 항목 | 가중치 가설 | 보는 것 |", "|---|---|---|---|---|---|---|");
+  for (const d of contract.score_dimensions) {
+    out.push(`| \`${d.key}\` | ${cell(d.label)} | \`${d.evaluation_field}\` | ${d.rule_prefix ? `\`${d.rule_prefix}\`` : "—"} | ${cell(d.match_score_slot)} | ${d.weight_hypothesis ?? "—"} | ${cell(d.looks_at)} |`);
+  }
+  out.push("", `척도 ${contract.score_scale.min}~${contract.score_scale.max}, 0~100 환산 \`${contract.score_scale.to_100}\` (상태: ${contract.score_scale.status}, ${contract.score_scale.decision}). 가중치는 **가설**이며 공동창업자 승인 전에는 확정값이 아니다.`, "");
+
+  out.push(`### 평가 기준 문장(rubric) — ${cell(contract.rubric.status)}`, "", "| 차원 | 1 | 2 | 3 | 4 | 5 |", "|---|---|---|---|---|---|");
+  for (const [dim, anchors] of Object.entries(contract.rubric).filter(([k]) => k !== "status")) {
+    out.push(`| \`${dim}\` | ${anchors.map(cell).join(" | ")} |`);
+  }
+  out.push("");
+
   out.push("### 고정 목록 (정식 값 = 영어 키, 한국어 라벨도 같은 값으로 받음)", "", "| 목록 | 값 (키 = 라벨) |", "|---|---|");
   for (const [name, pairs] of Object.entries(contract.lists)) {
     out.push(`| \`${name}\` | ${cell(pairs.map(([k, l]) => (k === l ? `\`${k}\`` : `\`${k}\` = ${l}`)).join(", "))} |`);
@@ -56,6 +68,11 @@ export const renderGenerated = (contract) => {
   out.push("", "### 오류·경고 코드", "", "| 코드 | 수준 | 의미 |", "|---|---|---|");
   for (const [code, text] of Object.entries(contract.error_codes)) {
     out.push(`| \`${code}\` | ${code.startsWith("E_") ? "오류(가져오기 중단)" : "경고"} | ${cell(text)} |`);
+  }
+
+  out.push("", "### 공동창업자 승인이 필요한 패션 판단 (확정 전)", "", "| ID | 주제 | 결정할 것 | 영향 |", "|---|---|---|---|");
+  for (const d of contract.pending_cofounder_decisions) {
+    out.push(`| ${d.id} | ${cell(d.topic)} | ${cell(d.question)} | ${cell(d.affects.join(", "))} |`);
   }
 
   out.push("", END);
@@ -81,6 +98,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
     console.log("문서와 계약 일치");
   } else {
     fs.writeFileSync(DOC_PATH, next);
-    console.log(`갱신: ${path.relative(ROOT, DOC_PATH)}`);
+    console.log(`갱신: ${path.relative(ROOT, DOC_PATH)} (전달 패키지는 node scripts/fkd/gen-handoff.mjs)`);
   }
 }

@@ -4,73 +4,26 @@
 //   node scripts/fkd/cli.mjs compare [묶음폴더] [--out 파일] [--allow-partial] [--force]
 //                                                          evaluations/의 두 평가자 일치도 + 불일치 검토 목록
 //
-// 묶음폴더 구성: manifest.json(Lab 내보내기 필수) · evaluators.csv · garment_schema.csv · garments.csv · outfits.csv
-//               · styling_rules.csv · [disagreement_review.csv] · evaluations/*.csv
+// 묶음: CSV 폴더(manifest.json · evaluators.csv · garment_schema.csv · garments.csv · outfits.csv · styling_rules.csv
+//        · [disagreement_review.csv] · evaluations/*.csv) 또는 JSON(bundle.json 파일·그 파일이 든 폴더)
 
 import fs from "node:fs";
 import path from "node:path";
 
+import { CSV_FILES, runValidation } from "./bundle.mjs";
 import { buildRuleset } from "./build.mjs";
 import { compareEvaluations, reviewHeaders } from "./compare.mjs";
-import { ROOT, loadContract, readTable, toCsv } from "./lib.mjs";
-import { createValidator, formatIssues, validateManifest } from "./validate.mjs";
+import { ROOT, loadContract, toCsv } from "./lib.mjs";
+import { formatIssues } from "./validate.mjs";
 
-const REQUIRED_FILES = {
-  evaluators: "evaluators.csv",
-  attribute_values: "garment_schema.csv",
-  garments: "garments.csv",
-  outfits: "outfits.csv",
-  styling_rules: "styling_rules.csv",
-};
-
-export const loadBundle = (dir, contract) => {
-  const issues = [];
-  const tables = {};
-  for (const [entity, file] of Object.entries(REQUIRED_FILES)) {
-    const full = path.join(dir, file);
-    if (!fs.existsSync(full)) {
-      issues.push({ level: "error", code: "E_FILE_MISSING", entity, file, line: 0, record: "", field: "", message: `${contract.error_codes.E_FILE_MISSING}: ${file}` });
-      tables[entity] = { file, keys: [], rows: [], missing: true };
-    } else {
-      tables[entity] = readTable(full, file);
-    }
-  }
-  const reviewFile = path.join(dir, "disagreement_review.csv");
-  if (fs.existsSync(reviewFile)) tables.disagreement_reviews = readTable(reviewFile, "disagreement_review.csv");
-  const evalDir = path.join(dir, "evaluations");
-  tables.outfit_evaluations = fs.existsSync(evalDir)
-    ? fs.readdirSync(evalDir).filter((f) => f.endsWith(".csv")).sort().map((f) => readTable(path.join(evalDir, f), `evaluations/${f}`))
-    : [];
-
-  const manifestFile = path.join(dir, "manifest.json");
-  let manifest = null;
-  if (fs.existsSync(manifestFile)) {
-    try {
-      manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8"));
-    } catch {
-      manifest = {};
-    }
-  }
-  issues.push(...validateManifest(contract, manifest, (file) => {
-    const full = path.join(dir, file);
-    return fs.existsSync(full) ? fs.readFileSync(full) : null;
-  }));
-
-  return { tables, issues };
-};
-
-export const runValidation = (dir, contract = loadContract()) => {
-  const bundle = loadBundle(dir, contract);
-  const validator = createValidator(contract);
-  const result = validator.validateBundle(bundle.tables);
-  const issues = [...bundle.issues, ...result.issues];
-  return { ...result, issues, errors: issues.filter((i) => i.level === "error").length };
-};
+export { runValidation };
 
 const pickDir = (positional) => {
   if (positional[0]) return path.resolve(positional[0]);
   const sheets = path.join(ROOT, "data/fkd/sheets");
-  return fs.existsSync(path.join(sheets, "styling_rules.csv")) ? sheets : path.join(ROOT, "data/fkd/templates");
+  return fs.existsSync(path.join(sheets, "styling_rules.csv")) || fs.existsSync(path.join(sheets, "bundle.json"))
+    ? sheets
+    : path.join(ROOT, "data/fkd/templates");
 };
 
 const main = () => {
@@ -93,7 +46,7 @@ const main = () => {
   } else {
     console.log(`검증: ${path.relative(ROOT, dir) || "."} (계약 ${contract.contract_version})`);
     if (result.issues.length > 0) console.log(formatIssues(result.issues));
-    for (const e of result.data.outfit_evaluations) {
+    for (const e of result.data?.outfit_evaluations ?? []) {
       const submitted = e.records.filter((r) => !r.example && r.v.submission_status === "submitted").length;
       const open = e.records.filter((r) => !r.example && r.v.submission_status !== "submitted").length;
       console.log(`평가 ${e.file}: 평가자 ${e.evaluator ?? "-"}, 제출 ${submitted}개, 작성중 ${open}개`);
@@ -107,7 +60,13 @@ const main = () => {
   }
 
   if (command === "build") {
-    const sourceText = Object.values(REQUIRED_FILES).map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n");
+    if (result.manifest?.purpose === "example") {
+      console.error(`[E_EXAMPLE_BUNDLE_BUILD] ${contract.error_codes.E_EXAMPLE_BUNDLE_BUILD}`);
+      process.exit(1);
+    }
+    const sourceText = result.format === "json"
+      ? fs.readFileSync(dir.endsWith(".json") ? dir : path.join(dir, "bundle.json"), "utf8")
+      : Object.values(CSV_FILES).map((f) => fs.readFileSync(path.join(dir, f), "utf8")).join("\n");
     const ruleset = buildRuleset({ contract, data: result.data, taxonomy: result.taxonomy, sourceText });
     const outFile = path.join(ROOT, "data/fkd/build/ruleset.json");
     fs.mkdirSync(path.dirname(outFile), { recursive: true });

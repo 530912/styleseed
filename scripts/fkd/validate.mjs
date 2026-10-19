@@ -19,8 +19,14 @@ const requiredNow = (required, v) => {
   return op === "=" ? v[field] === expected : v[field] !== expected;
 };
 
-export const createValidator = (contract) => {
+// options.strictEnumKeys: JSON 묶음은 고정 목록에 영어 키만 허용(한국어 라벨은 CSV에서만)
+export const createValidator = (contract, { strictEnumKeys = false } = {}) => {
   const lists = listLookup(contract);
+  const enumKeys = Object.fromEntries(Object.entries(contract.lists).map(([name, pairs]) => [name, new Set(pairs.map(([k]) => k))]));
+  const normalizeEnum = (list, raw) => {
+    if (strictEnumKeys) return enumKeys[list].has(raw) ? raw : `!${raw}`;
+    return lists[list].get(raw) ?? lists[list].get(raw.toLowerCase()) ?? `!${raw}`;
+  };
   const codeText = contract.error_codes;
   const issues = [];
 
@@ -69,8 +75,8 @@ export const createValidator = (contract) => {
       for (const f of spec.fields) {
         const raw = values[f.key] ?? "";
         if (f.display_only) continue;
-        if (f.type === "enum" && f.list) v[f.key] = raw ? lists[f.list].get(raw) ?? lists[f.list].get(raw.toLowerCase()) ?? `!${raw}` : "";
-        else if (f.type === "enum_list" && f.list) v[f.key] = splitValues(raw).map((x) => lists[f.list].get(x) ?? `!${x}`);
+        if (f.type === "enum" && f.list) v[f.key] = raw ? normalizeEnum(f.list, raw) : "";
+        else if (f.type === "enum_list" && f.list) v[f.key] = splitValues(raw).map((x) => normalizeEnum(f.list, x));
         else if (f.type === "enum_list" || f.type === "ref_list" || f.type === "taxonomy_values") v[f.key] = splitValues(raw);
         else v[f.key] = raw;
       }
@@ -329,8 +335,10 @@ export const validateManifest = (contract, manifest, readFileBytes) => {
 
   const [major, minor] = String(manifest.contract_version ?? "").split(".").map(Number);
   const [ourMajor, ourMinor] = contract.contract_version.split(".").map(Number);
+  const isJson = manifest.format === "json";
 
-  if (!Number.isInteger(major) || !manifest.source || !manifest.files) add("error", "E_MANIFEST_INVALID", "contract_version·source·files 필요");
+  if (!Number.isInteger(major) || !manifest.source || (!isJson && !manifest.files)) add("error", "E_MANIFEST_INVALID", `contract_version·source${isJson ? "" : "·files"} 필요`);
+  else if (manifest.purpose && !["production", "example"].includes(manifest.purpose)) add("error", "E_MANIFEST_INVALID", `purpose "${manifest.purpose}"`);
   else if (major !== ourMajor) add("error", "E_CONTRACT_MAJOR", `${manifest.contract_version} (지원 ${contract.contract_version})`);
   else if (minor > ourMinor) add("warning", "W_CONTRACT_NEWER", manifest.contract_version);
 

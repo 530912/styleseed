@@ -1,0 +1,27 @@
+{
+ "contract_version": "0.1.0",
+ "source": "knowledge-lab",
+ "purpose": "example",
+ "exported_at": "2026-10-24T10:00:00+09:00",
+ "exported_by": "E1",
+ "format": "csv",
+ "files": {
+  "evaluators.csv": "68b81f646a30ec73659e53c4a6e5b3c8bb6a1025087fd7b37285bc2e4e91fad2",
+  "garment_schema.csv": "35ef45fec8a6020029be4f15556baf9aeba10dcdc92f8df7605da577d4af177b",
+  "garments.csv": "8763000a71636678b6eb9b4e7b570172e54912650b77dd0e8dfe27aefe537a1c",
+  "outfits.csv": "9a60b4e1f7e2e2e33f534fb4128fc130d0522161820f6566889d9259651c8504",
+  "styling_rules.csv": "d395a2da1299676baa9c9c51e8805927cf6fb71466088403afe7cab9eef270f5",
+  "disagreement_review.csv": "80373a76390d6cd193bd838d9254f39bc247bda0be0b458dc9c196b6e9e546e2",
+  "evaluations/outfit_evaluation_E1.csv": "dfb671f9d3e5c9ce3eb75a79a3e9104507c4b2a332dd016506dc9867fd2863c8",
+  "evaluations/outfit_evaluation_E2.csv": "54d3f6f7f0c33b5732f2bbef126bc1e7bb1fd0b9c9d9ba998ed1f4829c3d2707"
+ },
+ "counts": {
+  "evaluators": 3,
+  "attribute_values": 60,
+  "garments": 8,
+  "outfits": 4,
+  "styling_rules": 10,
+  "outfit_evaluations": 8,
+  "disagreement_reviews": 2
+ }
+}

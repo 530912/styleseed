@@ -1,0 +1,4 @@
+evaluator_id,role,can_approve,active,note
+E1,cofounder,yes,yes,예시 데이터 — 실제 패션 판단 아님
+E2,cofounder,yes,yes,예시 데이터 — 실제 패션 판단 아님
+E3,external,no,yes,승인 권한 없는 평가자 예시

@@ -6,7 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { buildRuleset, loadApprovedRules } from "../build.mjs";
-import { runValidation } from "../cli.mjs";
+import { runValidation } from "../bundle.mjs";
 import { compareEvaluations, spearman, weightedKappa } from "../compare.mjs";
 import { ROOT, headerFor, loadContract, parseCsv, readTable } from "../lib.mjs";
 import { createValidator, validateManifest } from "../validate.mjs";
@@ -255,8 +255,80 @@ test("비교 결과(disagreement_review)는 계약 검증을 그대로 통과한
   assert.equal(result.data.disagreement_reviews.length, 2);
 });
 
-test("DATA_CONTRACT 문서의 표가 계약 JSON과 같다", async () => {
+test("전달 명세(README)의 표가 계약 JSON과 같다", async () => {
   const { DOC_PATH, syncDoc } = await import("../gen-contract-doc.mjs");
   const current = fs.readFileSync(DOC_PATH, "utf8");
   assert.equal(syncDoc(current, contract), current, "node scripts/fkd/gen-contract-doc.mjs 실행 필요");
+});
+
+const PACKAGE = path.join(ROOT, "docs/handoff/fkd-data-contract-v0.1");
+
+test("전달 패키지가 계약·예시와 동기화되어 있다(gen-handoff --check와 같음)", async () => {
+  const { generateHandoff } = await import("../gen-handoff.mjs");
+  for (const [rel, content] of generateHandoff(contract)) {
+    assert.equal(fs.readFileSync(path.join(PACKAGE, rel), "utf8"), content, rel);
+  }
+});
+
+test("예시 묶음: CSV·JSON 모두 오류 0, 빌드하면 승인 규칙 5개(최고 버전만)", () => {
+  for (const target of ["examples/csv", "examples/json/bundle.json"]) {
+    const result = runValidation(path.join(PACKAGE, target), contract);
+    assert.equal(result.errors, 0, `${target}: ${JSON.stringify(result.issues.filter((i) => i.level === "error").slice(0, 2))}`);
+    assert.deepEqual(result.issues.map((i) => i.code), Array(3).fill("W_UNSUPPORTED_ATTRIBUTE"), target);
+    const ruleset = build(result);
+    assert.deepEqual(ruleset.rules.map((r) => `${r.id}v${r.version}`), ["COL-001v1", "COL-002v2", "FIT-001v1", "FIT-002v1", "MAT-001v1"], target);
+  }
+});
+
+test("잘못된 예시 14개: 각각 기대한 오류 코드 집합이 정확히 나온다", () => {
+  const expected = JSON.parse(fs.readFileSync(path.join(PACKAGE, "examples/invalid/expected-errors.json"), "utf8"));
+  assert.equal(Object.keys(expected).length, 14);
+  for (const [name, codesExpected] of Object.entries(expected)) {
+    const result = runValidation(path.join(PACKAGE, `examples/invalid/${name}.json`), contract);
+    const got = [...new Set(result.issues.filter((i) => i.level === "error").map((i) => i.code))].sort();
+    assert.deepEqual(got, [...codesExpected].sort(), name);
+  }
+});
+
+test("purpose=example 묶음은 엔진용 빌드를 거부한다", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const run = spawnSync(process.execPath, [path.join(ROOT, "scripts/fkd/cli.mjs"), "build", path.join(PACKAGE, "examples/csv")], { encoding: "utf8" });
+  assert.equal(run.status, 1);
+  assert.match(run.stderr, /E_EXAMPLE_BUNDLE_BUILD/);
+  assert.doesNotMatch(run.stdout, /생성: data\/fkd\/build/);
+});
+
+// 작은 JSON Schema 검사기(type·enum·pattern·범위·required·items)로 예시 JSON이 스키마를 따르는지 확인
+const checkSchema = (schema, value, where, errors) => {
+  if (schema.type === "object") {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return errors.push(`${where}: object`);
+    for (const key of schema.required ?? []) if (!(key in value)) errors.push(`${where}.${key}: required`);
+    for (const [key, sub] of Object.entries(schema.properties ?? {})) if (key in value) checkSchema(sub, value[key], `${where}.${key}`, errors);
+  } else if (schema.type === "array") {
+    if (!Array.isArray(value)) return errors.push(`${where}: array`);
+    if (schema.minItems && value.length < schema.minItems) errors.push(`${where}: minItems`);
+    if (schema.maxItems && value.length > schema.maxItems) errors.push(`${where}: maxItems`);
+    value.forEach((item, i) => schema.items && checkSchema(schema.items, item, `${where}[${i}]`, errors));
+  } else if (schema.type === "integer") {
+    if (!Number.isInteger(value)) return errors.push(`${where}: integer`);
+    if (schema.minimum !== undefined && value < schema.minimum) errors.push(`${where}: minimum`);
+    if (schema.maximum !== undefined && value > schema.maximum) errors.push(`${where}: maximum`);
+  } else if (schema.type === "string") {
+    if (typeof value !== "string") return errors.push(`${where}: string`);
+    if (schema.enum && !schema.enum.includes(value)) errors.push(`${where}: enum ${value}`);
+    if (schema.const && value !== schema.const) errors.push(`${where}: const`);
+    if (schema.pattern && !new RegExp(schema.pattern).test(value)) errors.push(`${where}: pattern ${value}`);
+    if (schema.minLength && value.length < schema.minLength) errors.push(`${where}: minLength`);
+  }
+  return errors;
+};
+
+test("JSON Schema: 예시 bundle.json은 통과, 형식이 틀린 예시는 걸린다", () => {
+  const schema = JSON.parse(fs.readFileSync(path.join(PACKAGE, "contract/fkd-bundle.schema.json"), "utf8"));
+  const bundle = JSON.parse(fs.readFileSync(path.join(PACKAGE, "examples/json/bundle.json"), "utf8"));
+  assert.deepEqual(checkSchema(schema, bundle, "$", []), []);
+  for (const name of ["korean-label-in-json", "int-as-string-in-json"]) {
+    const bad = JSON.parse(fs.readFileSync(path.join(PACKAGE, `examples/invalid/${name}.json`), "utf8"));
+    assert.ok(checkSchema(schema, bad, "$", []).length > 0, name);
+  }
 });

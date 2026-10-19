@@ -1,0 +1,5 @@
+outfit_id,evaluator_id,round,outfit_summary,score_color,score_silhouette_fit,score_material_season,score_tpo,score_mood,score_overall,label,recommendable,reason,improvement,confidence,rated_at,submission_status,data_origin,note
+P01,E1,1,,5,4,4,5,4,4,suitable,yes,화이트 셔츠와 네이비 슬랙스의 명도 대비가 단정하고 출근 격식에 맞음,,high,2026-10-21,submitted,human,예시 데이터 — 실제 패션 판단 아님
+P02,E1,1,,4,2,4,4,3,3,conditional,unsure,오버핏 셔츠와 와이드 청바지의 볼륨이 겹쳐 허리선이 흐려짐,,high,2026-10-21,submitted,human,예시 데이터 — 실제 패션 판단 아님
+P03,E1,1,,4,4,4,4,4,4,suitable,yes,블레이저의 구조감과 데님의 캐주얼함이 데이트 상황에 균형을 이룸,,high,2026-10-21,submitted,human,예시 데이터 — 실제 패션 판단 아님
+P04,E1,1,,4,4,3,4,4,4,suitable,yes,울 블레이저와 울 스커트가 계절에 맞고 출근 격식에 적합함,,medium,2026-10-21,submitted,human,예시 데이터 — 실제 패션 판단 아님

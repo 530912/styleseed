@@ -2,7 +2,8 @@
 
 패션 지식 데이터(속성 사전·평가용 의류·코디·평가·스타일링 규칙·불일치 검토)를 **Data Contract V0.1** 형식으로 주고받는다.
 
-- 계약(단일 원본): `contract/fkd-contract-v0.1.json` — 문서: `docs/recommendation/DATA_CONTRACT_V0.1.md`
+- 계약(단일 원본): `contract/fkd-contract-v0.1.json` — Claude C 전달 패키지(명세·JSON Schema·예시): `docs/handoff/fkd-data-contract-v0.1/`
+- 형식: CSV 묶음 폴더 또는 JSON(`bundle.json`). 명령은 둘 다 받는다
 - 입력 주체: 공동창업자 2명(Knowledge Lab 또는 임시로 Google Sheets — `docs/recommendation/DATASET_GUIDE.md`)
 - Lab 개발: Claude C / 계약·가져오기·엔진: Claude A
 
@@ -19,7 +20,7 @@ npm run fkd:validate -- [묶음]          # 계약 검증. --json이면 Lab용 �
 npm run fkd:build -- [묶음]             # 오류 0일 때만 build/ruleset.json (approved + human 규칙만)
 npm run fkd:compare -- [묶음]           # evaluations/의 두 평가자 일치도 + review/disagreement_review.csv
 npm run test:fkd                        # 검증·빌드·비교·문서 동기화 테스트
-node scripts/fkd/gen-contract-doc.mjs   # 계약 JSON을 바꾼 뒤 문서 표 갱신
+node scripts/fkd/gen-handoff.mjs        # 계약 JSON·예시를 바꾼 뒤 전달 패키지 재생성(--check: 최신 확인)
 ```
 
 안전장치: 미승인(초안·검토중·보류·폐기)·예시·Claude 초안 규칙은 `build`에 들어가지 않고, 엔진 로더(`loadApprovedRules`)가 한 번 더 거른다. 승인 규칙은 작성자 ≠ 승인자, 승인 권한자, 승인일, 확정된 속성값만 허용한다.
