@@ -115,6 +115,18 @@
 | 1B4-3 | 운영 DB 적용 | **별도 승인** |
 | 1B4-4 | 계정 삭제·개인정보처리방침 반영 | Claude B 핸드오프 |
 
+### v2.4.1 책임 분리 (2026-10-19 추가)
+
+| 담당 | 범위 |
+|---|---|
+| Claude A(이 계획) | 엔진 Audit, Match Score 설계, **Data Contract V0.1**(`docs/recommendation/DATA_CONTRACT_V0.1.md`), 가져오기·검증(`scripts/fkd`), 기준선 측정, 엔진 통합 |
+| Claude C | Knowledge Lab: 연구 가이드 웹사이트, 데이터 입력·코디 평가 UI, 관리자, DB·CRUD, 계약 형식 내보내기 |
+| 공동창업자 2명 | 패션 지식 내용과 추천 기준의 최종 승인 |
+
+- 위 표의 1B1-3·1B1-5·1B1-7·1B2-1 같은 **사람 작업은 Knowledge Lab에서** 한다(Lab 준비 전에는 임시로 Google Sheets, 형식은 계약과 같음)
+- Claude A는 Lab의 UI·DB·CRUD를 만들지 않는다. 템플릿은 계약 형식 예시로만 유지한다
+- 핸드오프: `docs/handoff/knowledge-lab-data-contract.md`
+
 ### v2.5 테스트 시나리오 추가 (v1 8장에 더함)
 
 | ID | 시나리오 | 우선순위 | 자동화 |

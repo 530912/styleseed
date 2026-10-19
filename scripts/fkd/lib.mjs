@@ -1,7 +1,12 @@
-// Fashion Knowledge Dataset(FKD) 공통 도구 — CSV 읽기·쓰기, 열 키, 고정 목록
-// 공동창업자가 Google Sheets에서 내보낸 CSV를 읽는다. 헤더는 "한국어 이름 [key]" 형식이고 key로 읽는다.
+// Fashion Knowledge Dataset(FKD) 공통 도구 — CSV 읽기·쓰기, 계약(Data Contract) 불러오기, 고정 목록 정규화
+// 계약 원본: data/fkd/contract/fkd-contract-v0.1.json (필드·허용값·오류 코드의 단일 원본)
 
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+export const CONTRACT_PATH = path.join(ROOT, "data/fkd/contract/fkd-contract-v0.1.json");
 
 // RFC 4180 CSV 파서(따옴표 안 쉼표·줄바꿈·"" 지원). 첫 줄 BOM 제거.
 export const parseCsv = (text) => {
@@ -53,12 +58,12 @@ export const headerKey = (header) => {
   return match ? match[1] : header.trim();
 };
 
-// CSV → [{ key: value }] + 원래 줄 번호(헤더 = 1행)
-export const readTable = (filePath) => {
-  const [header = [], ...body] = parseCsv(fs.readFileSync(filePath, "utf8"));
+export const tableFromText = (text, file = "") => {
+  const [header = [], ...body] = parseCsv(text);
   const keys = header.map(headerKey);
 
   return {
+    file,
     keys,
     rows: body.map((cells, index) => ({
       line: index + 2,
@@ -66,6 +71,9 @@ export const readTable = (filePath) => {
     })),
   };
 };
+
+export const readTable = (filePath, file = path.basename(filePath)) =>
+  tableFromText(fs.readFileSync(filePath, "utf8"), file);
 
 const quote = (value) => {
   const text = String(value ?? "");
@@ -81,30 +89,27 @@ export const splitValues = (text) =>
     .map((value) => value.trim())
     .filter(Boolean);
 
-// 사람이 고르는 고정 목록(코드와 문서가 같은 값을 쓴다)
-export const LISTS = {
-  dimension: ["색", "핏·실루엣", "소재·계절", "TPO", "무드"],
-  dimensionPrefix: { 색: "COL", "핏·실루엣": "FIT", "소재·계절": "MAT", TPO: "TPO", 무드: "MOOD" },
-  ruleType: ["기본", "예외"],
-  judgement: ["권장", "조건부 권장", "주의", "비권장"],
-  confidence: ["High", "Medium", "Low"],
-  approvalStatus: ["초안", "검토중", "승인", "보류", "폐기"],
-  dataOrigin: ["사람", "예시", "Claude 초안"],
-  schemaStatus: ["제안", "검토중", "확정", "폐기"],
-  weather: ["cold", "cool", "mild", "warm", "hot", "rain", "snow"],
-  label: ["적합", "조건부", "부적합"],
-  recommendable: ["예", "아니오", "모름"],
-  scoreKeys: [
-    "score_color",
-    "score_silhouette_fit",
-    "score_material_season",
-    "score_tpo",
-    "score_mood",
-    "score_overall",
-  ],
-  causes: ["기준 해석 차이", "정보 부족(사진·설명)", "취향 차이", "입력 실수", "규칙 필요"],
-  actions: ["규칙 추가", "규칙 수정", "평가 기준 문장 수정", "예외 추가", "조치 없음"],
-  reviewStatus: ["미검토", "논의중", "합의", "보류"],
+export const isDate = (text) => /^\d{4}-\d{2}-\d{2}$/.test(text) && !Number.isNaN(Date.parse(text));
+
+export const loadContract = (file = CONTRACT_PATH) => JSON.parse(fs.readFileSync(file, "utf8"));
+
+// 고정 목록: 영어 키가 정식 값, 한국어 라벨도 받아 영어 키로 바꾼다
+export const listLookup = (contract) => {
+  const lookup = {};
+  for (const [name, pairs] of Object.entries(contract.lists)) {
+    const map = new Map();
+    for (const [key, label] of pairs) {
+      map.set(key, key);
+      map.set(label, key);
+      map.set(key.toLowerCase(), key);
+    }
+    lookup[name] = map;
+  }
+  return lookup;
 };
 
-export const isDate = (text) => /^\d{4}-\d{2}-\d{2}$/.test(text) && !Number.isNaN(Date.parse(text));
+export const listLabel = (contract, name, key) =>
+  contract.lists[name]?.find(([k]) => k === key)?.[1] ?? key;
+
+// 템플릿 헤더: "한국어 이름 [key]"
+export const headerFor = (field) => `${field.label} [${field.key}]`;

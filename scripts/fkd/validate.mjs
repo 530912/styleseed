@@ -1,265 +1,349 @@
-// FKD 검증 — 공동창업자가 내보낸 CSV가 규칙에 맞는지 확인한다.
-// 오류(error)는 반드시 고쳐야 하고, 경고(warning)는 확인만 하면 된다. 메시지는 한국어(시트 줄 번호 포함).
+// FKD 가져오기 검증 — Data Contract(fkd-contract-v0.1.json)에 맞는지 확인한다.
+// 1단계 필드 검사(필수·형식·허용값)는 계약에서 자동으로, 2단계 교차 검사(참조·승인·독립 평가)는 아래 규칙으로.
+// 모든 문제는 { level, code, entity, file, line, record, field, message }로 돌려준다(Knowledge Lab도 같은 코드 사용).
 
-import { LISTS, isDate, splitValues } from "./lib.mjs";
+import crypto from "node:crypto";
 
-const issue = (level, file, line, message) => ({ level, file, line, message });
+import { isDate, listLookup, splitValues } from "./lib.mjs";
 
-// ---- garment_schema ----
-export const validateSchema = (table, file = "garment_schema.csv") => {
+const isExampleRow = (v, keyField) =>
+  v.data_origin === "example" || String(v[keyField] ?? "").startsWith("EX-");
+
+// "status=confirmed", "approval_status!=draft" 같은 조건부 필수
+const requiredNow = (required, v) => {
+  if (required === true) return true;
+  if (!required) return false;
+  const match = String(required).match(/^(\w+)(!?=)(.+)$/);
+  if (!match) return false;
+  const [, field, op, expected] = match;
+  return op === "=" ? v[field] === expected : v[field] !== expected;
+};
+
+export const createValidator = (contract) => {
+  const lists = listLookup(contract);
+  const codeText = contract.error_codes;
   const issues = [];
-  const values = new Map(); // attribute → Map(value → status)
-  const seen = new Set();
 
-  for (const { line, values: v } of table.rows) {
-    if (v.data_origin === "예시") continue;
-
-    if (!LISTS.dataOrigin.includes(v.data_origin)) {
-      issues.push(issue("error", file, line, `데이터 출처는 ${LISTS.dataOrigin.join("/")} 중 하나여야 해요`));
-    }
-
-    if (!v.attribute_key || !v.value_key) {
-      issues.push(issue("error", file, line, "속성 키와 값 키는 비울 수 없어요"));
-      continue;
-    }
-
-    const id = `${v.attribute_key}:${v.value_key}`;
-    if (seen.has(id)) issues.push(issue("error", file, line, `같은 값이 두 번 있어요: ${id}`));
-    seen.add(id);
-
-    if (!LISTS.schemaStatus.includes(v.status)) {
-      issues.push(issue("error", file, line, `상태는 ${LISTS.schemaStatus.join("/")} 중 하나여야 해요 (지금: "${v.status}")`));
-    }
-
-    if (v.status === "확정" && (!v.decided_by || !isDate(v.decided_at))) {
-      issues.push(issue("error", file, line, "확정한 값은 결정자와 결정일(YYYY-MM-DD)이 필요해요"));
-    }
-
-    if (v.status === "확정" && v.data_origin !== "사람") {
-      issues.push(issue("error", file, line, "확정은 사람이 결정한 값만 할 수 있어요. Claude 초안 값을 확정하려면 출처를 '사람'으로 바꿔 주세요"));
-    }
-
-    if (!values.has(v.attribute_key)) values.set(v.attribute_key, new Map());
-    values.get(v.attribute_key).set(v.value_key, v.status);
-  }
-
-  return { issues, values };
-};
-
-const checkCondition = (schema, side, v, file, line, issues, approved) => {
-  const category = v[`${side}_category`];
-  const attribute = v[`${side}_attribute`];
-  const list = splitValues(v[`${side}_values`]);
-  const name = side === "a" ? "조건 A" : "조건 B";
-
-  if (!attribute && list.length === 0 && !category) return [];
-
-  if (category && category !== "any" && !schema.get("category")?.has(category)) {
-    issues.push(issue("error", file, line, `${name} 대분류 "${category}"가 속성 사전에 없어요(any 또는 category 값)`));
-  }
-
-  if (!attribute || list.length === 0) {
-    issues.push(issue("error", file, line, `${name}의 속성과 값을 함께 적어 주세요`));
-    return [];
-  }
-
-  const allowed = schema.get(attribute);
-  if (!allowed) {
-    issues.push(issue("error", file, line, `${name} 속성 "${attribute}"가 속성 사전에 없어요`));
-    return [];
-  }
-
-  const unconfirmed = [];
-  for (const value of list) {
-    if (!allowed.has(value)) {
-      issues.push(issue("error", file, line, `${name} 값 "${value}"가 속성 "${attribute}"의 허용값에 없어요`));
-    } else if (allowed.get(value) !== "확정") {
-      unconfirmed.push(`${attribute}:${value}`);
-    }
-  }
-
-  if (approved && unconfirmed.length > 0) {
-    issues.push(issue("error", file, line, `승인 규칙은 '확정'된 속성값만 쓸 수 있어요: ${unconfirmed.join(", ")}`));
-  }
-
-  return unconfirmed;
-};
-
-const checkContext = (schema, attribute, text, label, file, line, issues, approved) => {
-  for (const value of splitValues(text)) {
-    const allowed = schema.get(attribute);
-    if (!allowed?.has(value)) {
-      issues.push(issue("error", file, line, `${label} "${value}"가 속성 사전(${attribute})에 없어요`));
-    } else if (approved && allowed.get(value) !== "확정") {
-      issues.push(issue("error", file, line, `승인 규칙은 '확정'된 ${label}만 쓸 수 있어요: ${value}`));
-    }
-  }
-};
-
-// ---- styling_rules ----
-export const validateRules = (table, schema, file = "styling_rules.csv") => {
-  const issues = [];
-  const byId = new Map();
-
-  for (const row of table.rows) {
-    const v = row.values;
-    if (v.rule_id) byId.set(`${v.rule_id}@${v.rule_version}`, row);
-  }
-
-  const seen = new Set();
-
-  for (const { line, values: v } of table.rows) {
-    const isExample = v.data_origin === "예시" || v.rule_id.startsWith("EX-");
-
-    if (!LISTS.dataOrigin.includes(v.data_origin)) {
-      issues.push(issue("error", file, line, `데이터 출처는 ${LISTS.dataOrigin.join("/")} 중 하나여야 해요`));
-    }
-
-    if (isExample) {
-      if (v.approval_status === "승인") {
-        issues.push(issue("error", file, line, "예시 행은 승인할 수 없어요. 쓰려면 새 규칙 ID로 옮기고 출처를 '사람'으로 바꿔 주세요"));
-      }
-      continue;
-    }
-
-    const id = v.rule_id;
-    const prefix = LISTS.dimensionPrefix[v.dimension];
-
-    if (!LISTS.dimension.includes(v.dimension)) {
-      issues.push(issue("error", file, line, `평가 차원은 ${LISTS.dimension.join("/")} 중 하나여야 해요`));
-    }
-
-    if (!/^(COL|FIT|MAT|TPO|MOOD)-\d{3}$/.test(id)) {
-      issues.push(issue("error", file, line, `규칙 ID 형식은 COL-001처럼 '차원 약자-세 자리 숫자'예요 (지금: "${id}")`));
-    } else if (prefix && !id.startsWith(`${prefix}-`)) {
-      issues.push(issue("error", file, line, `평가 차원 "${v.dimension}"의 규칙 ID는 ${prefix}-로 시작해야 해요`));
-    }
-
-    if (!/^[1-9]\d*$/.test(v.rule_version)) {
-      issues.push(issue("error", file, line, "버전은 1, 2, 3 같은 숫자예요"));
-    }
-
-    const key = `${id}@${v.rule_version}`;
-    if (seen.has(key)) issues.push(issue("error", file, line, `같은 규칙 ID·버전이 두 번 있어요: ${key}`));
-    seen.add(key);
-
-    const approved = v.approval_status === "승인";
-
-    if (!LISTS.approvalStatus.includes(v.approval_status)) {
-      issues.push(issue("error", file, line, `승인 상태는 ${LISTS.approvalStatus.join("/")} 중 하나여야 해요`));
-    }
-
-    if (!LISTS.ruleType.includes(v.rule_type)) {
-      issues.push(issue("error", file, line, "규칙 종류는 기본/예외 중 하나예요"));
-    } else if (v.rule_type === "예외") {
-      const base = [...byId.values()].find((r) => r.values.rule_id === v.exception_of);
-      if (!base) {
-        issues.push(issue("error", file, line, `예외 규칙은 대상 기본 규칙 ID가 필요해요 (지금: "${v.exception_of}")`));
-      } else if (approved && base.values.approval_status !== "승인") {
-        issues.push(issue("error", file, line, `대상 기본 규칙 ${v.exception_of}이 아직 승인되지 않았어요`));
-      }
-    }
-
-    checkCondition(schema, "a", v, file, line, issues, approved);
-    if (!v.a_attribute) issues.push(issue("error", file, line, "조건 A는 반드시 적어야 해요"));
-    checkCondition(schema, "b", v, file, line, issues, approved);
-
-    checkContext(schema, "tpo", v.context_tpo, "적용 TPO", file, line, issues, approved);
-    checkContext(schema, "mood", v.context_mood, "적용 무드", file, line, issues, approved);
-    checkContext(schema, "season", v.context_season, "적용 계절", file, line, issues, approved);
-    for (const w of splitValues(v.context_weather)) {
-      if (!LISTS.weather.includes(w)) {
-        issues.push(issue("error", file, line, `적용 날씨는 ${LISTS.weather.join("/")} 중에서 골라 주세요 (지금: "${w}")`));
-      }
-    }
-
-    if (!LISTS.judgement.includes(v.judgement)) {
-      issues.push(issue("error", file, line, `판정은 ${LISTS.judgement.join("/")} 중 하나예요`));
-    }
-    if (!/^[1-5]$/.test(v.strength)) issues.push(issue("error", file, line, "강도는 1~5 숫자예요"));
-    if (!LISTS.confidence.includes(v.confidence)) {
-      issues.push(issue("error", file, line, "확신도는 High/Medium/Low 중 하나예요"));
-    }
-    if (v.reason.length < 10) {
-      issues.push(issue("error", file, line, "판단 이유를 관찰 가능한 문장으로 적어 주세요(10자 이상)"));
-    }
-    if (v.judgement === "조건부 권장" && !(v.context_tpo || v.context_mood || v.context_season || v.context_weather)) {
-      issues.push(issue("warning", file, line, "조건부 권장은 적용 상황(TPO·무드·계절·날씨) 중 하나를 적는 것이 좋아요"));
-    }
-
-    if (approved) {
-      if (v.data_origin !== "사람") {
-        issues.push(issue("error", file, line, "승인 규칙은 데이터 출처가 '사람'이어야 해요"));
-      }
-      if (!v.author || !v.reviewer) {
-        issues.push(issue("error", file, line, "승인 규칙은 작성자와 검토자가 모두 필요해요"));
-      } else if (v.author === v.reviewer) {
-        issues.push(issue("error", file, line, "작성자와 검토자는 서로 다른 사람이어야 해요"));
-      }
-      if (!isDate(v.approved_at)) {
-        issues.push(issue("error", file, line, "승인일을 YYYY-MM-DD 형식으로 적어 주세요"));
-      }
-    }
-  }
-
-  return { issues };
-};
-
-// ---- outfit_evaluation (평가자 한 명의 파일) ----
-export const validateEvaluation = (table, file = "outfit_evaluation.csv") => {
-  const issues = [];
-  const evaluators = new Set();
-  const seen = new Set();
-  let rated = 0;
-  let unrated = 0;
-
-  for (const { line, values: v } of table.rows) {
-    if (v.data_origin === "예시" || v.evaluator_id === "예시" || v.outfit_id.startsWith("EX-")) continue;
-
-    const scores = LISTS.scoreKeys.map((key) => v[key]);
-    const anyScore = scores.some(Boolean);
-
-    if (!v.outfit_id) issues.push(issue("error", file, line, "코디 ID가 비어 있어요"));
-    if (seen.has(v.outfit_id)) issues.push(issue("error", file, line, `같은 코디 ID가 두 번 있어요: ${v.outfit_id}`));
-    seen.add(v.outfit_id);
-
-    if (!anyScore) {
-      unrated += 1;
-      continue;
-    }
-
-    rated += 1;
-
-    if (!v.evaluator_id) issues.push(issue("error", file, line, "평가자 ID를 적어 주세요"));
-    else evaluators.add(v.evaluator_id);
-
-    LISTS.scoreKeys.forEach((key, i) => {
-      if (!/^[1-5]$/.test(scores[i])) {
-        issues.push(issue("error", file, line, `${key} 점수는 1~5 숫자예요 (지금: "${scores[i]}")`));
-      }
+  const add = (level, code, ctx, detail = "") =>
+    issues.push({
+      level,
+      code,
+      entity: ctx.entity,
+      file: ctx.file,
+      line: ctx.line ?? 0,
+      record: ctx.record ?? "",
+      field: ctx.field ?? "",
+      message: `${codeText[code] ?? code}${detail ? `: ${detail}` : ""}`,
     });
 
-    if (!LISTS.label.includes(v.label)) issues.push(issue("error", file, line, "판정은 적합/조건부/부적합 중 하나예요"));
-    if (!LISTS.recommendable.includes(v.recommendable)) {
-      issues.push(issue("error", file, line, "추천해도 되나는 예/아니오/모름 중 하나예요"));
+  // taxonomy: attribute → Map(value → { status, parent, appSupported, origin })
+  const taxonomy = new Map();
+  const taxonomyHas = (attribute, value) => {
+    const entry = taxonomy.get(attribute)?.get(value);
+    return Boolean(entry) && entry.status !== "retired";
+  };
+
+  // ---------- 1단계: 엔티티 하나의 필드 검사 + 정규화 ----------
+  const checkEntity = (entityName, table) => {
+    const spec = contract.entities[entityName];
+    const fields = new Map(spec.fields.map((f) => [f.key, f]));
+    const keyField = spec.key[0];
+    const base = { entity: entityName, file: table.file };
+
+    for (const key of table.keys) {
+      if (!fields.has(key) && !key.startsWith("x_")) add("warning", "W_UNKNOWN_FIELD", { ...base, field: key }, key);
     }
-    if (v.reason.length < 10) issues.push(issue("error", file, line, "핵심 이유를 10자 이상 적어 주세요"));
-    if (!LISTS.confidence.includes(v.confidence)) {
-      issues.push(issue("error", file, line, "확신도는 High/Medium/Low 중 하나예요"));
+    for (const f of spec.fields) {
+      if (!table.missing && f.required === true && !table.keys.includes(f.key)) add("error", "E_MISSING_FIELD", { ...base, field: f.key }, f.key);
     }
-    if (v.data_origin !== "사람") issues.push(issue("error", file, line, "평가 행의 데이터 출처는 '사람'이어야 해요"));
-    if (v.rated_at && !isDate(v.rated_at)) issues.push(issue("error", file, line, "평가일은 YYYY-MM-DD 형식이에요"));
+
+    const records = [];
+    const seenKeys = new Set();
+
+    for (const { line, values } of table.rows) {
+      const v = {};
+      const record = spec.key.map((k) => values[k]).join("/");
+      const ctx = { ...base, line, record };
+
+      // 고정 목록을 먼저 정규화(조건부 필수 판단에 쓰므로)
+      for (const f of spec.fields) {
+        const raw = values[f.key] ?? "";
+        if (f.display_only) continue;
+        if (f.type === "enum" && f.list) v[f.key] = raw ? lists[f.list].get(raw) ?? lists[f.list].get(raw.toLowerCase()) ?? `!${raw}` : "";
+        else if (f.type === "enum_list" && f.list) v[f.key] = splitValues(raw).map((x) => lists[f.list].get(x) ?? `!${x}`);
+        else if (f.type === "enum_list" || f.type === "ref_list" || f.type === "taxonomy_values") v[f.key] = splitValues(raw);
+        else v[f.key] = raw;
+      }
+
+      const example = isExampleRow(v, keyField);
+
+      // 예시 행은 형식 설명용이라 검사하지 않는다(승인 여부만 규칙 검사에서 확인)
+      if (example) {
+        records.push({ line, v, example, ctx });
+        continue;
+      }
+
+      for (const f of spec.fields) {
+        if (f.display_only) continue;
+        const value = v[f.key];
+        const empty = Array.isArray(value) ? value.length === 0 : value === "";
+        const fctx = { ...ctx, field: f.key };
+
+        if (empty) {
+          if (requiredNow(f.required, v) && !example) add("error", "E_REQUIRED", fctx, f.label);
+          continue;
+        }
+
+        switch (f.type) {
+          case "id":
+            if (f.pattern && !new RegExp(f.pattern).test(value)) add("error", "E_PATTERN", fctx, `${f.label} "${value}" (형식 ${f.example})`);
+            break;
+          case "int": {
+            const n = Number(value);
+            if (!/^-?\d+$/.test(value) || (f.min !== undefined && n < f.min) || (f.max !== undefined && n > f.max)) {
+              add("error", "E_INT", fctx, `${f.label} "${value}" (${f.min ?? ""}~${f.max ?? ""})`);
+            }
+            break;
+          }
+          case "date":
+            if (!isDate(value)) add("error", "E_DATE", fctx, `${f.label} "${value}"`);
+            break;
+          case "url":
+            if (!/^https:\/\/\S+$/.test(value)) add("error", "E_URL", fctx, value);
+            break;
+          case "text":
+            if ((f.min_length && value.length < f.min_length) || (f.max_length && value.length > f.max_length)) {
+              add("error", "E_TEXT_LENGTH", fctx, `${f.label} ${value.length}자 (${f.min_length ?? 0}~${f.max_length ?? "∞"})`);
+            }
+            break;
+          case "enum":
+            if (f.list && value.startsWith("!")) add("error", "E_ENUM", fctx, `${f.label} "${value.slice(1)}"`);
+            if (f.taxonomy && !(f.allow ?? []).includes(value) && !taxonomyHas(f.taxonomy, value)) {
+              add("error", "E_TAXONOMY_VALUE", fctx, `${f.taxonomy}:${value}`);
+            }
+            break;
+          case "enum_list":
+            for (const item of value) {
+              if (f.list && item.startsWith("!")) add("error", "E_ENUM", fctx, `${f.label} "${item.slice(1)}"`);
+              if (f.taxonomy && !taxonomyHas(f.taxonomy, item)) add("error", "E_TAXONOMY_VALUE", fctx, `${f.taxonomy}:${item}`);
+            }
+            break;
+          case "ref_list":
+            if ((f.min_items && value.length < f.min_items) || (f.max_items && value.length > f.max_items)) {
+              add("error", "E_LIST_SIZE", fctx, `${f.label} ${value.length}개 (${f.min_items ?? 0}~${f.max_items ?? "∞"})`);
+            }
+            break;
+          default:
+            break;
+        }
+      }
+
+      const uniqueKey = spec.key.map((k) => v[k]).join("\u0000");
+      if (seenKeys.has(uniqueKey)) add("error", "E_DUPLICATE_KEY", ctx, record);
+      seenKeys.add(uniqueKey);
+
+      records.push({ line, v, example, ctx });
+    }
+
+    return records;
+  };
+
+  const refCheck = (records, field, targetIds, label) => {
+    for (const { v, example, ctx } of records) {
+      if (example) continue;
+      const values = Array.isArray(v[field]) ? v[field] : v[field] ? [v[field]] : [];
+      for (const id of values) {
+        if (!targetIds.has(id)) add("error", "E_REF", { ...ctx, field }, `${label} "${id}"`);
+      }
+    }
+  };
+
+  // ---------- 2단계: 묶음 전체 검사 ----------
+  const validateBundle = (tables) => {
+    const data = {};
+
+    data.evaluators = checkEntity("evaluators", tables.evaluators);
+    const evaluatorIds = new Set(data.evaluators.filter((r) => !r.example).map((r) => r.v.evaluator_id));
+    const approvers = new Set(
+      data.evaluators.filter((r) => !r.example && r.v.can_approve === "yes" && r.v.active === "yes").map((r) => r.v.evaluator_id),
+    );
+
+    // 속성 사전을 먼저 읽어 taxonomy를 만든다(다른 엔티티의 허용값)
+    for (const { values } of tables.attribute_values.rows) {
+      if (values.data_origin === "예시" || values.data_origin === "example") continue;
+      const attribute = values.attribute_key;
+      if (!taxonomy.has(attribute)) taxonomy.set(attribute, new Map());
+      taxonomy.get(attribute).set(values.value_key, {
+        status: lists.taxonomy_status.get(values.status) ?? values.status,
+        parent: values.parent_value,
+        appSupported: lists.app_supported.get(values.app_supported) ?? values.app_supported,
+      });
+    }
+
+    data.attribute_values = checkEntity("attribute_values", tables.attribute_values);
+    refCheck(data.attribute_values, "decided_by", evaluatorIds, "평가자");
+    for (const { v, example, ctx } of data.attribute_values) {
+      if (example) continue;
+      if (v.attribute_key === "subcategory" && v.parent_value && !taxonomyHas("category", v.parent_value)) {
+        add("error", "E_PARENT_MISMATCH", { ...ctx, field: "parent_value" }, v.parent_value);
+      }
+      if (v.status === "confirmed") {
+        if (v.data_origin !== "human") add("error", "E_CONFIRM_ORIGIN", { ...ctx, field: "data_origin" });
+        for (const id of v.decided_by) if (!approvers.has(id)) add("error", "E_APPROVER_AUTHORITY", { ...ctx, field: "decided_by" }, id);
+      }
+    }
+
+    data.garments = checkEntity("garments", tables.garments);
+    const garmentIds = new Set(data.garments.filter((r) => !r.example).map((r) => r.v.garment_id));
+    refCheck(data.garments, "labeled_by", evaluatorIds, "평가자");
+    for (const { v, example, ctx } of data.garments) {
+      if (example || !v.subcategory) continue;
+      const parent = taxonomy.get("subcategory")?.get(v.subcategory)?.parent;
+      if (parent && parent !== v.category) add("error", "E_PARENT_MISMATCH", { ...ctx, field: "subcategory" }, `${v.subcategory}는 ${parent}`);
+    }
+
+    data.outfits = checkEntity("outfits", tables.outfits);
+    const outfitIds = new Set(data.outfits.filter((r) => !r.example).map((r) => r.v.outfit_id));
+    refCheck(data.outfits, "garment_ids", garmentIds, "의류");
+
+    data.styling_rules = checkRules(checkEntity("styling_rules", tables.styling_rules), evaluatorIds, approvers);
+
+    data.outfit_evaluations = [];
+    const evalKeys = new Set();
+    for (const table of tables.outfit_evaluations ?? []) {
+      const records = checkEntity("outfit_evaluations", table);
+      refCheck(records, "outfit_id", outfitIds, "코디");
+      refCheck(records, "evaluator_id", evaluatorIds, "평가자");
+      const evaluators = new Set();
+      for (const r of records) {
+        if (r.example || r.v.submission_status !== "submitted") continue;
+        evaluators.add(r.v.evaluator_id);
+        if (r.v.data_origin !== "human") add("error", "E_EVAL_ORIGIN", { ...r.ctx, field: "data_origin" });
+        const key = `${r.v.outfit_id}/${r.v.evaluator_id}/${r.v.round}`;
+        if (evalKeys.has(key)) add("error", "E_DUPLICATE_KEY", r.ctx, `${key}(다른 파일과 중복)`);
+        evalKeys.add(key);
+      }
+      // 독립 평가: 한 파일 = 한 평가자
+      if (evaluators.size > 1) {
+        add("error", "E_EVAL_MIXED_EVALUATOR", { entity: "outfit_evaluations", file: table.file }, [...evaluators].join(", "));
+      }
+      data.outfit_evaluations.push({ file: table.file, records, evaluator: [...evaluators][0] ?? null });
+    }
+
+    if (tables.disagreement_reviews) {
+      data.disagreement_reviews = checkEntity("disagreement_reviews", tables.disagreement_reviews);
+      refCheck(data.disagreement_reviews, "outfit_id", outfitIds, "코디");
+    }
+
+    return { issues, data, taxonomy };
+  };
+
+  // ---------- 규칙 교차 검사 ----------
+  const checkRules = (records, evaluatorIds, approvers) => {
+    const byId = new Map();
+    for (const r of records) if (!r.example) (byId.get(r.v.rule_id) ?? byId.set(r.v.rule_id, []).get(r.v.rule_id)).push(r);
+
+    refCheck(records, "author", evaluatorIds, "작성자");
+    refCheck(records, "reviewer", evaluatorIds, "검토·승인자");
+
+    for (const { v, example, ctx } of records) {
+      const approved = v.approval_status === "approved";
+
+      if (example) {
+        if (approved) add("error", "E_EXAMPLE_APPROVED", ctx);
+        continue;
+      }
+
+      const prefix = contract.rule_id_prefix[v.dimension];
+      if (prefix && /^(COL|FIT|MAT|TPO|MOOD)-/.test(v.rule_id) && !v.rule_id.startsWith(`${prefix}-`)) {
+        add("error", "E_RULE_PREFIX", { ...ctx, field: "rule_id" }, `${v.dimension} → ${prefix}-`);
+      }
+
+      for (const side of ["a", "b"]) {
+        const attribute = v[`${side}_attribute`];
+        const values = v[`${side}_values`];
+        if (Boolean(attribute && !attribute.startsWith("!")) !== values.length > 0) {
+          add("error", "E_CONDITION_INCOMPLETE", { ...ctx, field: `${side}_values` }, side.toUpperCase());
+          continue;
+        }
+        if (!attribute || attribute.startsWith("!")) continue;
+        for (const value of values) {
+          if (!taxonomyHas(attribute, value)) add("error", "E_TAXONOMY_VALUE", { ...ctx, field: `${side}_values` }, `${attribute}:${value}`);
+        }
+        const supported = [...(taxonomy.get(attribute)?.values() ?? [])].some((e) => e.appSupported !== "no");
+        if (!supported) add("warning", "W_UNSUPPORTED_ATTRIBUTE", { ...ctx, field: `${side}_attribute` }, attribute);
+      }
+
+      if (v.judgement === "conditional" && !(v.context_tpo.length || v.context_mood.length || v.context_season.length || v.context_weather.length)) {
+        add("warning", "W_CONDITIONAL_NO_CONTEXT", ctx);
+      }
+
+      if (v.rule_type === "exception") {
+        const bases = byId.get(v.exception_of) ?? [];
+        if (bases.length === 0) add("error", "E_EXCEPTION_BASE", { ...ctx, field: "exception_of" }, v.exception_of);
+        else if (approved && !bases.some((b) => b.v.approval_status === "approved")) {
+          add("error", "E_EXCEPTION_BASE_NOT_APPROVED", { ...ctx, field: "exception_of" }, v.exception_of);
+        }
+      }
+
+      if (approved) {
+        if (v.data_origin !== "human") add("error", "E_APPROVAL_ORIGIN", { ...ctx, field: "data_origin" });
+        if (v.author && v.author === v.reviewer) add("error", "E_APPROVAL_SAME_PERSON", { ...ctx, field: "reviewer" });
+        if (v.reviewer && !approvers.has(v.reviewer)) add("error", "E_APPROVER_AUTHORITY", { ...ctx, field: "reviewer" }, v.reviewer);
+
+        const used = [
+          ["category", [v.a_category, v.b_category].filter((c) => c && c !== "any")],
+          [v.a_attribute, v.a_values],
+          [v.b_attribute, v.b_values],
+          ["tpo", v.context_tpo],
+          ["mood", v.context_mood],
+          ["season", v.context_season],
+        ];
+        const unconfirmed = [];
+        for (const [attribute, values] of used) {
+          for (const value of values ?? []) {
+            const entry = taxonomy.get(attribute)?.get(value);
+            if (entry && entry.status !== "confirmed") unconfirmed.push(`${attribute}:${value}`);
+          }
+        }
+        if (unconfirmed.length > 0) add("error", "E_UNCONFIRMED_VALUE", ctx, unconfirmed.join(", "));
+      }
+    }
+
+    return records;
+  };
+
+  return { validateBundle, issues };
+};
+
+// ---------- manifest ----------
+export const validateManifest = (contract, manifest, readFileBytes) => {
+  const issues = [];
+  const add = (level, code, detail = "") =>
+    issues.push({ level, code, entity: "manifest", file: "manifest.json", line: 0, record: "", field: "", message: `${contract.error_codes[code]}${detail ? `: ${detail}` : ""}` });
+
+  if (!manifest) {
+    add("warning", "W_MANIFEST_MISSING");
+    return issues;
   }
 
-  // 독립 평가: 한 파일에는 한 사람의 평가만 둔다(서로의 점수를 보지 않도록 파일을 나눈다)
-  if (evaluators.size > 1) {
-    issues.push(issue("error", file, 0, `한 파일에 평가자가 ${evaluators.size}명 있어요(${[...evaluators].join(", ")}). 평가자마다 따로 만든 시트에서 내보내 주세요`));
+  const [major, minor] = String(manifest.contract_version ?? "").split(".").map(Number);
+  const [ourMajor, ourMinor] = contract.contract_version.split(".").map(Number);
+
+  if (!Number.isInteger(major) || !manifest.source || !manifest.files) add("error", "E_MANIFEST_INVALID", "contract_version·source·files 필요");
+  else if (major !== ourMajor) add("error", "E_CONTRACT_MAJOR", `${manifest.contract_version} (지원 ${contract.contract_version})`);
+  else if (minor > ourMinor) add("warning", "W_CONTRACT_NEWER", manifest.contract_version);
+
+  for (const [file, hash] of Object.entries(manifest.files ?? {})) {
+    const bytes = readFileBytes(file);
+    if (!bytes) add("error", "E_FILE_MISSING", file);
+    else if (crypto.createHash("sha256").update(bytes).digest("hex") !== hash) add("error", "E_HASH_MISMATCH", file);
   }
 
-  return { issues, evaluator: [...evaluators][0] ?? null, rated, unrated };
+  return issues;
 };
 
 export const formatIssues = (issues) =>
   issues
-    .map((i) => `${i.level === "error" ? "오류" : "경고"} ${i.file}${i.line ? ` ${i.line}행` : ""}: ${i.message}`)
+    .map((i) => `${i.level === "error" ? "오류" : "경고"} [${i.code}] ${i.file}${i.line ? ` ${i.line}행` : ""}${i.field ? ` (${i.field})` : ""}: ${i.message}`)
     .join("\n");

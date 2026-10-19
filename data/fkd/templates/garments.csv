@@ -1,0 +1,16 @@
+의류 ID [garment_id],이름 [name_ko],이미지 링크 [image_url],출처 [source],출처 참조 [source_ref],대분류 [category],세부분류 [subcategory],주색상 [main_color],색 톤(앱) [color_tone],명도 [value],채도 [saturation],핏 [fit],실루엣 [silhouette],소재(섬유) [material],소재감 [material_feel],두께감 [thickness],계절 [season],TPO [tpo],무드 [mood],속성 확인 상태 [attribute_status],태깅한 사람 [labeled_by],데이터 출처 [data_origin],메모 [note]
+G001,화이트 오버핏 면 셔츠,,고정 옷장,engine-closet#1,top,shirt,white,bright,,,oversized,,cotton,,,spring|fall,casual|office,minimal|classic,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G002,블랙 레귤러핏 면 티셔츠,,고정 옷장,engine-closet#2,top,tshirt,black,dark,,,regular,,cotton,,,spring|summer,casual|travel,casual|street,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G003,베이지 릴랙스핏 울 니트,,고정 옷장,engine-closet#3,top,knit,beige,light,,,relaxed,,wool,,,fall|winter,casual|date,minimal|feminine,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G004,핑크 슬림핏 리넨 민소매 탑,,고정 옷장,engine-closet#4,top,sleeveless,pink,vivid,,,slim,,linen,,,summer,date|party,feminine,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G005,블랙 스트레이트핏 폴리 슬랙스,,고정 옷장,engine-closet#5,bottom,slacks,black,dark,,,straight,,polyester,,,spring|fall|winter,office|formal,classic|minimal,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G006,블루 와이드핏 데님 청바지,,고정 옷장,engine-closet#6,bottom,jeans,blue,muted,,,wide,,denim,,,spring|fall|winter,casual|travel,casual|street,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G007,베이지 릴랙스핏 면 반바지,,고정 옷장,engine-closet#7,bottom,shorts,beige,light,,,relaxed,,cotton,,,summer,casual|travel,casual|sporty,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G008,네이비 레귤러핏 울 스커트,,고정 옷장,engine-closet#8,bottom,skirt,navy,dark,,,regular,,wool,,,fall|winter,office|date,feminine|classic,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G009,그레이 오버핏 울 코트,,고정 옷장,engine-closet#9,outer,coat,gray,muted,,,oversized,,wool,,,fall|winter,office|formal,classic|minimal,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G010,브라운 레귤러핏 가죽 재킷,,고정 옷장,engine-closet#10,outer,jacket,brown,dark,,,regular,,leather,,,spring|fall,casual|date,vintage|street,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G011,그린 레귤러핏 실크 미디 원피스,,고정 옷장,engine-closet#11,dress,midi-dress,green,muted,,,regular,,silk,,,spring|summer,date|party,feminine,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G012,화이트 스니커즈,,고정 옷장,engine-closet#12,shoes,sneakers,white,bright,,,regular,,other,,,spring|summer|fall,casual|travel,casual|sporty,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G013,블랙 가죽 로퍼,,고정 옷장,engine-closet#13,shoes,loafer,black,dark,,,regular,,leather,,,spring|fall|winter,office|formal,classic,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G014,브라운 가죽 부츠,,고정 옷장,engine-closet#14,shoes,boots,brown,dark,,,regular,,leather,,,fall|winter,casual|date,vintage,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅
+G015,베이지 토트백,,고정 옷장,engine-closet#15,bag,tote-bag,beige,light,,,regular,,other,,,spring|summer|fall|winter,office|casual,minimal,제안,,Claude 초안,엔진 기준선 측정용 고정 옷장. 명도·채도·실루엣·소재감·두께는 사람이 태깅

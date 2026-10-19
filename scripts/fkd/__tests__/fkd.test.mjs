@@ -1,166 +1,218 @@
-// FKD 데이터 검증·빌드·비교 테스트 — "승인되지 않은 규칙은 추천에 쓰이지 않는다"를 보장한다
+// FKD Data Contract V0.1 검증·빌드·비교 테스트 — "승인되지 않은 데이터는 추천에 쓰이지 않는다"를 보장한다
 import test from "node:test";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
+import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { buildRuleset, loadApprovedRules } from "../build.mjs";
+import { runValidation } from "../cli.mjs";
 import { compareEvaluations, spearman, weightedKappa } from "../compare.mjs";
-import { parseCsv, readTable } from "../lib.mjs";
-import { validateEvaluation, validateRules, validateSchema } from "../validate.mjs";
+import { ROOT, headerFor, loadContract, parseCsv, readTable } from "../lib.mjs";
+import { createValidator, validateManifest } from "../validate.mjs";
 
-const TEMPLATES = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../data/fkd/templates");
+const contract = loadContract();
+const TEMPLATES = path.join(ROOT, "data/fkd/templates");
 
-const table = (rows) => ({ keys: Object.keys(rows[0] ?? {}), rows: rows.map((values, i) => ({ line: i + 2, values })) });
-
-const schemaRow = (attribute_key, value_key, status = "확정") => ({
-  attribute_key, value_key, status,
-  decided_by: status === "확정" ? "E1" : "", decided_at: status === "확정" ? "2026-10-20" : "",
-  data_origin: "사람",
+const table = (file, rows) => ({
+  file,
+  keys: [...new Set(rows.flatMap((r) => Object.keys(r)))],
+  rows: rows.map((values, i) => ({ line: i + 2, values })),
 });
 
-const SCHEMA = table([
-  schemaRow("category", "top"),
-  schemaRow("category", "bottom"),
-  schemaRow("fit", "oversized"),
-  schemaRow("silhouette", "wide"),
-  schemaRow("main_color", "navy"),
-  schemaRow("main_color", "white", "제안"),
-  schemaRow("tpo", "office"),
-]);
+const value = (attribute_key, value_key, over = {}) => ({
+  attribute_key, attribute_ko: attribute_key, value_key, value_ko: value_key, app_field: "none", app_supported: "yes",
+  status: "confirmed", decided_by: "E1|E2", decided_at: "2026-10-20", data_origin: "human", version: "1", ...over,
+});
 
 const rule = (over = {}) => ({
-  rule_id: "FIT-001", rule_version: "1", rule_type: "기본", exception_of: "", dimension: "핏·실루엣",
+  rule_id: "FIT-001", rule_version: "1", rule_type: "base", dimension: "silhouette_fit",
   a_category: "top", a_attribute: "fit", a_values: "oversized",
   b_category: "bottom", b_attribute: "silhouette", b_values: "wide",
-  context_tpo: "", context_mood: "", context_season: "", context_weather: "",
-  judgement: "주의", strength: "3", reason: "상·하의 볼륨이 동시에 커져 허리선이 흐려짐", display_text: "",
-  exception_note: "", confidence: "High", author: "E1", reviewer: "E2",
-  approval_status: "승인", approved_at: "2026-10-20", data_origin: "사람", note: "",
+  judgement: "caution", strength: "3", reason: "상·하의 볼륨이 동시에 커져 허리선이 흐려짐", confidence: "high",
+  author: "E1", reviewer: "E2", approval_status: "approved", approved_at: "2026-10-20", data_origin: "human",
   ...over,
 });
 
-const schemaValues = () => validateSchema(SCHEMA).values;
-const errorsOf = (rows) => validateRules(table(rows), schemaValues()).issues.filter((i) => i.level === "error");
-const build = (rows) =>
-  buildRuleset({ schemaTable: SCHEMA, rulesTable: table(rows), schemaValues: schemaValues(), sourceText: JSON.stringify(rows) });
+const evaluation = (outfit_id, evaluator_id, scores, label = "suitable", over = {}) => ({
+  outfit_id, evaluator_id, round: "1",
+  score_color: String(scores[0]), score_silhouette_fit: String(scores[1]), score_material_season: String(scores[2]),
+  score_tpo: String(scores[3]), score_mood: String(scores[4]), score_overall: String(scores[5]),
+  label, recommendable: "yes", reason: "명도 대비와 볼륨 균형이 안정적", confidence: "high", rated_at: "2026-10-21",
+  submission_status: "submitted", data_origin: "human", ...over,
+});
 
-test("템플릿 4종은 오류 없이 검증되고, 빌드하면 승인 규칙이 0개다(예시·초안 제외)", () => {
-  const schemaTable = readTable(path.join(TEMPLATES, "garment_schema.csv"));
-  const rulesTable = readTable(path.join(TEMPLATES, "styling_rules.csv"));
-  const schema = validateSchema(schemaTable);
-  assert.deepEqual(schema.issues.filter((i) => i.level === "error"), []);
-  assert.deepEqual(validateRules(rulesTable, schema.values).issues.filter((i) => i.level === "error"), []);
+const bundle = ({ rules = [], evaluations = [], extraValues = [], evaluators } = {}) => ({
+  evaluators: table("evaluators.csv", evaluators ?? [
+    { evaluator_id: "E1", role: "cofounder", can_approve: "yes", active: "yes" },
+    { evaluator_id: "E2", role: "cofounder", can_approve: "yes", active: "yes" },
+    { evaluator_id: "E3", role: "external", can_approve: "no", active: "yes" },
+  ]),
+  attribute_values: table("garment_schema.csv", [
+    value("category", "top"), value("category", "bottom"),
+    value("subcategory", "shirt", { parent_value: "top" }), value("subcategory", "jeans", { parent_value: "bottom" }),
+    value("main_color", "white"), value("main_color", "navy"), value("main_color", "blue", { status: "proposed", decided_by: "", decided_at: "" }),
+    value("fit", "oversized"), value("fit", "regular"), value("silhouette", "wide", { app_supported: "no" }),
+    value("material", "cotton"), value("material", "denim"), value("season", "spring"), value("tpo", "office"), value("tpo", "casual"),
+    value("mood", "minimal"), value("mood", "street"),
+    ...extraValues,
+  ]),
+  garments: table("garments.csv", [
+    { garment_id: "G001", name_ko: "화이트 셔츠", source: "fixture", category: "top", subcategory: "shirt", main_color: "white", color_tone: "bright", fit: "oversized", material: "cotton", season: "spring", tpo: "office", mood: "minimal", attribute_status: "proposed", data_origin: "claude_draft" },
+    { garment_id: "G002", name_ko: "블루 청바지", source: "fixture", category: "bottom", subcategory: "jeans", main_color: "navy", color_tone: "muted", fit: "regular", material: "denim", season: "spring", tpo: "casual", mood: "street", attribute_status: "proposed", data_origin: "claude_draft" },
+  ]),
+  outfits: table("outfits.csv", [
+    { outfit_id: "P01", set: "pilot", split: "unassigned", context_label: "봄 · 출근", context_tpo: "office", context_season: "spring", garment_ids: "G001|G002", status: "active", data_origin: "claude_draft" },
+    { outfit_id: "P02", set: "pilot", split: "unassigned", context_label: "봄 · 주말", context_tpo: "casual", context_season: "spring", garment_ids: "G001|G002", status: "active", data_origin: "claude_draft" },
+    { outfit_id: "P03", set: "pilot", split: "unassigned", context_label: "봄 · 주말", context_tpo: "casual", context_season: "spring", garment_ids: "G001|G002", status: "active", data_origin: "claude_draft" },
+  ]),
+  styling_rules: table("styling_rules.csv", rules.length ? rules : [rule({ approval_status: "draft", approved_at: "", reviewer: "" })]),
+  outfit_evaluations: evaluations,
+});
 
-  const evaluation = validateEvaluation(readTable(path.join(TEMPLATES, "outfit_evaluation.csv")));
-  assert.deepEqual(evaluation.issues, []);
-  assert.equal(evaluation.unrated, 20);
+const validate = (opts) => createValidator(contract).validateBundle(bundle(opts));
+const codes = (result) => result.issues.filter((i) => i.level === "error").map((i) => i.code);
+const build = (result) => buildRuleset({ contract, data: result.data, taxonomy: result.taxonomy, sourceText: "t" });
 
-  const ruleset = buildRuleset({ schemaTable, rulesTable, schemaValues: schema.values, sourceText: "t" });
+test("템플릿 묶음: 오류 0(경고는 manifest 없음뿐), 빌드 시 승인 규칙 0개", () => {
+  const result = runValidation(TEMPLATES, contract);
+  assert.equal(result.errors, 0, JSON.stringify(result.issues.filter((i) => i.level === "error").slice(0, 3)));
+  assert.deepEqual(result.issues.map((i) => i.code), ["W_MANIFEST_MISSING"]);
+  assert.equal(result.data.outfit_evaluations[0].records.filter((r) => !r.example).length, 20);
+  const ruleset = build(result);
   assert.equal(ruleset.rules.length, 0);
   assert.equal(ruleset.counts.ruleRows, 8);
-
-  const review = readTable(path.join(TEMPLATES, "disagreement_review.csv"));
-  assert.ok(review.keys.includes("agreed_score") && review.keys.includes("status"));
 });
 
-test("승인 + 사람 + 서로 다른 작성자·검토자 + 확정 값 → 빌드에 포함", () => {
-  assert.deepEqual(errorsOf([rule()]), []);
-  const ruleset = build([rule()]);
+test("템플릿 헤더가 계약 필드와 정확히 같다(계약 = 단일 원본)", () => {
+  const files = { evaluators: "evaluators.csv", attribute_values: "garment_schema.csv", garments: "garments.csv", outfits: "outfits.csv", styling_rules: "styling_rules.csv", disagreement_reviews: "disagreement_review.csv", outfit_evaluations: "evaluations/outfit_evaluation.csv" };
+  for (const [entity, file] of Object.entries(files)) {
+    const [header] = parseCsv(fs.readFileSync(path.join(TEMPLATES, file), "utf8"));
+    assert.deepEqual(header, contract.entities[entity].fields.map(headerFor), entity);
+  }
+});
+
+test("승인 + human + 작성자≠승인자 + 확정 값 → 빌드 포함. 한국어 라벨도 같은 값으로 인식", () => {
+  const korean = rule({ dimension: "핏·실루엣", judgement: "주의", confidence: "High", approval_status: "승인", data_origin: "사람", rule_type: "기본" });
+  const result = validate({ rules: [korean] });
+  assert.deepEqual(codes(result), []);
+  const ruleset = build(result);
   assert.equal(ruleset.rules.length, 1);
-  assert.equal(ruleset.rules[0].id, "FIT-001");
-  assert.deepEqual(ruleset.confirmedValues.main_color, ["navy"]);
+  assert.equal(ruleset.rules[0].dimension, "silhouette_fit");
+  assert.equal(ruleset.rules[0].judgement, "caution");
+  // 앱이 저장하지 않는 속성(silhouette)을 쓰면 경고
+  assert.ok(result.issues.some((i) => i.code === "W_UNSUPPORTED_ATTRIBUTE"));
 });
 
-test("초안·검토중·보류·폐기 규칙은 빌드에 들어가지 않는다", () => {
-  const rows = ["초안", "검토중", "보류", "폐기"].map((s, i) =>
-    rule({ rule_id: `FIT-00${i + 2}`, approval_status: s, approved_at: "" }),
-  );
-  assert.deepEqual(errorsOf(rows), []);
-  const ruleset = build(rows);
-  assert.equal(ruleset.rules.length, 0);
-  assert.equal(Object.values(ruleset.counts.excluded).reduce((a, b) => a + b, 0), 4);
+test("초안·검토중·보류·폐기 규칙은 빌드에서 빠진다", () => {
+  const rules = ["draft", "in_review", "on_hold", "retired"].map((s, i) => rule({ rule_id: `FIT-00${i + 2}`, approval_status: s, approved_at: "" }));
+  const result = validate({ rules });
+  assert.deepEqual(codes(result), []);
+  assert.equal(build(result).rules.length, 0);
 });
 
-test("승인 조건 위반은 오류: 작성자=검토자, 출처 Claude 초안, 승인일 없음, 확정 안 된 값", () => {
-  assert.match(errorsOf([rule({ reviewer: "E1" })])[0].message, /서로 다른 사람/);
-  assert.match(errorsOf([rule({ data_origin: "Claude 초안" })])[0].message, /출처가 '사람'/);
-  assert.match(errorsOf([rule({ approved_at: "" })])[0].message, /승인일/);
-
-  const unconfirmed = errorsOf([
-    rule({ rule_id: "COL-001", dimension: "색", a_category: "any", a_attribute: "main_color", a_values: "navy", b_category: "any", b_attribute: "main_color", b_values: "white" }),
-  ]);
-  assert.match(unconfirmed[0].message, /확정.*main_color:white/);
+test("승인 조건 위반은 오류 코드로 막힌다", () => {
+  assert.ok(codes(validate({ rules: [rule({ reviewer: "E1" })] })).includes("E_APPROVAL_SAME_PERSON"));
+  assert.ok(codes(validate({ rules: [rule({ data_origin: "claude_draft" })] })).includes("E_APPROVAL_ORIGIN"));
+  assert.ok(codes(validate({ rules: [rule({ reviewer: "E3" })] })).includes("E_APPROVER_AUTHORITY"));
+  assert.ok(codes(validate({ rules: [rule({ approved_at: "" })] })).includes("E_REQUIRED"));
+  assert.ok(codes(validate({ rules: [rule({ rule_id: "EX-FIT-001", data_origin: "example" })] })).includes("E_EXAMPLE_APPROVED"));
+  const unconfirmed = validate({ rules: [rule({ rule_id: "COL-001", dimension: "color", a_category: "any", a_attribute: "main_color", a_values: "navy", b_category: "any", b_attribute: "main_color", b_values: "blue" })] });
+  assert.ok(unconfirmed.issues.some((i) => i.code === "E_UNCONFIRMED_VALUE" && i.message.includes("main_color:blue")));
 });
 
-test("Claude 초안·예시 규칙은 승인 표시가 있어도 빌드에서 빠진다", () => {
-  const ruleset = build([
-    rule({ data_origin: "Claude 초안" }),
-    rule({ rule_id: "EX-FIT-001", data_origin: "예시" }),
-  ]);
-  assert.equal(ruleset.rules.length, 0);
-  assert.match(errorsOf([rule({ rule_id: "EX-FIT-001", data_origin: "예시" })])[0].message, /예시 행은 승인할 수 없어요/);
+test("Claude 초안·예시는 승인 표시가 있어도 빌드에서 빠진다", () => {
+  const result = validate({ rules: [rule({ data_origin: "claude_draft" }), rule({ rule_id: "EX-FIT-001", data_origin: "example" })] });
+  assert.equal(build(result).rules.length, 0);
 });
 
-test("규칙 형식 오류: ID 접두어·없는 속성값·강도 범위·승인 안 된 기본 규칙의 예외", () => {
-  assert.match(errorsOf([rule({ rule_id: "COL-001" })])[0].message, /FIT-로 시작/);
-  assert.match(errorsOf([rule({ a_values: "baggy" })])[0].message, /허용값에 없어요/);
-  assert.match(errorsOf([rule({ strength: "7" })])[0].message, /1~5/);
-
-  const errors = errorsOf([
-    rule({ approval_status: "초안", approved_at: "" }),
-    rule({ rule_id: "FIT-002", rule_type: "예외", exception_of: "FIT-001", context_tpo: "office" }),
-  ]);
-  assert.match(errors[0].message, /FIT-001이 아직 승인되지 않았어요/);
+test("규칙 형식: ID 약자·없는 값·강도 범위·조건 불완전·미승인 기본 규칙의 예외", () => {
+  assert.ok(codes(validate({ rules: [rule({ rule_id: "COL-001" })] })).includes("E_RULE_PREFIX"));
+  assert.ok(codes(validate({ rules: [rule({ a_values: "baggy" })] })).includes("E_TAXONOMY_VALUE"));
+  assert.ok(codes(validate({ rules: [rule({ strength: "7" })] })).includes("E_INT"));
+  assert.ok(codes(validate({ rules: [rule({ b_values: "" })] })).includes("E_CONDITION_INCOMPLETE"));
+  assert.ok(codes(validate({ rules: [rule({ judgement: "maybe" })] })).includes("E_ENUM"));
+  const exception = validate({
+    rules: [
+      rule({ approval_status: "draft", approved_at: "", reviewer: "" }),
+      rule({ rule_id: "FIT-002", rule_type: "exception", exception_of: "FIT-001", context_mood: "street", judgement: "conditional" }),
+    ],
+  });
+  assert.ok(codes(exception).includes("E_EXCEPTION_BASE_NOT_APPROVED"));
 });
 
-test("같은 규칙의 승인 버전이 여러 개면 가장 높은 버전만 쓴다", () => {
-  const ruleset = build([rule(), rule({ rule_version: "2", judgement: "비권장" })]);
+test("같은 규칙의 승인 버전이 여러 개면 가장 높은 버전만", () => {
+  const result = validate({ rules: [rule(), rule({ rule_version: "2", judgement: "not_recommended" })] });
+  const ruleset = build(result);
   assert.equal(ruleset.rules.length, 1);
   assert.equal(ruleset.rules[0].version, 2);
-  assert.equal(ruleset.rules[0].judgement, "비권장");
 });
 
 test("엔진 로더는 빌드 파일을 손으로 고쳐도 미승인 규칙을 거른다", () => {
-  const tampered = { rules: [{ id: "FIT-001", approvalStatus: "승인" }, { id: "FIT-002", approvalStatus: "초안" }, { id: "EX-COL-001", approvalStatus: "승인" }] };
+  const tampered = { rules: [{ id: "FIT-001", approvalStatus: "approved" }, { id: "FIT-002", approvalStatus: "draft" }, { id: "EX-COL-001", approvalStatus: "approved" }] };
   assert.deepEqual(loadApprovedRules(tampered).map((r) => r.id), ["FIT-001"]);
 });
 
-const evalRow = (outfit_id, evaluator_id, scores, label = "적합", over = {}) => ({
-  evaluator_id, outfit_id, set: "pilot",
-  score_color: String(scores[0]), score_silhouette_fit: String(scores[1]), score_material_season: String(scores[2]),
-  score_tpo: String(scores[3]), score_mood: String(scores[4]), score_overall: String(scores[5]),
-  label, recommendable: "예", reason: "명도 대비와 볼륨 균형이 안정적", confidence: "High",
-  rated_at: "2026-10-21", data_origin: "사람", ...over,
+test("평가: 한 파일에 평가자 여러 명 → 오류, 제출 행만 필수 검사, 점수 범위", () => {
+  const mixed = validate({ evaluations: [table("evaluations/a.csv", [evaluation("P01", "E1", [4, 4, 4, 4, 4, 4]), evaluation("P02", "E2", [3, 3, 3, 3, 3, 3])])] });
+  assert.ok(codes(mixed).includes("E_EVAL_MIXED_EVALUATOR"));
+
+  const draft = validate({ evaluations: [table("evaluations/a.csv", [{ outfit_id: "P01", round: "1", submission_status: "in_progress", data_origin: "human" }])] });
+  assert.deepEqual(codes(draft), []);
+
+  const bad = validate({ evaluations: [table("evaluations/a.csv", [evaluation("P01", "E1", [4, 6, 4, 4, 4, 4]), evaluation("P09", "E1", [4, 4, 4, 4, 4, 4])])] });
+  assert.ok(codes(bad).includes("E_INT"));
+  assert.ok(codes(bad).includes("E_REF"));
 });
 
-test("평가 파일: 한 파일에 두 평가자가 섞이면 오류(독립 평가), 점수 범위 검사", () => {
-  const mixed = validateEvaluation(table([evalRow("P01", "E1", [4, 4, 4, 4, 4, 4]), evalRow("P02", "E2", [3, 3, 3, 3, 3, 3])]));
-  assert.ok(mixed.issues.some((i) => /평가자가 2명/.test(i.message)));
-
-  const bad = validateEvaluation(table([evalRow("P01", "E1", [4, 6, 4, 4, 4, 4])]));
-  assert.ok(bad.issues.some((i) => /score_silhouette_fit/.test(i.message)));
+test("의류·코디 참조: 세부분류-대분류 불일치, 없는 의류 ID", () => {
+  const b = bundle();
+  b.garments.rows[0].values.subcategory = "jeans";
+  b.outfits.rows[0].values.garment_ids = "G001|G999";
+  const result = createValidator(contract).validateBundle(b);
+  assert.ok(codes(result).includes("E_PARENT_MISMATCH"));
+  assert.ok(result.issues.some((i) => i.code === "E_REF" && i.message.includes("G999")));
 });
 
-test("두 평가 비교: 일치도 지표와 불일치 검토 목록(차이 2 이상 또는 판정 다름)", () => {
-  const a = table([
-    evalRow("P01", "E1", [4, 4, 4, 4, 4, 5]),
-    evalRow("P02", "E1", [2, 3, 3, 3, 3, 2], "부적합"),
-    evalRow("P03", "E1", [3, 3, 3, 3, 3, 3], "조건부"),
-  ]);
-  const b = table([
-    evalRow("P01", "E2", [4, 4, 4, 4, 4, 4]),
-    evalRow("P02", "E2", [4, 3, 3, 3, 3, 3], "조건부"),
-    evalRow("P03", "E2", [3, 3, 3, 3, 3, 3], "조건부"),
-  ]);
-  const result = compareEvaluations(a, b);
+test("모르는 열은 경고, x_ 열은 조용히 무시", () => {
+  const b = bundle();
+  b.garments.keys.push("colour", "x_lab_internal");
+  const result = createValidator(contract).validateBundle(b);
+  const unknown = result.issues.filter((i) => i.code === "W_UNKNOWN_FIELD").map((i) => i.field);
+  assert.deepEqual(unknown, ["colour"]);
+});
 
-  assert.equal(result.compared, 3);
-  assert.deepEqual(result.evaluators, ["E1", "E2"]);
-  assert.equal(result.metrics["색"].exact, 0.667);
-  assert.equal(result.labelAgreement, 0.667);
-  // P02 색 차이 2 + P02 종합 판정 다름 → 2행
-  assert.deepEqual(result.review.map((r) => `${r[0]}:${r[1]}`), ["P02:색", "P02:종합"]);
+test("manifest: 주 버전 불일치·해시 불일치 오류, 새 부 버전 경고", () => {
+  const bytes = Buffer.from("a,b\n1,2\n");
+  const hash = crypto.createHash("sha256").update(bytes).digest("hex");
+  const read = (file) => (file === "garments.csv" ? bytes : null);
+  assert.equal(validateManifest(contract, { contract_version: "1.0.0", source: "knowledge-lab", files: {} }, read)[0].code, "E_CONTRACT_MAJOR");
+  assert.equal(validateManifest(contract, { contract_version: "0.2.0", source: "knowledge-lab", files: { "garments.csv": hash } }, read)[0].code, "W_CONTRACT_NEWER");
+  assert.equal(validateManifest(contract, { contract_version: "0.1.0", source: "knowledge-lab", files: { "garments.csv": "00" } }, read)[0].code, "E_HASH_MISMATCH");
+  assert.equal(validateManifest(contract, { contract_version: "0.1.0", source: "knowledge-lab", files: { "outfits.csv": hash } }, read)[0].code, "E_FILE_MISSING");
+  assert.deepEqual(validateManifest(contract, { contract_version: "0.1.0", source: "knowledge-lab", files: { "garments.csv": hash } }, read), []);
+});
+
+test("두 평가 비교: 일치도와 불일치 목록(차이 2 이상 또는 판정 다름)", () => {
+  const a = table("evaluations/E1.csv", [
+    evaluation("P01", "E1", [4, 4, 4, 4, 4, 5]),
+    evaluation("P02", "E1", [2, 3, 3, 3, 3, 2], "unsuitable"),
+    evaluation("P03", "E1", [3, 3, 3, 3, 3, 3], "conditional"),
+  ]);
+  const b = table("evaluations/E2.csv", [
+    evaluation("P01", "E2", [4, 4, 4, 4, 4, 4]),
+    evaluation("P02", "E2", [4, 3, 3, 3, 3, 3], "conditional"),
+    evaluation("P03", "E2", [3, 3, 3, 3, 3, 3], "conditional"),
+  ]);
+  const result = validate({ evaluations: [a, b] });
+  assert.deepEqual(codes(result), []);
+  const [ra, rb] = result.data.outfit_evaluations;
+  const compared = compareEvaluations(contract, ra.records, rb.records);
+  assert.equal(compared.compared, 3);
+  assert.deepEqual(compared.evaluators, ["E1", "E2"]);
+  assert.equal(compared.metrics.color.exact, 0.667);
+  assert.equal(compared.labelAgreement, 0.667);
+  assert.deepEqual(compared.review.map((r) => `${r[0]}:${r[1]}`), ["P02:색", "P02:종합"]);
 });
 
 test("통계: 가중 kappa(완전 일치 1), 스피어만(역순 -1)", () => {
@@ -168,7 +220,43 @@ test("통계: 가중 kappa(완전 일치 1), 스피어만(역순 -1)", () => {
   assert.equal(spearman([1, 2, 3, 4], [4, 3, 2, 1]), -1);
 });
 
-test("CSV: 따옴표 안 쉼표·줄바꿈·BOM 처리", () => {
+test("CSV: 따옴표 안 쉼표·줄바꿈·BOM 처리, 대괄호 헤더", () => {
   const rows = parseCsv('﻿이름 [a],이유 [b]\nx,"쉼표, 있음\n줄바꿈 ""따옴표"""\n');
   assert.deepEqual(rows[1], ["x", '쉼표, 있음\n줄바꿈 "따옴표"']);
+  const t = readTable(path.join(TEMPLATES, "evaluators.csv"));
+  assert.deepEqual(t.keys.slice(0, 2), ["evaluator_id", "role"]);
+});
+
+test("CLI는 지정한 묶음 폴더를 검증한다(--out 없이도)", async () => {
+  const { execFileSync } = await import("node:child_process");
+  let output = "";
+  try {
+    execFileSync(process.execPath, [path.join(ROOT, "scripts/fkd/cli.mjs"), "validate", "/nonexistent-fkd-bundle", "--json"], { encoding: "utf8" });
+  } catch (error) {
+    output = error.stdout;
+  }
+  const report = JSON.parse(output);
+  assert.ok(report.errors >= 5);
+  assert.ok(report.issues.every((i) => i.code === "E_FILE_MISSING" || i.level === "warning"));
+});
+
+test("비교 결과(disagreement_review)는 계약 검증을 그대로 통과한다", async () => {
+  const { reviewHeaders } = await import("../compare.mjs");
+  const { tableFromText, toCsv } = await import("../lib.mjs");
+  const a = table("evaluations/E1.csv", [evaluation("P01", "E1", [5, 4, 4, 4, 4, 5])]);
+  const b = table("evaluations/E2.csv", [evaluation("P01", "E2", [2, 4, 4, 4, 4, 2], "unsuitable")]);
+  const first = validate({ evaluations: [a, b] });
+  const [ra, rb] = first.data.outfit_evaluations;
+  const csv = toCsv(reviewHeaders(contract), compareEvaluations(contract, ra.records, rb.records).review);
+  const tables = bundle();
+  tables.disagreement_reviews = tableFromText(csv, "disagreement_review.csv");
+  const result = createValidator(contract).validateBundle(tables);
+  assert.deepEqual(codes(result), []);
+  assert.equal(result.data.disagreement_reviews.length, 2);
+});
+
+test("DATA_CONTRACT 문서의 표가 계약 JSON과 같다", async () => {
+  const { DOC_PATH, syncDoc } = await import("../gen-contract-doc.mjs");
+  const current = fs.readFileSync(DOC_PATH, "utf8");
+  assert.equal(syncDoc(current, contract), current, "node scripts/fkd/gen-contract-doc.mjs 실행 필요");
 });
