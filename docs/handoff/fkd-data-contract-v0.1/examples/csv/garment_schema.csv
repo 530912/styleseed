@@ -3,6 +3,7 @@ category,대분류,top,상의,,,,,category,top,yes,confirmed,E1|E2,2026-10-20,hu
 category,대분류,bottom,하의,,,,,category,bottom,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
 category,대분류,outer,아우터,,,,,category,outer,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
 category,대분류,shoes,신발,,,,,category,shoes,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
+category,대분류,jumpsuit,점프수트·올인원,,상·하체가 한 벌로 이어지고 하단이 양다리로 나뉘는 옷(연구용 대분류),,,category,dress,converted,proposed,,,human,1,예시 데이터 — 실제 패션 판단 아님 — Lab 연구용 8번째 대분류. 앱 대분류는 7개 고정이라 앱 dress로 변환
 subcategory,세부분류,shirt,셔츠,top,,,,subCategory,shirt,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
 subcategory,세부분류,tshirt,티셔츠,top,,,,subCategory,tshirt,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
 subcategory,세부분류,slacks,슬랙스,bottom,,,,subCategory,slacks,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
@@ -12,6 +13,8 @@ subcategory,세부분류,blazer,블레이저,outer,,,,subCategory,blazer,yes,con
 subcategory,세부분류,coat,코트,outer,,,,subCategory,coat,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
 subcategory,세부분류,loafer,로퍼,shoes,,,,subCategory,loafer,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
 subcategory,세부분류,sneakers,스니커즈,shoes,,,,subCategory,sneakers,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
+subcategory,세부분류,jumpsuit,점프수트,jumpsuit,하단이 종아리 아래 기장의 바지인 일체형,,,subCategory,jumpsuit,yes,proposed,,,human,1,예시 데이터 — 실제 패션 판단 아님 — 앱 지원값 유지(앱에서는 dress 아래)
+subcategory,세부분류,romper,롬퍼·플레이수트,jumpsuit,하단이 쇼츠 기장인 일체형,,,none,,no,proposed,,,claude_draft,1,예시 데이터 — 실제 패션 판단 아님 — 앱 지원 검증 전이라 미지원. 이 값을 쓰는 의류는 앱·엔진 입력에서 제외
 main_color,주색상,white,화이트,,,,,color,white,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
 main_color,주색상,black,블랙,,,,,color,black,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님
 main_color,주색상,navy,네이비,,,,,color,navy,yes,confirmed,E1|E2,2026-10-20,human,1,예시 데이터 — 실제 패션 판단 아님

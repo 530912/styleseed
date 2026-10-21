@@ -1,0 +1,21 @@
+{
+ "source": "Knowledge Lab 백업 lab-backup-2026-10-21T11-43-27.json(읽기 전용)의 대분류·세부분류 키와 상위값만 옮김. 정의·메모·작성자 정보 없음",
+ "categories": ["top", "bottom", "outer", "dress", "jumpsuit", "shoes", "bag", "accessory"],
+ "existing_41": [
+  ["tshirt", "top"], ["shirt", "top"], ["blouse", "top"], ["knit", "top"], ["sweatshirt", "top"], ["hoodie", "top"], ["sleeveless", "top"],
+  ["jeans", "bottom"], ["slacks", "bottom"], ["trousers", "bottom"], ["shorts", "bottom"], ["skirt", "bottom"], ["leggings", "bottom"],
+  ["jacket", "outer"], ["coat", "outer"], ["cardigan", "outer"], ["blazer", "outer"], ["padding", "outer"], ["vest", "outer"],
+  ["mini-dress", "dress"], ["midi-dress", "dress"], ["maxi-dress", "dress"], ["jumpsuit", "jumpsuit"],
+  ["sneakers", "shoes"], ["loafer", "shoes"], ["boots", "shoes"], ["heels", "shoes"], ["sandals", "shoes"], ["flats", "shoes"],
+  ["shoulder-bag", "bag"], ["crossbody-bag", "bag"], ["tote-bag", "bag"], ["backpack", "bag"], ["clutch", "bag"],
+  ["hat", "accessory"], ["belt", "accessory"], ["scarf", "accessory"], ["necklace", "accessory"], ["bracelet", "accessory"], ["earrings", "accessory"], ["glasses", "accessory"]
+ ],
+ "new_19": [
+  ["polo-shirt", "top"], ["bodysuit", "top"], ["bustier-top", "top"], ["culottes", "bottom"], ["skort", "bottom"],
+  ["shirt-dress", "dress"], ["slip-dress", "dress"], ["windbreaker", "outer"], ["cape-poncho", "outer"], ["romper", "jumpsuit"],
+  ["mules", "shoes"], ["oxford-shoes", "shoes"], ["mary-jane", "shoes"], ["bucket-bag", "bag"], ["hobo-bag", "bag"], ["belt-bag", "bag"],
+  ["ring", "accessory"], ["hair-accessory", "accessory"], ["gloves", "accessory"]
+ ],
+ "extra_candidates": [["knit-vest", "top"], ["tailored-vest", "top"], ["padded-vest", "outer"]],
+ "observed_category_jumpsuit": { "app_field": "none", "app_value": "", "app_supported": "no" }
+}

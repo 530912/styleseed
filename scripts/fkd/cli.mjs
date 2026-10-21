@@ -3,6 +3,7 @@
 //   node scripts/fkd/cli.mjs build [묶음폴더]               오류 0일 때만 승인 규칙 → data/fkd/build/ruleset.json
 //   node scripts/fkd/cli.mjs compare [묶음폴더] [--out 파일] [--allow-partial] [--force]
 //                                                          evaluations/의 두 평가자 일치도 + 불일치 검토 목록
+//   node scripts/fkd/cli.mjs compat [묶음폴더] [--json]     의류별 앱 변환 보고서(연구 원본 ↔ 앱 값, 제외·누락 사유)
 //
 // 묶음: CSV 폴더(manifest.json · evaluators.csv · garment_schema.csv · garments.csv · outfits.csv · styling_rules.csv
 //        · [disagreement_review.csv] · evaluations/*.csv) 또는 JSON(bundle.json 파일·그 파일이 든 폴더)
@@ -10,6 +11,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { convertGarmentsForApp } from "./app-compat.mjs";
 import { CSV_FILES, runValidation } from "./bundle.mjs";
 import { buildRuleset } from "./build.mjs";
 import { compareEvaluations, reviewHeaders } from "./compare.mjs";
@@ -34,14 +36,14 @@ const main = () => {
   const contract = loadContract();
   const dir = pickDir(positional);
 
-  if (!["validate", "build", "compare"].includes(command)) {
-    console.error("명령: validate | build | compare");
+  if (!["validate", "build", "compare", "compat"].includes(command)) {
+    console.error("명령: validate | build | compare | compat");
     process.exit(2);
   }
 
   const result = runValidation(dir, contract);
 
-  if (flags.has("--json")) {
+  if (flags.has("--json") && command !== "compat") {
     console.log(JSON.stringify({ contractVersion: contract.contract_version, errors: result.errors, issues: result.issues }, null, 1));
   } else {
     console.log(`검증: ${path.relative(ROOT, dir) || "."} (계약 ${contract.contract_version})`);
@@ -57,6 +59,23 @@ const main = () => {
   if (result.errors > 0) {
     if (command !== "validate") console.error("오류가 있어 진행하지 않았어요. 데이터를 고친 뒤 다시 내보내 주세요.");
     process.exit(1);
+  }
+
+  if (command === "compat") {
+    const report = convertGarmentsForApp(contract, result.data, result.taxonomy);
+    if (flags.has("--json")) {
+      console.log(JSON.stringify({ contractVersion: contract.contract_version, summary: report.summary, garments: report.records, issues: report.issues }, null, 1));
+    } else {
+      for (const r of report.records) {
+        const detail = [
+          ...r.conversions.map((c) => `${c.field} ${c.from}→${[].concat(c.to).join("|")}`),
+          ...r.dropped.map((d) => `빠짐 ${d.field}=${d.value}`),
+          ...r.unresolved.map((u) => `앱 값 없음 ${u.field}=${u.value}(${u.reason})`),
+        ];
+        console.log(`${r.garment_id} ${r.status}${detail.length ? ` — ${detail.join(", ")}` : ""}`);
+      }
+      console.log(`앱 변환: ${Object.entries(report.summary).map(([k, n]) => `${k} ${n}`).join(", ")} (unsupported는 앱·엔진 입력에서 제외)`);
+    }
   }
 
   if (command === "build") {

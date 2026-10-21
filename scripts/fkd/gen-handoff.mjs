@@ -102,6 +102,9 @@ export const INVALID_CASES = [
   ["duplicate-rule-version", ["E_DUPLICATE_KEY"], (b) => { b.styling_rules.push({ ...find(b.styling_rules, (r) => r.rule_id === "COL-001") }); }],
   ["rule-id-prefix-mismatch", ["E_RULE_PREFIX"], (b) => { find(b.styling_rules, (r) => r.rule_id === "MAT-001").dimension = "color"; }],
   ["contract-major-mismatch", ["E_CONTRACT_MAJOR"], (b) => { b.manifest.contract_version = "1.0.0"; }],
+  ["jumpsuit-category-marked-app-supported", ["E_APP_VALUE", "E_APP_PARENT_MISMATCH"], (b) => Object.assign(find(b.attribute_values, (v) => v.attribute_key === "category" && v.value_key === "jumpsuit"), { app_supported: "yes", app_value: undefined })],
+  ["romper-marked-app-supported", ["E_APP_VALUE"], (b) => Object.assign(find(b.attribute_values, (v) => v.value_key === "romper"), { app_field: "subCategory", app_supported: "yes", app_value: "romper" })],
+  ["jumpsuit-category-without-app-mapping", ["E_APP_PARENT_MISMATCH"], (b) => Object.assign(find(b.attribute_values, (v) => v.attribute_key === "category" && v.value_key === "jumpsuit"), { app_field: "none", app_supported: "no", app_value: undefined })],
 ];
 
 // ---------- 생성 ----------

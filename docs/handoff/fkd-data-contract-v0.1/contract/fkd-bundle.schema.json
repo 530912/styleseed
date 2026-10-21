@@ -1,7 +1,7 @@
 {
  "$schema": "https://json-schema.org/draft/2020-12/schema",
- "$id": "https://styleseed.local/fkd/bundle-0.1.0.schema.json",
- "title": "STYLESEED Fashion Knowledge bundle (contract 0.1.0)",
+ "$id": "https://styleseed.local/fkd/bundle-0.2.0.schema.json",
+ "title": "STYLESEED Fashion Knowledge bundle (contract 0.2.0)",
  "description": "필드 단위 형식만 표현한다. 교차 검증(참조·승인 조건·독립 평가)은 계약 문서 8장과 validate.mjs가 기준. x-taxonomy 값은 같은 묶음의 attribute_values에서 허용값을 찾는다.",
  "type": "object",
  "required": [
@@ -173,7 +173,7 @@
       "type": "string"
      },
      "app_field": {
-      "description": "앱 필드 — 현재 앱 Clothing 타입의 필드. 대응 없음은 none",
+      "description": "앱 필드 — 현재 앱 Clothing 타입의 필드. 대응 없음은 none. 속성별로 쓸 수 있는 앱 필드는 app_compat.attribute_app_fields",
       "type": "string",
       "enum": [
        "category",
@@ -189,11 +189,11 @@
       ]
      },
      "app_value": {
-      "description": "현재 앱 값",
+      "description": "현재 앱 값 — converted일 때 바꿀 앱 값(app_compat.app_values의 값, 목록 필드는 | 로 여러 개). yes면 비우거나 value_key와 같게, no면 비움",
       "type": "string"
      },
      "app_supported": {
-      "description": "앱 지원 — yes=앱이 저장 / converted=다른 앱 값에서 변환 / no=앱이 아직 모름",
+      "description": "앱 지원 — yes=앱이 그대로 저장 / converted=앱 값으로 변환(app_value 또는 계약의 규칙형 변환) / no=앱이 모름. 지원 표시는 앱 지원이 검증된 값(app_compat.app_values)만",
       "type": "string",
       "enum": [
        "yes",

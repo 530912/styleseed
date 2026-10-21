@@ -21,7 +21,7 @@ const table = (file, rows) => ({
 });
 
 const value = (attribute_key, value_key, over = {}) => ({
-  attribute_key, attribute_ko: attribute_key, value_key, value_ko: value_key, app_field: "none", app_supported: "yes",
+  attribute_key, attribute_ko: attribute_key, value_key, value_ko: value_key, app_field: "none", app_supported: "no",
   status: "confirmed", decided_by: "E1|E2", decided_at: "2026-10-20", data_origin: "human", version: "1", ...over,
 });
 
@@ -187,7 +187,7 @@ test("manifest: 주 버전 불일치·해시 불일치 오류, 새 부 버전 �
   const hash = crypto.createHash("sha256").update(bytes).digest("hex");
   const read = (file) => (file === "garments.csv" ? bytes : null);
   assert.equal(validateManifest(contract, { contract_version: "1.0.0", source: "knowledge-lab", files: {} }, read)[0].code, "E_CONTRACT_MAJOR");
-  assert.equal(validateManifest(contract, { contract_version: "0.2.0", source: "knowledge-lab", files: { "garments.csv": hash } }, read)[0].code, "W_CONTRACT_NEWER");
+  assert.equal(validateManifest(contract, { contract_version: "0.3.0", source: "knowledge-lab", files: { "garments.csv": hash } }, read)[0].code, "W_CONTRACT_NEWER");
   assert.equal(validateManifest(contract, { contract_version: "0.1.0", source: "knowledge-lab", files: { "garments.csv": "00" } }, read)[0].code, "E_HASH_MISMATCH");
   assert.equal(validateManifest(contract, { contract_version: "0.1.0", source: "knowledge-lab", files: { "outfits.csv": hash } }, read)[0].code, "E_FILE_MISSING");
   assert.deepEqual(validateManifest(contract, { contract_version: "0.1.0", source: "knowledge-lab", files: { "garments.csv": hash } }, read), []);
@@ -280,9 +280,9 @@ test("예시 묶음: CSV·JSON 모두 오류 0, 빌드하면 승인 규칙 5개(
   }
 });
 
-test("잘못된 예시 14개: 각각 기대한 오류 코드 집합이 정확히 나온다", () => {
+test("잘못된 예시 17개: 각각 기대한 오류 코드 집합이 정확히 나온다", () => {
   const expected = JSON.parse(fs.readFileSync(path.join(PACKAGE, "examples/invalid/expected-errors.json"), "utf8"));
-  assert.equal(Object.keys(expected).length, 14);
+  assert.equal(Object.keys(expected).length, 17);
   for (const [name, codesExpected] of Object.entries(expected)) {
     const result = runValidation(path.join(PACKAGE, `examples/invalid/${name}.json`), contract);
     const got = [...new Set(result.issues.filter((i) => i.level === "error").map((i) => i.code))].sort();

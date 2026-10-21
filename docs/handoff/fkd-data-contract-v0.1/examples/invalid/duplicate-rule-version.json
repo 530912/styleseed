@@ -1,6 +1,6 @@
 {
  "manifest": {
-  "contract_version": "0.1.0",
+  "contract_version": "0.2.0",
   "source": "knowledge-lab",
   "purpose": "example",
   "exported_at": "2026-10-24T10:00:00+09:00",
@@ -8,8 +8,8 @@
   "format": "json",
   "counts": {
    "evaluators": 3,
-   "attribute_values": 60,
-   "garments": 8,
+   "attribute_values": 63,
+   "garments": 10,
    "outfits": 4,
    "styling_rules": 10,
    "outfit_evaluations": 8,
@@ -111,6 +111,20 @@
    "data_origin": "human",
    "version": 1,
    "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "category",
+   "attribute_ko": "대분류",
+   "value_key": "jumpsuit",
+   "value_ko": "점프수트·올인원",
+   "definition": "상·하체가 한 벌로 이어지고 하단이 양다리로 나뉘는 옷(연구용 대분류)",
+   "app_field": "category",
+   "app_value": "dress",
+   "app_supported": "converted",
+   "status": "proposed",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님 — Lab 연구용 8번째 대분류. 앱 대분류는 7개 고정이라 앱 dress로 변환"
   },
   {
    "attribute_key": "subcategory",
@@ -282,6 +296,35 @@
    "data_origin": "human",
    "version": 1,
    "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "jumpsuit",
+   "value_ko": "점프수트",
+   "parent_value": "jumpsuit",
+   "definition": "하단이 종아리 아래 기장의 바지인 일체형",
+   "app_field": "subCategory",
+   "app_value": "jumpsuit",
+   "app_supported": "yes",
+   "status": "proposed",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님 — 앱 지원값 유지(앱에서는 dress 아래)"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "romper",
+   "value_ko": "롬퍼·플레이수트",
+   "parent_value": "jumpsuit",
+   "definition": "하단이 쇼츠 기장인 일체형",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "proposed",
+   "data_origin": "claude_draft",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님 — 앱 지원 검증 전이라 미지원. 이 값을 쓰는 의류는 앱·엔진 입력에서 제외"
   },
   {
    "attribute_key": "main_color",
@@ -1386,6 +1429,68 @@
    "attribute_status": "proposed",
    "data_origin": "human",
    "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "garment_id": "G009",
+   "name_ko": "베이지 코튼 점프수트",
+   "source": "fixture",
+   "source_ref": "example#9",
+   "category": "jumpsuit",
+   "subcategory": "jumpsuit",
+   "main_color": "beige",
+   "color_tone": "muted",
+   "value": "medium",
+   "saturation": "low",
+   "fit": "regular",
+   "material": "cotton",
+   "material_feel": [
+    "matte"
+   ],
+   "thickness": "medium",
+   "season": [
+    "spring",
+    "summer"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "mood": [
+    "casual"
+   ],
+   "attribute_status": "proposed",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님 — 연구용 대분류 jumpsuit → 앱 dress로 변환(converted)"
+  },
+  {
+   "garment_id": "G010",
+   "name_ko": "블랙 린넨 롬퍼",
+   "source": "fixture",
+   "source_ref": "example#10",
+   "category": "jumpsuit",
+   "subcategory": "romper",
+   "main_color": "black",
+   "color_tone": "dark",
+   "value": "dark",
+   "saturation": "low",
+   "fit": "relaxed",
+   "material": "linen",
+   "material_feel": [
+    "crisp"
+   ],
+   "thickness": "thin",
+   "season": [
+    "summer"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "mood": [
+    "minimal",
+    "romantic"
+   ],
+   "attribute_status": "proposed",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님 — 세부분류 romper가 앱 미지원 → 앱·엔진 입력 제외(unsupported)"
   }
  ],
  "outfits": [

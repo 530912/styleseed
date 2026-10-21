@@ -40,5 +40,15 @@
  ],
  "contract-major-mismatch": [
   "E_CONTRACT_MAJOR"
+ ],
+ "jumpsuit-category-marked-app-supported": [
+  "E_APP_VALUE",
+  "E_APP_PARENT_MISMATCH"
+ ],
+ "romper-marked-app-supported": [
+  "E_APP_VALUE"
+ ],
+ "jumpsuit-category-without-app-mapping": [
+  "E_APP_PARENT_MISMATCH"
  ]
 }

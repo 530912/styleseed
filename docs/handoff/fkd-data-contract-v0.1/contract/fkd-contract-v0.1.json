@@ -1,6 +1,6 @@
 {
  "contract": "styleseed-fashion-knowledge",
- "contract_version": "0.1.0",
+ "contract_version": "0.2.0",
  "status": "draft",
  "owner": "Claude A (추천엔진·Data Contract). 패션 의미(허용값·규칙·평가 기준) 최종 승인: 공동창업자 2명",
  "format": {
@@ -504,6 +504,287 @@
    ]
   ]
  },
+ "app_compat": {
+  "status": "2026-10-21 PO 결정: 1라운드 STYLESEED 앱 대분류 7개 고정(8번째 앱 대분류 추가 금지). Knowledge Lab의 대분류 8개는 연구 기준으로 별도 관리하고 앱·엔진에는 아래 규칙으로 변환한다",
+  "app_categories_fixed": true,
+  "app_values_source": "src/constants/clothingOptions.ts(앱 상수)·backend/server.js(Gemini 분석 스키마)와 같아야 한다(참고 검증기 테스트로 확인). 값 추가는 앱 상수·분석 스키마·엔진 처리·테스트가 갖춰진 뒤 계약 변경 절차로",
+  "app_values": {
+   "category": [
+    "top",
+    "bottom",
+    "outer",
+    "dress",
+    "shoes",
+    "bag",
+    "accessory"
+   ],
+   "subCategory": {
+    "top": [
+     "tshirt",
+     "shirt",
+     "blouse",
+     "knit",
+     "sweatshirt",
+     "hoodie",
+     "sleeveless"
+    ],
+    "bottom": [
+     "jeans",
+     "slacks",
+     "trousers",
+     "shorts",
+     "skirt",
+     "leggings"
+    ],
+    "outer": [
+     "jacket",
+     "coat",
+     "cardigan",
+     "blazer",
+     "padding",
+     "vest"
+    ],
+    "dress": [
+     "mini-dress",
+     "midi-dress",
+     "maxi-dress",
+     "jumpsuit"
+    ],
+    "shoes": [
+     "sneakers",
+     "loafer",
+     "boots",
+     "heels",
+     "sandals",
+     "flats"
+    ],
+    "bag": [
+     "shoulder-bag",
+     "crossbody-bag",
+     "tote-bag",
+     "backpack",
+     "clutch"
+    ],
+    "accessory": [
+     "hat",
+     "belt",
+     "scarf",
+     "necklace",
+     "bracelet",
+     "earrings",
+     "glasses"
+    ]
+   },
+   "color": [
+    "black",
+    "white",
+    "gray",
+    "beige",
+    "brown",
+    "navy",
+    "blue",
+    "red",
+    "pink",
+    "orange",
+    "yellow",
+    "green",
+    "purple",
+    "multi"
+   ],
+   "colorTone": [
+    "bright",
+    "light",
+    "muted",
+    "dark",
+    "vivid"
+   ],
+   "fit": [
+    "slim",
+    "regular",
+    "relaxed",
+    "oversized",
+    "straight",
+    "wide"
+   ],
+   "material": [
+    "cotton",
+    "denim",
+    "leather",
+    "wool",
+    "linen",
+    "polyester",
+    "nylon",
+    "silk",
+    "knit",
+    "other"
+   ],
+   "season": [
+    "spring",
+    "summer",
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "casual",
+    "office",
+    "date",
+    "formal",
+    "travel",
+    "party"
+   ],
+   "style": [
+    "minimal",
+    "classic",
+    "casual",
+    "street",
+    "sporty",
+    "feminine",
+    "vintage"
+   ]
+  },
+  "list_app_fields": [
+   "season",
+   "tpo",
+   "style"
+  ],
+  "attribute_app_fields": {
+   "category": [
+    "category"
+   ],
+   "subcategory": [
+    "subCategory"
+   ],
+   "main_color": [
+    "color"
+   ],
+   "value": [
+    "colorTone"
+   ],
+   "saturation": [
+    "colorTone"
+   ],
+   "fit": [
+    "fit"
+   ],
+   "silhouette": [],
+   "material": [
+    "material"
+   ],
+   "material_feel": [],
+   "thickness": [],
+   "season": [
+    "season"
+   ],
+   "tpo": [
+    "tpo"
+   ],
+   "mood": [
+    "style"
+   ]
+  },
+  "support_rules": {
+   "yes": "앱이 이 값을 그대로 저장한다. value_key가 app_values에 있어야 하고 app_value는 비우거나 value_key와 같아야 한다",
+   "converted": "앱에 없는 연구용 값을 앱 값으로 바꾼다. app_value(app_values의 값, 목록 필드는 | 로 여러 개)를 적거나, 아래 derived_conversions에 규칙이 있어야 한다",
+   "no": "앱이 모르는 값. app_value를 적지 않는다(적어도 변환에 쓰지 않음, W_APP_VALUE_IGNORED). 이 값을 쓰는 의류는 앱·엔진 입력에서 제외되거나(필수 속성) 그 값만 빠진다(목록 속성) — 보고서에 남긴다",
+   "verified_support": "yes·converted 대상은 '앱 지원이 검증된 값'(app_values)만 쓴다. Lab 신규 값을 지원으로 표시하려면 먼저 앱 상수·Gemini 분석 스키마·엔진 처리·테스트가 갖춰지고 계약의 app_values에 추가되어야 한다",
+   "parent": "세부분류를 앱으로 보낼 때(yes·converted) 앱 세부분류의 앱 상위 대분류 = 그 세부분류의 연구용 상위 대분류를 앱으로 변환한 값이어야 한다(E_APP_PARENT_MISMATCH). 상위 대분류가 앱 미지원이면 오류"
+  },
+  "derived_conversions": [
+   {
+    "attribute_key": "season",
+    "value_key": "all-season",
+    "app_values": [
+     "spring",
+     "summer",
+     "fall",
+     "winter"
+    ],
+    "rule": "사계절 → 계절 4개 모두"
+   },
+   {
+    "attribute_key": "value",
+    "value_key": "*",
+    "app_values": null,
+    "rule": "명도+채도 → colorTone 변환표(D-F02 미확정). 확정 전에는 의류의 color_tone을 그대로 앱 colorTone으로 쓰고 value·saturation은 연구 전용으로 보존"
+   },
+   {
+    "attribute_key": "saturation",
+    "value_key": "*",
+    "app_values": null,
+    "rule": "value와 같음(D-F02)"
+   }
+  ],
+  "garment_field_map": [
+   {
+    "contract": "category",
+    "app": "category",
+    "taxonomy": "category",
+    "required": true
+   },
+   {
+    "contract": "subcategory",
+    "app": "subCategory",
+    "taxonomy": "subcategory",
+    "required": true
+   },
+   {
+    "contract": "main_color",
+    "app": "color",
+    "taxonomy": "main_color",
+    "required": true
+   },
+   {
+    "contract": "color_tone",
+    "app": "colorTone",
+    "list": "color_tone",
+    "required": true
+   },
+   {
+    "contract": "fit",
+    "app": "fit",
+    "taxonomy": "fit",
+    "required": true
+   },
+   {
+    "contract": "material",
+    "app": "material",
+    "taxonomy": "material",
+    "required": true
+   },
+   {
+    "contract": "season",
+    "app": "season",
+    "taxonomy": "season",
+    "multi": true
+   },
+   {
+    "contract": "tpo",
+    "app": "tpo",
+    "taxonomy": "tpo",
+    "multi": true
+   },
+   {
+    "contract": "mood",
+    "app": "style",
+    "taxonomy": "mood",
+    "multi": true
+   }
+  ],
+  "research_only_fields": [
+   "value",
+   "saturation",
+   "silhouette",
+   "material_feel",
+   "thickness"
+  ],
+  "conversion_status": {
+   "exact": "모든 앱 필드가 연구 값 그대로",
+   "converted": "변환(converted·규칙형) 값이 있음. 연구 원본은 research에 그대로 남음",
+   "lossy": "목록 속성 일부가 앱 미지원이라 빠짐. 빠진 값은 dropped에 남음",
+   "unsupported": "필수 속성(대분류·세부분류·색·핏·소재 등)에 앱 값이 없거나 앱 상·하위 분류가 맞지 않음 → app = null, 앱·엔진 입력에서 제외"
+  },
+  "no_silent_loss": "변환 결과는 항상 research(원본)·app(앱 값)·conversions·dropped·research_only·unresolved를 함께 남긴다. 가까운 값으로 임의 대체하지 않는다"
+ },
  "rule_id_prefix": {
   "color": "COL",
   "silhouette_fit": "FIT",
@@ -746,14 +1027,15 @@
      "list": "app_field",
      "required": true,
      "example": "fit",
-     "desc": "현재 앱 Clothing 타입의 필드. 대응 없음은 none"
+     "desc": "현재 앱 Clothing 타입의 필드. 대응 없음은 none. 속성별로 쓸 수 있는 앱 필드는 app_compat.attribute_app_fields"
     },
     {
      "key": "app_value",
      "label": "현재 앱 값",
      "type": "string",
      "required": false,
-     "example": "oversized"
+     "example": "oversized",
+     "desc": "converted일 때 바꿀 앱 값(app_compat.app_values의 값, 목록 필드는 | 로 여러 개). yes면 비우거나 value_key와 같게, no면 비움"
     },
     {
      "key": "app_supported",
@@ -762,7 +1044,7 @@
      "list": "app_supported",
      "required": true,
      "example": "yes",
-     "desc": "yes=앱이 저장 / converted=다른 앱 값에서 변환 / no=앱이 아직 모름"
+     "desc": "yes=앱이 그대로 저장 / converted=앱 값으로 변환(app_value 또는 계약의 규칙형 변환) / no=앱이 모름. 지원 표시는 앱 지원이 검증된 값(app_compat.app_values)만"
     },
     {
      "key": "status",
@@ -1723,6 +2005,10 @@
   "E_DUPLICATE_KEY": "기본 키 중복",
   "E_REF": "참조 대상 없음",
   "E_PARENT_MISMATCH": "세부분류가 대분류와 맞지 않음",
+  "E_APP_FIELD": "앱 필드가 이 속성에 맞지 않거나, 앱 필드가 none인데 지원(yes·converted)으로 표시됨",
+  "E_APP_VALUE": "앱 지원 표시와 앱 값이 맞지 않음(지원 값은 앱 허용값만, 변환은 앱 값 또는 계약의 규칙형 변환 필요)",
+  "E_APP_PARENT_MISMATCH": "앱으로 보내는 세부분류의 앱 상위 대분류가 연구용 상위 대분류의 앱 변환값과 다르거나, 상위 대분류가 앱 미지원",
+  "W_APP_VALUE_IGNORED": "앱 미지원(no) 값에 앱 값이 적혀 있음 — 변환에 쓰지 않음(지원 표시가 아님)",
   "E_CONFIRM_ORIGIN": "출처가 human이 아닌 값을 확정",
   "E_APPROVER_AUTHORITY": "승인·확정 권한 없는 평가자",
   "E_RULE_PREFIX": "규칙 ID 약자와 평가 차원 불일치",
@@ -1736,7 +2022,9 @@
   "W_UNSUPPORTED_ATTRIBUTE": "앱이 아직 저장하지 않는 속성을 쓰는 규칙(적용은 변환 또는 분석 확장 후)",
   "W_CONDITIONAL_NO_CONTEXT": "조건부 권장인데 적용 상황 없음",
   "E_EVAL_MIXED_EVALUATOR": "한 평가 파일에 평가자 여러 명",
-  "E_EVAL_ORIGIN": "제출된 평가의 출처가 human이 아님"
+  "E_EVAL_ORIGIN": "제출된 평가의 출처가 human이 아님",
+  "W_APP_UNSUPPORTED": "의류의 필수 속성에 앱 값이 없어 앱·엔진 입력에서 제외(원본은 보고서에 보존)",
+  "W_APP_LOSSY": "의류의 목록 속성 중 앱 미지원 값이 빠짐(빠진 값은 보고서에 보존)"
  },
  "pending_cofounder_decisions": [
   {

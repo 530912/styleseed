@@ -1,6 +1,6 @@
 # 대분류 `jumpsuit` 신설 · 세부분류 60개 · 독립 속성 — 앱 영향 분석과 구현 계획
 
-- 작성: 2026-10-21 (Claude A, 추천엔진·Data Contract 담당) · 상태: **분석·계획만. 코드·DB·계약·Lab 변경 없음**
+- 작성: 2026-10-21 (Claude A, 추천엔진·Data Contract 담당) · 상태: **분석·계획.** PO 결정(2026-10-21): 1라운드 앱 대분류 7개 유지, Lab 8개 대분류는 연구 기준. **S0 완료 → 계약 0.2.0**(패키지 README 9장, `docs/handoff/knowledge-lab-app-mapping-0.2.md`). S1 이후는 승인 대기
 - 확인한 것(읽기 전용)
   - 앱: `src/constants/clothingOptions.ts`, `src/types/index.ts`, `src/app/analyze.tsx`, `src/lib/clothes.ts`, `src/utils/{recommendation,outfitScore,weatherRecommendation,prototypeCore}.ts`, `src/app/{styling,shop,closet,item}.tsx`
   - 서버: `backend/server.js`(Gemini 분석 스키마·프롬프트)

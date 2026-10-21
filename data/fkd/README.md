@@ -19,6 +19,7 @@
 npm run fkd:validate -- [묶음]          # 계약 검증. --json이면 Lab용 오류 목록(코드·행·필드)
 npm run fkd:build -- [묶음]             # 오류 0일 때만 build/ruleset.json (approved + human 규칙만)
 npm run fkd:compare -- [묶음]           # evaluations/의 두 평가자 일치도 + review/disagreement_review.csv
+node scripts/fkd/cli.mjs compat [묶음]  # 의류별 앱 변환 보고서(연구 원본 ↔ 앱 값, 빠진 값·제외 사유). 계약 0.2.0 README 9장
 npm run test:fkd                        # 검증·빌드·비교·문서 동기화 테스트
 node scripts/fkd/gen-handoff.mjs        # 계약 JSON·예시를 바꾼 뒤 전달 패키지 재생성(--check: 최신 확인)
 ```

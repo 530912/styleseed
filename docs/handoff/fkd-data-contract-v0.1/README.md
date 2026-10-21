@@ -1,6 +1,8 @@
 # STYLESEED Fashion Knowledge Data Contract V0.1
 
-**Knowledge Lab(Claude C) ↔ 추천엔진(Claude A) 공식 공유 명세** · 계약 버전 `0.1.0` · 상태 **draft(Claude C 검토 후 확정)** · 작성 2026-10-19
+**Knowledge Lab(Claude C) ↔ 추천엔진(Claude A) 공식 공유 명세** · 계약 버전 `0.2.0` · 상태 **draft(Claude C 검토 후 확정)** · 작성 2026-10-19 · 0.2.0 앱 호환 규칙 2026-10-21(9장)
+
+> 파일·폴더 이름의 `v0.1`은 경로 고정용이다(Lab의 계약 사본 갱신 스크립트가 이 경로를 쓴다). 실제 버전은 계약 JSON의 `contract_version`.
 
 이 폴더 하나만 있으면 Lab을 개발할 수 있도록 만든 독립 패키지다. 다른 저장소 문서를 읽지 않아도 된다.
 
@@ -11,7 +13,7 @@
 | `contract/fkd-bundle.schema.json` | JSON 내보내기용 JSON Schema(필드 형식만. 교차 검증은 8장) |
 | `examples/csv/` | **올바른 예시 묶음(CSV)** + `manifest.json`(파일 해시) — 모든 상태·승인 경로 포함 |
 | `examples/json/bundle.json` | 같은 예시의 **JSON 묶음** |
-| `examples/invalid/*.json` + `expected-errors.json` | 잘못된 묶음 14가지와 **반드시 나와야 하는 오류 코드** — Lab 검증 구현의 테스트 데이터 |
+| `examples/invalid/*.json` + `expected-errors.json` | 잘못된 묶음 17가지와 **반드시 나와야 하는 오류 코드** — Lab 검증 구현의 테스트 데이터 |
 
 > 예시 데이터는 모두 **가짜**다(`manifest.purpose = "example"`, 메모 “예시 데이터 — 실제 패션 판단 아님”). 엔진용 빌드는 `purpose = example` 묶음을 거부한다.
 
@@ -92,7 +94,7 @@ styling_rules ─< styling_rules.exception_of (예외 → 기본 규칙)
 
 ```json
 {
-  "manifest": { "contract_version": "0.1.0", "source": "knowledge-lab", "purpose": "production", "format": "json",
+  "manifest": { "contract_version": "0.2.0", "source": "knowledge-lab", "purpose": "production", "format": "json",
                 "exported_at": "2026-10-24T10:00:00+09:00", "exported_by": "E1", "counts": { "styling_rules": 12 } },
   "evaluators": [ { "evaluator_id": "E1", "role": "cofounder", "can_approve": "yes", "active": "yes" } ],
   "attribute_values": [ ... ], "garments": [ ... ], "outfits": [ ... ], "styling_rules": [ ... ],
@@ -108,7 +110,7 @@ styling_rules ─< styling_rules.exception_of (예외 → 기본 규칙)
 
 | 필드 | 필수 | 설명 |
 |---|---|---|
-| `contract_version` | ✔ | `0.1.0` |
+| `contract_version` | ✔ | `0.2.0` |
 | `source` | ✔ | `knowledge-lab` 또는 `sheets` |
 | `purpose` | ✔(Lab) | `production` 또는 `example`(예시는 빌드 거부) |
 | `format` | ✔(Lab) | `csv` 또는 `json` |
@@ -120,7 +122,7 @@ styling_rules ─< styling_rules.exception_of (예외 → 기본 규칙)
 
 <!-- BEGIN GENERATED: scripts/fkd/gen-contract-doc.mjs -->
 
-계약 버전 `0.1.0` (상태: draft)
+계약 버전 `0.2.0` (상태: draft)
 
 ### 평가자·승인자 — `evaluators`
 
@@ -148,9 +150,9 @@ styling_rules ─< styling_rules.exception_of (예외 → 기본 규칙)
 | `definition` | 정의 | text | 선택 |  |  |  |
 | `guide` | 판단 기준 | text | 선택 |  |  |  |
 | `example` | 예시 | text | 선택 |  |  |  |
-| `app_field` | 앱 필드 | enum · 목록 `app_field` | 필수 |  | `fit` | 현재 앱 Clothing 타입의 필드. 대응 없음은 none |
-| `app_value` | 현재 앱 값 | string | 선택 |  | `oversized` |  |
-| `app_supported` | 앱 지원 | enum · 목록 `app_supported` | 필수 |  | `yes` | yes=앱이 저장 / converted=다른 앱 값에서 변환 / no=앱이 아직 모름 |
+| `app_field` | 앱 필드 | enum · 목록 `app_field` | 필수 |  | `fit` | 현재 앱 Clothing 타입의 필드. 대응 없음은 none. 속성별로 쓸 수 있는 앱 필드는 app_compat.attribute_app_fields |
+| `app_value` | 현재 앱 값 | string | 선택 |  | `oversized` | converted일 때 바꿀 앱 값(app_compat.app_values의 값, 목록 필드는 \| 로 여러 개). yes면 비우거나 value_key와 같게, no면 비움 |
+| `app_supported` | 앱 지원 | enum · 목록 `app_supported` | 필수 |  | `yes` | yes=앱이 그대로 저장 / converted=앱 값으로 변환(app_value 또는 계약의 규칙형 변환) / no=앱이 모름. 지원 표시는 앱 지원이 검증된 값(app_compat.app_values)만 |
 | `status` | 상태 | enum · 목록 `taxonomy_status` | 필수 |  | `confirmed` |  |
 | `decided_by` | 결정자 | ref_list → `evaluators` | 조건부: status=confirmed |  | `E1\|E2` |  |
 | `decided_at` | 결정일 | date | 조건부: status=confirmed |  | `2026-10-22` |  |
@@ -375,6 +377,10 @@ styling_rules ─< styling_rules.exception_of (예외 → 기본 규칙)
 | `E_DUPLICATE_KEY` | 오류(가져오기 중단) | 기본 키 중복 |
 | `E_REF` | 오류(가져오기 중단) | 참조 대상 없음 |
 | `E_PARENT_MISMATCH` | 오류(가져오기 중단) | 세부분류가 대분류와 맞지 않음 |
+| `E_APP_FIELD` | 오류(가져오기 중단) | 앱 필드가 이 속성에 맞지 않거나, 앱 필드가 none인데 지원(yes·converted)으로 표시됨 |
+| `E_APP_VALUE` | 오류(가져오기 중단) | 앱 지원 표시와 앱 값이 맞지 않음(지원 값은 앱 허용값만, 변환은 앱 값 또는 계약의 규칙형 변환 필요) |
+| `E_APP_PARENT_MISMATCH` | 오류(가져오기 중단) | 앱으로 보내는 세부분류의 앱 상위 대분류가 연구용 상위 대분류의 앱 변환값과 다르거나, 상위 대분류가 앱 미지원 |
+| `W_APP_VALUE_IGNORED` | 경고 | 앱 미지원(no) 값에 앱 값이 적혀 있음 — 변환에 쓰지 않음(지원 표시가 아님) |
 | `E_CONFIRM_ORIGIN` | 오류(가져오기 중단) | 출처가 human이 아닌 값을 확정 |
 | `E_APPROVER_AUTHORITY` | 오류(가져오기 중단) | 승인·확정 권한 없는 평가자 |
 | `E_RULE_PREFIX` | 오류(가져오기 중단) | 규칙 ID 약자와 평가 차원 불일치 |
@@ -389,6 +395,8 @@ styling_rules ─< styling_rules.exception_of (예외 → 기본 규칙)
 | `W_CONDITIONAL_NO_CONTEXT` | 경고 | 조건부 권장인데 적용 상황 없음 |
 | `E_EVAL_MIXED_EVALUATOR` | 오류(가져오기 중단) | 한 평가 파일에 평가자 여러 명 |
 | `E_EVAL_ORIGIN` | 오류(가져오기 중단) | 제출된 평가의 출처가 human이 아님 |
+| `W_APP_UNSUPPORTED` | 경고 | 의류의 필수 속성에 앱 값이 없어 앱·엔진 입력에서 제외(원본은 보고서에 보존) |
+| `W_APP_LOSSY` | 경고 | 의류의 목록 속성 중 앱 미지원 값이 빠짐(빠진 값은 보고서에 보존) |
 
 ### 공동창업자 승인이 필요한 패션 판단 (확정 전)
 
@@ -485,13 +493,16 @@ styling_rules ─< styling_rules.exception_of (예외 → 기본 규칙)
 | X11 | 한 평가 파일 = 한 평가자, 제출 평가는 human | `E_EVAL_MIXED_EVALUATOR`, `E_EVAL_ORIGIN` |
 | X12 | manifest 주 버전·해시·형식 | `E_CONTRACT_MAJOR`, `E_HASH_MISMATCH`, `E_MANIFEST_INVALID`, `W_CONTRACT_NEWER` |
 | X13 | JSON 타입(정수는 number, 목록은 배열), JSON에 한국어 라벨 | `E_JSON_INVALID`, `E_ENUM` |
+| X14 | 속성값의 앱 필드가 그 속성에 맞음, 앱 필드 none이면 미지원 | `E_APP_FIELD` |
+| X15 | 앱 지원 표시와 앱 값: yes는 앱 허용값만, converted는 앱 값 또는 규칙형 변환, 단일 필드는 값 1개 | `E_APP_VALUE`, `W_APP_VALUE_IGNORED`(경고) |
+| X16 | 앱으로 보내는 세부분류의 앱 상위 = 연구용 상위 대분류의 앱 변환값 | `E_APP_PARENT_MISMATCH` |
 
 오류(`E_`)가 하나라도 있으면 가져오기·빌드를 하지 않는다. 경고(`W_`)는 막지 않는다.
 
 ### 8.3 오류 보고 형식
 
 ```json
-{ "contractVersion": "0.1.0", "errors": 1,
+{ "contractVersion": "0.2.0", "errors": 1,
   "issues": [ { "level": "error", "code": "E_APPROVAL_SAME_PERSON", "entity": "styling_rules",
                 "file": "styling_rules.csv", "line": 14, "record": "FIT-003/1", "field": "reviewer",
                 "message": "작성자와 승인자가 같음" } ] }
@@ -502,25 +513,78 @@ Lab에서 저장 전 검사를 할 때도 **같은 코드**를 쓴다(공동창�
 ### 8.4 Lab 검증 구현 확인 방법
 
 - `examples/csv/`, `examples/json/bundle.json` → **오류 0개**(경고: CSV는 `W_UNSUPPORTED_ATTRIBUTE` 3개, JSON은 같은 3개)
+- 앱 변환 보고서(`node scripts/fkd/cli.mjs compat examples/csv`) → exact 8, converted 1(G009), unsupported 1(G010)
 - `examples/invalid/<case>.json` → `expected-errors.json`에 적힌 오류 코드가 **정확히 그 집합**으로 나와야 함
 - 참고 구현(JavaScript, 외부 의존성 없음): STYLESEED 앱 저장소 `scripts/fkd/`(`validate.mjs`의 `createValidator`, `bundle.mjs`의 `loadBundle`). 다른 언어면 계약 JSON + 이 명세로 구현. **최종 판정은 Claude A 가져오기 결과**
 
-## 9. 앱 의류 속성과의 호환
+## 9. 앱 의류 속성과의 호환 (0.2.0)
 
-| 계약(`garments`) | 앱 `Clothing` | DB `clothes` | AI 분석 출력 | 비고 |
+### 9.1 원칙
+
+| # | 원칙 |
+|---|---|
+| A1 | **1라운드 STYLESEED 앱 대분류는 7개 고정**(top·bottom·outer·dress·shoes·bag·accessory). 8번째 앱 대분류를 추가하지 않는다(PO 결정 2026-10-21) |
+| A2 | Knowledge Lab의 분류(대분류 8개 등)는 **연구 기준**으로 그대로 관리하고, 앱·엔진에는 계약의 변환 규칙으로만 보낸다 |
+| A3 | **앱 지원이 검증된 값만** 지원(yes·converted 대상)으로 표시한다. 검증된 값 목록 = 계약 `app_compat.app_values`(앱 상수·Gemini 분석 스키마와 같음, 참고 검증기 테스트로 확인) |
+| A4 | **조용한 유실 금지.** 변환 결과에는 연구 원본(`research`)과 앱 값(`app`)이 함께 남고, 바뀐 값(`conversions`)·빠진 값(`dropped`)·앱 값이 없는 값(`unresolved`)·연구 전용 값(`research_only`)이 모두 기록된다. 앱이 모르는 값을 가까운 값으로 임의 대체하지 않는다 |
+
+### 9.2 속성값(`attribute_values`)에 앱 매핑을 적는 법
+
+| `app_supported` | 뜻 | `app_field` | `app_value` |
+|---|---|---|---|
+| `yes` | 앱이 이 값을 그대로 저장 | 그 속성의 앱 필드 | 비우거나 `value_key`와 같게. `value_key`가 앱 허용값이어야 함 |
+| `converted` | 앱에 없는 연구 값을 앱 값으로 바꿈 | 그 속성의 앱 필드 | **앱 허용값**(목록 필드 season·tpo·style은 `\|`로 여러 개). 비우려면 계약 `derived_conversions`에 규칙이 있어야 함 |
+| `no` | 앱이 모름(지원 검증 전) | `none` 권장 | **비움**(적어도 변환에 쓰지 않음 → `W_APP_VALUE_IGNORED`) |
+
+속성별로 쓸 수 있는 앱 필드(`app_compat.attribute_app_fields`): category → `category`, subcategory → `subCategory`, main_color → `color`, value·saturation → `colorTone`, fit → `fit`, material → `material`, season → `season`, tpo → `tpo`, mood → `style`. silhouette·material_feel·thickness는 앱 필드가 없다(항상 `none`·`no`).
+
+규칙형 변환(`derived_conversions`): `season:all-season` → 계절 4개 모두, `value`·`saturation` → colorTone 변환표(D-F02 미확정: 확정 전에는 의류의 `color_tone`을 그대로 쓰고 명도·채도는 연구 전용으로 보존).
+
+### 9.3 `jumpsuit` 변환 규칙
+
+| 값 | `parent_value` | `app_field` | `app_value` | `app_supported` | 앱에서 |
+|---|---|---|---|---|---|
+| 대분류 `jumpsuit` | — | `category` | **`dress`** | **`converted`** | 대분류 `dress`(앱은 dress를 상의+하의를 대체하는 한 벌로 처리) |
+| 세부분류 `jumpsuit` | `jumpsuit` | `subCategory` | `jumpsuit`(또는 비움) | `yes` | 세부분류 `jumpsuit`(앱에서 dress 아래, 기존 지원값 유지) |
+| 세부분류 `romper` | `jumpsuit` | `none` | (비움) | `no` | **앱·엔진 입력에서 제외**(9.5) |
+
+- 의류 `jumpsuit/jumpsuit` → 앱 `dress/jumpsuit`, 상태 `converted`, 원본 `research.category = jumpsuit` 보존.
+- 대분류 `jumpsuit`를 `yes`로 적으면 `E_APP_VALUE`(8번째 앱 대분류 금지). 앱 매핑 없이(`none`·`no`) 두면 세부분류 `jumpsuit`가 앱으로 갈 상위 대분류가 없어 `E_APP_PARENT_MISMATCH`.
+- 세부분류의 연구용 상위가 바뀌어도 **앱에서의 상위(앱 상수 기준)** 와 맞아야 한다: 예) `shirt`를 `jumpsuit` 아래에 두면 앱에서 shirt는 top이라 `E_APP_PARENT_MISMATCH`.
+
+### 9.4 의류 필드 대응
+
+| 계약(`garments`) | 앱 `Clothing` | DB `clothes` | AI 분석 출력 | 변환 |
 |---|---|---|---|---|
-| `category` | `category` | `category` | `category` | 같음 |
-| `subcategory` | `subCategory` | `sub_category` | `subCategory` | 같은 값 |
-| `main_color` | `color` | `color` | `color` | `multi`는 D-F02 |
-| `color_tone` | `colorTone` | `color_tone` | `colorTone` | bright·light·muted·dark·vivid |
-| `value`, `saturation` | — | — | — | colorTone에서 변환(D-F02) |
-| `fit` | `fit` | `fit` | `fit` | `straight`·`wide`는 D-F01 |
-| `silhouette` | — | — | — | 앱에 없음 |
-| `material` | `material` | `material` | `material` | 섬유 |
-| `material_feel`, `thickness` | — | — | — | 앱에 없음(D-F03) |
-| `season` | `season[]` | `season text[]` | `season` | `autumn` 대신 `fall` |
-| `tpo` | `tpo[]` | `tpo text[]` | `tpo` | `school`·`active`는 D-F03 |
-| `mood` | `style[]` | `style text[]` | `style` | `romantic`·`edgy`는 D-F03 |
+| `category` | `category` | `category` | `category` | 속성 사전의 앱 매핑(9.2), 필수 |
+| `subcategory` | `subCategory` | `sub_category` | `subCategory` | 앱 매핑 + 앱 상·하위 일치, 필수 |
+| `main_color` | `color` | `color` | `color` | 앱 매핑, 필수 |
+| `color_tone` | `colorTone` | `color_tone` | `colorTone` | 같은 목록(그대로), 필수 |
+| `fit` | `fit` | `fit` | `fit` | 앱 매핑, 필수. `straight`·`wide`는 D-F01 |
+| `material` | `material` | `material` | `material` | 앱 매핑, 필수 |
+| `season` | `season[]` | `season text[]` | `season` | 앱 매핑, 미지원 값은 빠짐(기록) |
+| `tpo` | `tpo[]` | `tpo text[]` | `tpo` | 앱 매핑, 미지원 값은 빠짐(기록) |
+| `mood` | `style[]` | `style text[]` | `style` | 앱 매핑, 미지원 값은 빠짐(기록) |
+| `value`, `saturation`, `silhouette`, `material_feel`, `thickness` | — | — | — | **연구 전용**(`research_only`로 보존) |
+
+### 9.5 변환 결과 상태 (`node scripts/fkd/cli.mjs compat <묶음>`, 참고 구현 `scripts/fkd/app-compat.mjs`)
+
+| 상태 | 뜻 | 앱·엔진 입력 | 경고 |
+|---|---|---|---|
+| `exact` | 모든 앱 필드가 연구 값 그대로 | 사용 | — |
+| `converted` | 변환된 값이 있음(예: 대분류 jumpsuit → dress) | 사용, 원본 함께 기록 | — |
+| `lossy` | 목록 속성 일부가 앱 미지원이라 빠짐(예: tpo `school`) | 사용, 빠진 값 기록 | `W_APP_LOSSY` |
+| `unsupported` | 필수 속성에 앱 값이 없음(예: 세부분류 `romper`, 핏 `fitted`) 또는 앱 상·하위 불일치 | **제외**(`app = null`), 사유 기록 | `W_APP_UNSUPPORTED` |
+
+### 9.6 세부분류 호환성 검증 기준 (Lab 60개 + 추가 후보)
+
+| # | 대상 | 기준 |
+|---|---|---|
+| V1 | 기존 41개(앱에 있는 키) | 키 변경·삭제 금지. `subCategory`·`yes`. 앱 상위 = 연구용 상위의 앱 변환값(`jumpsuit`만 연구용 상위가 다르고 변환으로 일치) |
+| V2 | 신규 19개 + 추가 후보(예: knit-vest·tailored-vest·padded-vest) | **`none`·`no`, 앱 값 비움.** 지원 표시하면 `E_APP_VALUE` |
+| V3 | 대분류 8개 | 7개는 `yes`, `jumpsuit`는 `converted → dress` |
+| V4 | 의류 | V2 값을 쓰는 의류는 `unsupported`로 제외되고 원본·사유가 남는다. 가까운 값으로 바뀌지 않는다 |
+| V5 | 지원 승격 | V2 값을 `yes`·`converted`로 바꾸려면: 공동창업자의 앱 변환 결정(converted) **또는** 앱 상수·Gemini 스키마·엔진 처리·테스트 완료 후 계약 `app_values` 추가(yes) |
 
 `attribute_values.app_supported`가 `no`인 속성만 쓰는 규칙은 경고(`W_UNSUPPORTED_ATTRIBUTE`) — 저장은 되지만 앱 옷장에는 아직 적용되지 않는다.
 
@@ -532,6 +596,7 @@ Lab에서 저장 전 검사를 할 때도 **같은 코드**를 쓴다(공동창�
 | 선택 필드·목록 값·엔티티·경고 코드 추가 | **부** | `pattern` 필드 추가 |
 | 설명·예시 수정 | **수** | 문구 |
 
+- **draft(0.x) 단계:** 기존 데이터를 거부할 수 있는 검증 규칙 추가도 **부** 버전으로 올린다(주 버전을 올리면 Lab 가져오기가 모두 막히므로). 1.0.0부터 표대로 적용
 - 가져오기는 **같은 주 버전**만 받는다. 더 새로운 부 버전은 경고(`W_CONTRACT_NEWER`)와 함께 받고 모르는 필드는 무시
 - 레코드 버전: 속성값 `version`, 규칙 `rule_version`, 평가 `round` — 승인·제출된 레코드는 고치지 않고 새 버전을 만든다
 - 데이터 버전: 빌드 결과에 `datasetVersion = fkd-<입력 해시 12자리>` 자동 기록
@@ -550,8 +615,8 @@ Lab에서 저장 전 검사를 할 때도 **같은 코드**를 쓴다(공동창�
 | 엔티티 | 개수 | 보여주는 경로 |
 |---|---|---|
 | evaluators | 3 | E1·E2 승인 권한, E3 승인 권한 없음 |
-| attribute_values | 60 | 확정 58, 폐기 1(`fit:fitted`), 제안 1(`mood:romantic`, Claude 초안) |
-| garments | 8 | 속성 확인 완료 6, 제안 2 |
+| attribute_values | 63 | 확정 58, 폐기 1(`fit:fitted`), 제안 4(`mood:romantic` Claude 초안, 대분류 `jumpsuit` 변환 → dress, 세부분류 `jumpsuit`(상위 jumpsuit), `romper` 미지원 Claude 초안) |
+| garments | 10 | 속성 확인 완료 6, 제안 4(G009 점프수트 → 앱 dress 변환, G010 롬퍼 → 앱 입력 제외) |
 | outfits | 4 | dev 2 / holdout 2, 날씨 상황 1, Claude 초안 구성 1 |
 | outfit_evaluations | 8 | E1·E2 각 4개 제출 |
 | styling_rules | 10 | 승인 기본(FIT-001·COL-001·MAT-001), 승인 예외(FIT-002 → FIT-001), 버전 1·2 승인(COL-002 → 빌드는 v2), 검토중(TPO-001), 초안(MOOD-001), 폐기(FIT-003), Claude 초안(COL-003) |
@@ -577,6 +642,9 @@ Lab에서 저장 전 검사를 할 때도 **같은 코드**를 쓴다(공동창�
 | `duplicate-rule-version` | COL-001 v1 중복 | `E_DUPLICATE_KEY` |
 | `rule-id-prefix-mismatch` | MAT-001의 차원 = color | `E_RULE_PREFIX` |
 | `contract-major-mismatch` | 계약 버전 1.0.0 | `E_CONTRACT_MAJOR` |
+| `jumpsuit-category-marked-app-supported` | 대분류 jumpsuit = 앱 지원 yes | `E_APP_VALUE`, `E_APP_PARENT_MISMATCH` |
+| `romper-marked-app-supported` | romper = 앱 subCategory yes | `E_APP_VALUE` |
+| `jumpsuit-category-without-app-mapping` | 대분류 jumpsuit 앱 매핑 없음(none·no) | `E_APP_PARENT_MISMATCH` |
 
 ## 12. Claude C 작업 체크리스트
 
@@ -587,4 +655,5 @@ Lab에서 저장 전 검사를 할 때도 **같은 코드**를 쓴다(공동창�
 - [ ] 4장 형식으로 내보내기(CSV 또는 JSON, manifest 포함, `purpose` 구분)
 - [ ] 8.4로 Lab 검증 구현 확인(예시 = 오류 0, invalid = 기대 코드)
 - [ ] 5장 마지막 표(D-F01~D-F10)는 공동창업자 결정 화면·기록에 연결(Lab이 값을 임의로 정하지 않음)
+- [ ] 9장 앱 매핑: 대분류 `jumpsuit` = converted → dress, 지원 검증 전 값은 `none`·`no`(9.6). 저장 전 X14~X16 검사
 - [ ] 형식 변경이 필요하면 10장 절차로 Claude A에게 요청

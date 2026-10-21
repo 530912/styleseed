@@ -4,6 +4,7 @@
 
 import crypto from "node:crypto";
 
+import { appParentOf, isAppValue, resolveTaxonomyForApp } from "./app-compat.mjs";
 import { isDate, listLookup, splitValues } from "./lib.mjs";
 
 const isExampleRow = (v, keyField) =>
@@ -42,7 +43,7 @@ export const createValidator = (contract, { strictEnumKeys = false } = {}) => {
       message: `${codeText[code] ?? code}${detail ? `: ${detail}` : ""}`,
     });
 
-  // taxonomy: attribute → Map(value → { status, parent, appSupported, origin })
+  // taxonomy: attribute → Map(value → { status, parent, appField, appValue, appSupported })
   const taxonomy = new Map();
   const taxonomyHas = (attribute, value) => {
     const entry = taxonomy.get(attribute)?.get(value);
@@ -164,6 +165,50 @@ export const createValidator = (contract, { strictEnumKeys = false } = {}) => {
     }
   };
 
+  // ---------- 앱 호환(계약 app_compat): 연구용 값 → 앱 값 표시가 맞는지 ----------
+  const compat = contract.app_compat;
+  const checkAppMapping = (v, ctx) => {
+    if (!compat || v.status === "retired" || String(v.app_field).startsWith("!") || String(v.app_supported).startsWith("!")) return;
+    const field = v.app_field;
+    const supported = v.app_supported;
+    const appValue = String(v.app_value ?? "").trim();
+    const allowedFields = compat.attribute_app_fields[v.attribute_key] ?? [];
+    const fctx = { ...ctx, field: "app_field" };
+
+    if (field === "none") {
+      if (supported !== "no") add("error", "E_APP_FIELD", fctx, `앱 필드 none인데 ${supported}`);
+    } else if (!allowedFields.includes(field)) {
+      add("error", "E_APP_FIELD", fctx, `${v.attribute_key} → ${field}(허용 ${allowedFields.join("·") || "none"})`);
+      return;
+    }
+
+    const vctx = { ...ctx, field: "app_value" };
+    if (supported === "yes") {
+      if (appValue && appValue !== v.value_key) add("error", "E_APP_VALUE", vctx, `yes인데 앱 값 "${appValue}" ≠ "${v.value_key}"(다르면 converted)`);
+      else if (field !== "none" && !isAppValue(compat, field, v.value_key)) add("error", "E_APP_VALUE", vctx, `"${v.value_key}"는 앱 ${field} 값이 아님(앱 지원이 검증되지 않은 값은 yes 불가)`);
+    } else if (supported === "converted") {
+      const parts = appValue ? appValue.split("|").map((x) => x.trim()).filter(Boolean) : [];
+      const derived = compat.derived_conversions.some((d) => d.attribute_key === v.attribute_key && (d.value_key === v.value_key || d.value_key === "*"));
+      if (parts.length === 0 && !derived) add("error", "E_APP_VALUE", vctx, "converted인데 앱 값과 규칙형 변환이 모두 없음");
+      if (parts.length > 1 && !compat.list_app_fields.includes(field)) add("error", "E_APP_VALUE", vctx, `${field}는 값 1개만`);
+      for (const part of parts) if (!isAppValue(compat, field, part)) add("error", "E_APP_VALUE", vctx, `"${part}"는 앱 ${field} 값이 아님`);
+    } else if (supported === "no" && appValue) {
+      add("warning", "W_APP_VALUE_IGNORED", vctx, appValue);
+    }
+
+    // 세부분류를 앱으로 보낼 때: 앱 세부분류의 앱 상위 = 연구용 상위 대분류의 앱 변환값
+    if (v.attribute_key === "subcategory" && field === "subCategory" && supported !== "no" && v.parent_value) {
+      const appSub = resolveTaxonomyForApp(compat, taxonomy, "subcategory", v.value_key).values?.[0];
+      const appCategory = resolveTaxonomyForApp(compat, taxonomy, "category", v.parent_value);
+      const expected = appSub ? appParentOf(compat, appSub) : null;
+      if (!appCategory.values) {
+        add("error", "E_APP_PARENT_MISMATCH", { ...ctx, field: "parent_value" }, `상위 대분류 "${v.parent_value}"가 앱 미지원 → 대분류에 앱 변환값이 필요`);
+      } else if (expected && appCategory.values[0] !== expected) {
+        add("error", "E_APP_PARENT_MISMATCH", { ...ctx, field: "parent_value" }, `앱에서 ${appSub}는 ${expected} 아래인데 "${v.parent_value}" → ${appCategory.values[0]}`);
+      }
+    }
+  };
+
   // ---------- 2단계: 묶음 전체 검사 ----------
   const validateBundle = (tables) => {
     const data = {};
@@ -182,6 +227,8 @@ export const createValidator = (contract, { strictEnumKeys = false } = {}) => {
       taxonomy.get(attribute).set(values.value_key, {
         status: lists.taxonomy_status.get(values.status) ?? values.status,
         parent: values.parent_value,
+        appField: lists.app_field.get(values.app_field) ?? values.app_field,
+        appValue: values.app_value ?? "",
         appSupported: lists.app_supported.get(values.app_supported) ?? values.app_supported,
       });
     }
@@ -197,6 +244,7 @@ export const createValidator = (contract, { strictEnumKeys = false } = {}) => {
         if (v.data_origin !== "human") add("error", "E_CONFIRM_ORIGIN", { ...ctx, field: "data_origin" });
         for (const id of v.decided_by) if (!approvers.has(id)) add("error", "E_APPROVER_AUTHORITY", { ...ctx, field: "decided_by" }, id);
       }
+      checkAppMapping(v, ctx);
     }
 
     data.garments = checkEntity("garments", tables.garments);
