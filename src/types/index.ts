@@ -58,6 +58,9 @@ export type Clothing = {
   box2d?: ClothingBox2D;
 
   mask?: ClothingMaskPoint[];
+
+  // 분류 호환 계층(src/utils/taxonomyCompat.ts)이 값을 바꿨을 때의 원래 분류. DB에는 열이 없어 저장하지 않는다
+  taxonomySource?: { category: string; subCategory: string };
 };
 
 export type Outfit = {
@@ -114,6 +117,9 @@ export type ClothingAnalysis = {
   style: ClothingStyle[];
   box2d: ClothingBox2D;
   mask: ClothingMaskPoint[];
+
+  // 분석 결과의 분류를 앱 값으로 정리했을 때의 원래 분류(정리하지 않았으면 없음)
+  taxonomySource?: { category: string; subCategory: string };
 };
 
 export type ClothingBox2D = [number, number, number, number];

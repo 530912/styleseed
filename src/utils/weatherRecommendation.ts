@@ -10,6 +10,8 @@ import {
   type OutfitRecommendation,
 } from "./recommendation";
 
+import { getEngineCategory, getOutfitRole } from "./taxonomyCompat";
+
 /**
  * 날씨 기반 오늘의 코디 (TODAY'S LOOK)
  *
@@ -47,7 +49,10 @@ const BAND_RULES: Record<TemperatureBand, BandRule> = {
     preferredItems: [
       "coat",
       "padding",
+      // Lab 세부분류(앱 목록 밖, taxonomyCompat): 보온 신호를 원래 값으로 유지
+      "padded-vest",
       "knit",
+      "knit-vest",
       "sweatshirt",
       "hoodie",
       "boots",
@@ -70,6 +75,7 @@ const BAND_RULES: Record<TemperatureBand, BandRule> = {
       "cardigan",
       "coat",
       "knit",
+      "knit-vest",
       "sweatshirt",
       "hoodie",
       "shirt",
@@ -125,7 +131,16 @@ const BAND_RULES: Record<TemperatureBand, BandRule> = {
       "sandals",
       "flats",
     ],
-    avoidedItems: ["padding", "coat", "knit", "hoodie", "sweatshirt", "boots"],
+    avoidedItems: [
+      "padding",
+      "padded-vest",
+      "coat",
+      "knit",
+      "knit-vest",
+      "hoodie",
+      "sweatshirt",
+      "boots",
+    ],
     preferredMaterials: ["cotton", "linen"],
     avoidedMaterials: ["wool"],
     needsOuter: false,
@@ -146,8 +161,10 @@ const BAND_RULES: Record<TemperatureBand, BandRule> = {
     ],
     avoidedItems: [
       "padding",
+      "padded-vest",
       "coat",
       "knit",
+      "knit-vest",
       "hoodie",
       "sweatshirt",
       "boots",
@@ -243,7 +260,9 @@ export const getWeatherFitScore = (
   clothing: Clothing,
   rule: WeatherRule,
 ): number | null => {
-  if (clothing.category === "bag" || clothing.category === "accessory") {
+  const category = getEngineCategory(clothing);
+
+  if (category === "bag" || category === "accessory") {
     return null;
   }
 
@@ -277,13 +296,13 @@ const filterClosetForWeather = (clothes: Clothing[], rule: WeatherRule) => {
   };
 
   const categoriesWithSuitableItems = new Set(
-    clothes.filter(isSuitable).map((clothing) => clothing.category),
+    clothes.filter(isSuitable).map((clothing) => getEngineCategory(clothing)),
   );
 
   return clothes.filter(
     (clothing) =>
       isSuitable(clothing) ||
-      !categoriesWithSuitableItems.has(clothing.category),
+      !categoriesWithSuitableItems.has(getEngineCategory(clothing)),
   );
 };
 
@@ -330,15 +349,16 @@ export const getTodaysLooks = (
 
   const pool = rule ? filterClosetForWeather(clothes, rule) : clothes;
 
-  // 상의/원피스를 기준으로 코디를 만들고, 없으면 다른 의류를 기준으로 사용
-  const anchors = pool.filter(
-    (clothing) => clothing.category === "top" || clothing.category === "dress",
-  );
+  // 상의(베스트 포함)/원피스(점프수트·롬퍼 포함)를 기준으로 코디를 만들고, 없으면 다른 의류를 기준으로 사용
+  const anchors = pool.filter((clothing) => {
+    const role = getOutfitRole(clothing);
+    return role === "top" || role === "topLayer" || role === "onePiece";
+  });
 
-  const wearables = pool.filter(
-    (clothing) =>
-      clothing.category !== "bag" && clothing.category !== "accessory",
-  );
+  const wearables = pool.filter((clothing) => {
+    const role = getOutfitRole(clothing);
+    return role !== "bag" && role !== "accessory" && role !== "unknown";
+  });
 
   const bases =
     anchors.length > 0 ? anchors : wearables.length > 0 ? wearables : pool;
@@ -353,8 +373,8 @@ export const getTodaysLooks = (
     // 쌀쌀한 날씨에는 옷장에 아우터가 있을 때 코디에 추가
     if (
       rule?.needsOuter &&
-      base.category !== "outer" &&
-      !items.some((item) => item.category === "outer")
+      getEngineCategory(base) !== "outer" &&
+      !items.some((item) => getEngineCategory(item) === "outer")
     ) {
       const outerMatch = findBestMatch(base, pool, "outer");
 

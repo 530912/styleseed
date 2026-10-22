@@ -5,6 +5,7 @@
 - 기준 코드: 앱 저장소 `9285f7d`(계약 0.2.0)
 - 재현: `LAB_TAXONOMY_JSON=<위 JSON 경로> bash scripts/analysis/taxonomy-review-2026-10-22/run.sh`. 엔진을 임시 폴더에 컴파일한 사본과 모의 옷장, 계약 검증기만 쓴다
 - Lab 분류는 **모두 제안 상태**(서명 0)라서, 이 문서의 결론도 공동창업자 확정 전 기준이다
+- **갱신(2026-10-22, 호환 계층 구현):** P0-2(분석 수정 화면 오류)·P0-3(대분류 jumpsuit 엔진 조합)과 베스트 3종 역할 처리는 앱 코드로 해결(로컬, 미배포). 명세 `docs/handoff/knowledge-lab-engine-compat.md`, 테스트 `src/utils/__tests__/taxonomy.compat.test.mjs`. P0-1(Lab 매핑)은 Claude C 대기
 
 ---
 

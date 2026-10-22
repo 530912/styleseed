@@ -53,6 +53,11 @@ import type { ClothingAnalysis } from "../types";
 
 import { getClothingName, joinTitles, toTitle } from "../utils/format";
 
+import {
+  getSubcategoryOptions,
+  normalizeAnalysisTaxonomy,
+} from "../utils/taxonomyCompat";
+
 // 분석을 기다리는 동안 순서대로 보여줄 항목
 // (Gemini 분석 결과에 실제로 포함되는 속성만 사용)
 const ANALYSIS_STEPS = ["COLOR", "MATERIAL", "FIT", "STYLE", "SEASON", "TPO"];
@@ -141,7 +146,7 @@ export default function AnalyzeScreen() {
 
       const analyzeStartedAt = now();
 
-      const data = (await apiPost(
+      const response = (await apiPost(
         "/analyze-clothing",
         {
           imageBase64,
@@ -155,6 +160,9 @@ export default function AnalyzeScreen() {
       perfLog("analyze.request", analyzeStartedAt, {
         base64Bytes: imageBase64.length,
       });
+
+      // 분류를 앱 값으로 정리(대분류 jumpsuit → dress, 어긋난 쌍 보정). 바뀌면 원래 값은 taxonomySource에 남는다
+      const { analysis: data } = normalizeAnalysisTaxonomy(response);
 
       setAnalysisResult(data);
 
@@ -475,7 +483,7 @@ export default function AnalyzeScreen() {
           <Label style={styles.optionLabel}>SUB CATEGORY</Label>
 
           <View style={styles.optionRow}>
-            {CLOTHING_SUBCATEGORIES[category].map((item) => (
+            {getSubcategoryOptions(category, subCategory).map((item) => (
               <OptionChip
                 key={item}
                 label={toTitle(item)}

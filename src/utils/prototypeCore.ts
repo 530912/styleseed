@@ -6,6 +6,8 @@ import { toTitle } from "./format";
 
 import { getCompatibilityScore } from "./recommendation";
 
+import { getEngineCategory } from "./taxonomyCompat";
+
 /**
  * CORE ENGINE — BETA prototype scoring
  *
@@ -187,16 +189,19 @@ export const buildPrototypeCoreLook = (
   const ranked = rankClosetByPrototypeCore(clothes, rule);
 
   const picks = LOOK_SLOTS.map((slot) =>
-    ranked.find((match) => match.clothing.category === slot),
+    ranked.find((match) => getEngineCategory(match.clothing) === slot),
   ).filter((match): match is PrototypeCoreMatch => match !== undefined);
 
   const hasTopOrBottom = picks.some(
     (match) =>
-      match.clothing.category === "top" || match.clothing.category === "bottom",
+      getEngineCategory(match.clothing) === "top" ||
+      getEngineCategory(match.clothing) === "bottom",
   );
 
   if (!hasTopOrBottom) {
-    const dress = ranked.find((match) => match.clothing.category === "dress");
+    const dress = ranked.find(
+      (match) => getEngineCategory(match.clothing) === "dress",
+    );
 
     if (dress) {
       picks.push(dress);
