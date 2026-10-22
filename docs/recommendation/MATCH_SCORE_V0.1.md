@@ -76,6 +76,8 @@
 
 앱은 아직 실루엣·소재감·두께·명도·채도를 저장하지 않는다(감사 7.1). V0.1은 아래 변환표로 근사하고, 변환으로 판정한 규칙은 이유 문장에 표시하지 않는다(확신 부족). **변환표도 공동창업자 확정 대상이다.**
 
+> **2026-10-22 폐기(colorTone 5행):** 아래 colorTone → 명도·채도 역산은 쓰지 않는다(D-F02 담당자 결정안 결정 3). colorTone에서 직접 확인 가능한 칸만 출처를 표시해 채우고 나머지는 미평가로 둔다. 대체 설계: `docs/recommendation/COLOR_VALUE_SATURATION_DESIGN.md`. 핏·소재 행은 그대로다.
+
 | 앱 값 | 속성 사전 값(제안) |
 |---|---|
 | colorTone bright | value light, saturation high |
