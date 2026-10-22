@@ -1,308 +1,286 @@
-# 색상 체계 전환 설계: color + value + saturation (D-F02)
+# 색상 체계 전환 설계: color + value + saturation (D-F02) — r2
 
-- 작성: 2026-10-22 (Claude A) · 기준 커밋 `ccf84c4`(주색상 검토 포함)
-- 입력: Claude C `KNOWLEDGE_LAB_COLOR_CONTRACT_REQUIREMENTS.md` r1
-  - Lab 원본과 앱 사본이 같은 파일이다(sha256 `2035d9aebcb0`). Lab 커밋은 `efc7a31`이다.
-  - 근거는 D-F02 담당자 결정안(논의중, 서명 0)이다.
-- 이 문서는 **설계와 안전한 테스트**만 다룬다.
-  - 하지 않은 것: 운영·QA DB 변경, 사용자 사진 재분석, Gemini 호출, Data Contract 변경, 앱·서버 코드 변경, 배포
-  - 바꾼 것: 내 문서 `MATCH_SCORE_V0.1.md` 3.4의 colorTone 역산 5행에 폐기 표시(요구 V6)
-- 검증 자료(`scripts/analysis/color-tone-2026-10-22/`):
-  - `tone-rules.mjs`: 규칙 초안. 앱 코드가 아니다
-  - `tone-rules.test.mjs`: 11개 테스트, 모두 통과
-  - `measure.cjs`: 색상 공간 측정 시제품. 저장소 상품 사진 7장만 쓴다
-- 표시: **[코드]** 코드로 확인 · **[실행]** 실행으로 확인 · **[제안]** 설계안, 공동창업자·PO 결정 필요
+- 작성: 2026-10-22 (Claude A)
+  - r1 커밋은 `8e8590f`다. **r2는 PO 검토 의견 7개를 반영했다.**
+- 입력: Claude C `KNOWLEDGE_LAB_COLOR_CONTRACT_REQUIREMENTS.md` r1(Lab `efc7a31`, sha256 `2035d9aebcb0`)과 PO 검토 의견
+- **승인된 것:** color + value + saturation을 신규 표준으로 쓰고, 기존 colorTone과 사용자 데이터를 보존하는 방향
+- **승인되지 않은 것:**
+  - 3×3 → colorTone 축약표: 이 문서는 대안만 비교한다
+  - Data Contract 0.3 확정
+  - 운영 DB 변경, Gemini 유료 호출, 배포, Push
+- 이번 변경:
+  - 설계 문서(이 파일)
+  - 규칙 초안 r2와 테스트
+  - 측정 계산 모듈 분리
+  - 엔진 회귀 테스트 1개 파일 추가(앱 코드는 바꾸지 않음)
+- 검증 자료:
+  - `scripts/analysis/color-tone-2026-10-22/`
+    - `tone-rules.mjs`, `tone-rules.test.mjs`: r1 기록, 11개 테스트 유지
+    - `tone-rules-r2.mjs`, `tone-rules-r2.test.mjs`: r2, 22개 테스트
+    - `measure-core.cjs`, `measure.cjs`: 측정. 출력은 r1과 같다
+  - `src/utils/__tests__/color.tone.invariance.test.mjs`: 엔진 회귀 6개. 기존 엔진 테스트 25개와 함께 31개 모두 통과
+- 표시: **[코드]** 코드로 확인 · **[실행]** 실행으로 확인 · **[제안]** 결정 필요
 
----
+## r1 → r2 변경 요약
 
-## 1. 현재 colorTone 추적 [코드]
-
-| 항목 | 실제 상태 |
-|---|---|
-| 정의 | `COLOR_TONES = bright, light, muted, dark, vivid`(`src/constants/clothingOptions.ts:60`). **의미를 설명하는 문장이 코드·프롬프트 어디에도 없다.** 상품 CSV 가이드에만 한글 이름(밝은·연한·차분한·어두운·선명한)이 있다 |
-| 생성 | Gemini `responseSchema.colorTone` 필수 enum(`backend/server.js:610`). 프롬프트에 기준이 없어 **모델이 마음대로 고른다** |
-| 사람 확인 | **없다.** 분석 화면에 colorTone 카드도 수정 칩도 없다(`analyze.tsx`에 tone 관련 코드 0건). 사용자는 colorTone 값을 본 적이 없다 → 운영 DB의 colorTone은 **전부 사람 검토 없는 Gemini 값**이다 |
-| 저장 | `clothes.color_tone text not null`, CHECK 제약 없음(`clothes.ts:417`). 조회는 그대로(`clothes.ts:508`) |
-| 서버 검사 | 없다(Gemini JSON 통과). 백엔드 테스트 데이터에는 목록 밖 값(`warm`·`neutral`)이 쓰였는데도 통과한다(`backend/test/limits.test.js:66`) |
-| 추천 엔진 | **쓰지 않는다.** 옷장 15벌의 colorTone을 5가지로 일괄 변경해도 Styling, Looks, Today, Core 결과가 같다(주색상 검토 C4) |
-| 상품 | 상품 CSV `color_tone` 필수(브랜드 입력, `products.mjs:144`로 카탈로그에 전달). Core 교체 추천은 상품 colorTone을 `"muted"`로 고정한다(`prototypeCore.ts:124`) |
-| 계약 0.2.0 | 의류 `color_tone` 필수(앱 colorTone). `value`·`saturation`은 선택이고 연구 전용(`research_only_fields`). 변환 규칙은 "D-F02 확정 전에는 color_tone을 그대로" |
-
-**정리:**
-- colorTone은 정의가 없는 Gemini 인상어다. 사람도 엔진도 쓰지 않는다.
-- 그래서 전환의 **회귀 위험이 매우 작다.** 엔진 점수가 colorTone에 의존하지 않으므로, 요구 V4 "기존 데이터 같은 점수"는 구조적으로 보장된다.
-- 반대로 기존 colorTone의 **정보 가치도 낮다.** 역산할 가치가 큰 원본이 아니다.
-
----
-
-## 2. 권장 데이터 구조 [제안]
-
-### 2.1 원칙
-
-1. **추가만 한다.** `clothes.color`·`color_tone`은 그대로 둔다(필수, 덮어쓰지 않음).
-2. **판정값과 원본을 분리한다.** 명도·채도는 "누가, 어떤 방법으로, 언제 판단했는가"와 함께 저장한다. 같은 옷에 판단이 여러 개(측정·Gemini·사람) 있어도 서로 덮어쓰지 않는다.
-3. **상태는 값과 섞지 않는다.** `none`·`na` 같은 예약 값을 쓰지 않는다(요구 4장).
-4. **칸별 상태를 둔다.** 무채색은 "명도는 평가됨, 채도는 해당 없음"이다. 의류 전체 상태(`tone_status`) 하나로는 이것을 표현할 수 없어서, 명도·채도 칸마다 상태를 둔다(Claude C 요구의 확장).
-
-### 2.2 앱 DB: 판정 이력 표 추가(기존 행 변경 없음)
-
-```sql
--- 제안. 운영 적용은 별도 승인
-create table public.clothing_color_assessments (
-  id bigint generated always as identity primary key,
-  clothes_id bigint not null references public.clothes(id) on delete cascade,
-  user_id uuid not null references auth.users(id) on delete cascade,     -- RLS용(clothes와 같은 정책)
-  value text check (value in ('light','medium','dark')),
-  value_status text not null check (value_status in ('assessed','not_applicable','unknown')),
-  saturation text check (saturation in ('low','medium','high')),
-  saturation_status text not null check (saturation_status in ('assessed','not_applicable','unknown')),
-  source text not null check (source in ('human','measured','gemini','derived_from_color_tone')),
-  method_version text not null,           -- 예: 'measure-lab-v1', 'gemini-tone-v1', 'D-F02-draft-r1'
-  color_at_assessment text not null,      -- 판단 당시 주색상(이후 색 수정 시 무효 판단에 사용)
-  metrics jsonb,                          -- 측정값: L*, C*, h, IQR, 반사광 비율, 배경 보정 배수 / Gemini 신뢰도 등
-  created_at timestamptz not null default now(),
-  constraint value_cell check ((value is null) = (value_status <> 'assessed')),
-  constraint saturation_cell check ((saturation is null) = (saturation_status <> 'assessed'))
-);
--- 같은 방법으로 두 번 판정해도 중복되지 않게(재분석 멱등)
-create unique index on public.clothing_color_assessments (clothes_id, source, method_version);
-```
-
-- 행이 없으면 **미기록**이다. 기존 사용자 옷은 모두 이 상태로 시작한다(요구 5.4).
-- `delete cascade`이므로 기존 계정·옷 삭제 흐름(Claude B 영역)에 따로 손댈 필요가 없다. 개인정보 처리방침에 "색 판정값"을 적어야 하는지는 Claude B에게 확인한다.
-- 대안은 `clothes`에 nullable 열 6개를 추가하는 방법이다. 단순하지만 출처가 여러 개일 때 덮어쓰게 되고 이력이 사라진다. 재분석 전략(3장)과 맞지 않아 권장하지 않는다.
-
-### 2.3 앱 타입 (`src/types/index.ts`)
-
-```ts
-type ToneCell<T> = { value: T | null; status: "assessed" | "not_applicable" | "unknown" | "unrecorded"; source?: ToneSource };
-type ToneSource = "human" | "measured" | "gemini" | "derived_from_color_tone";
-type ColorAssessment = { value: ToneCell<"light"|"medium"|"dark">; saturation: ToneCell<"low"|"medium"|"high">; methodVersion: string };
-
-interface Clothing {
-  color: ClothingColor;     // 그대로
-  colorTone: ColorTone;     // 그대로(필수, 하위 호환)
-  tone?: { value: ToneCell<...>; saturation: ToneCell<...> };  // 해석된 값(없으면 미기록). 엔진은 이것만 읽는다
-}
-```
-
-- 해석 규칙(`resolveTone`):
-  - 출처 우선순위는 **human > measured > gemini > derived_from_color_tone** 이다. 측정과 Gemini가 일치하면 measured 신뢰도를 올린다.
-  - 판정 당시 주색상(`color_at_assessment`)이 지금 주색상과 다르면 그 판정은 무시한다.
-
-### 2.4 Data Contract 0.3 후보 (승인 필요)
-
-| 필드 | 내용 |
-|---|---|
-| `value_status`, `saturation_status` | assessed · not_applicable · unknown · (빈 칸 = 미기록) |
-| `value_source`, `saturation_source` | human · derived_from_color_tone (Lab). 앱 내보내기에는 measured·gemini도 허용 |
-| `tone_rules_version` | 예: `D-F02 r1` |
-| 검증 규칙 | (a) multi → 두 칸 not_applicable, 값 없음(오류) (b) assessed ↔ 값 있음(오류) (c) 무채색 + 채도 값 → 경고, 무채색 + 채도 빈 칸 → 경고 없음 |
-| `derived_conversions.value/saturation` | "color_tone 그대로"를 유지하고, 4장 축약표는 **color_tone이 빈 경우에만** 사용 |
-
-- Lab 요구의 `tone_status`(의류 전체 하나)는 칸별 상태로 대체할 것을 제안한다(Claude C 회신 문서 R-1).
-
----
-
-## 3. 재분석 전략 [제안]
-
-### 3.1 단계
-
-| 단계 | 입력 | 출처 | 비용·위험 | 대상 |
-|---|---|---|---|---|
-| ① 부분 역산 | 주색상 + colorTone | `derived_from_color_tone` | 0원. 사진을 쓰지 않음 | 모든 옷. 단, **엔진에는 쓰지 않음**(5.1) |
-| ② 색상 공간 측정 | 누끼 이미지(`cutout_image_path`, 알파 마스크) → 없으면 원본 + 배경 추정 | `measured` | 서버 CPU만. 외부 전송 없음 | 사진이 있는 옷 |
-| ③ Gemini 시각 판단 | 원본 사진 | `gemini` | **API 호출.** 무료 등급은 입력이 Google 개선에 쓰일 수 있어서 **기존 사용자 사진에는 쓰지 않음**(유료 등급 승인과 개인정보 검토 전까지) | 새로 올리는 옷(분석 요청 한 번에 함께 출력, 추가 호출 없음) |
-| ④ 사람 판단 | 연구 세트 | `human` | 공동창업자 시간 | 검증 표본만 |
-
-- **기존 사용자 사진은 ②만 쓴다.** 이것도 실행 전에 PO 승인을 받는다. 새 목적으로 사진을 처리하는 것이므로 처리방침 확인이 필요하다(Claude B).
-- **실행 방식:**
-  - QA 프로젝트에서 테스트 계정으로 먼저 dry-run한다.
-  - 운영은 옷 단위로 판정 표에 추가(insert)만 한다. 유일 인덱스로 멱등성을 보장한다.
-  - 배치 크기와 속도 제한을 두고, 언제든 중단하고 다시 시작할 수 있게 한다.
-- **판정 무효화:** 사용자가 주색상을 바꾸거나(현재는 저장 후 수정 기능 없음) 이미지를 교체하면(`replaceClothingImage`) 기존 판정은 `color_at_assessment`와 이미지 기준으로 무시하고 다시 측정한다.
-
-### 3.2 사진이 없을 때
-
-- `original_image_path`와 `cutout_image_path`가 모두 null이면 판정 행을 만들지 않는다. 그 옷은 **미기록**이다.
-- ① 부분 역산 행은 남길 수 있다. 이 행은 연구용 표시이고, 엔진과 정답 비교에는 쓰지 않는다.
-- 사진이 없다는 사유를 남기려면 `value_status = unknown`, `metrics = {"reason":"no_image"}`로 기록한다. 이렇게 해야 "아직 안 봄"과 "볼 수 없음"이 구분된다.
-- 누끼가 `original`로 대체된 경우(배경 제거 실패, `cutoutVia = "original"`)에는 원본에서 배경을 추정한다. 측정 신뢰도를 낮게 표시한다(`metrics.mask = "estimated"`).
-
-### 3.3 먼저 확인할 것(읽기 전용, 승인 후)
-
-- 운영 `clothes`에서 `original_image_path`·`cutout_image_path` 보유 비율, `color_tone` 값 분포(목록 밖 값이 있는지), `color = multi` 비율을 확인한다. 집계 쿼리만 쓰고 개별 행은 보지 않는다.
-
----
-
-## 4. 레거시 호환 규칙 [제안][실행]
-
-### 4.1 colorTone → 명도·채도: 직접 확인 가능한 칸만 (요구 3.3)
-
-| colorTone | 유채색 | 무채색(black·white·gray·silver) | multi |
+| # | PO 의견 | r1 | r2 |
 |---|---|---|---|
-| light | 명도 light | 명도 light, 채도 해당 없음 | 둘 다 해당 없음 |
-| dark | 명도 dark | 명도 dark, 채도 해당 없음 | 〃 |
-| muted | 채도 low | 채도 해당 없음(명도 미기록) | 〃 |
-| vivid | 채도 high | 채도 해당 없음 | 〃 |
-| bright | 없음 | 채도 해당 없음 | 〃 |
-
-- 채운 칸의 출처는 `derived_from_color_tone`, 규칙 버전은 `D-F02-draft-r1`이다.
-- **두 칸이 동시에 채워지는 경우는 없다.** colorTone 5개 × 9개 색을 전수 테스트로 확인했다.
-
-### 4.2 명도·채도 9개 조합 → colorTone 5개 축약 후보
-
-| 명도 \ 채도 | low | medium | high |
-|---|---|---|---|
-| **light** | light | strict: 미해결 / practical: **light** | **bright** |
-| **medium** | muted | **미해결(두 안 모두)** | **vivid** |
-| **dark** | strict: 미해결 / practical: **dark** | dark | strict: 미해결 / practical: **dark** |
-| 무채색(채도 해당 없음) | light → bright, medium → muted, dark → dark (기존 앱이 흰 옷을 bright로 저장하는 관례에 맞춤) | | |
-
-- **적용 범위:** 원래 colorTone이 있으면 **항상 원래 값을 쓴다**(요구 3.4). 축약은 colorTone이 없을 때만 쓴다. 예: 앞으로 Gemini가 colorTone을 내지 않게 되는 경우, Lab에서 명도·채도만 기록된 의류
-- 커버리지는 strict 5/9, practical 8/9이다(테스트로 고정).
-- **권장은 practical이다.** 단, (medium, medium)은 의미상 대응하는 colorTone이 없으므로 `unresolved`로 남긴다. 앱이 colorTone을 필수로 받는 동안 이 경우는 앱 입력에서 제외되지 않도록 "원래 값 우선" 규칙이 막는다.
-
-### 4.3 bright · light · vivid 의미 충돌과 우선순위
-
-| 쟁점 | 내용 | 결정안 |
-|---|---|---|
-| bright vs light | 둘 다 "밝다"이지만 bright는 맑고 선명한 밝음(고명도+고채도), light는 연한 밝음(고명도+저채도, 파스텔)이다. 앱은 흰 옷도 bright로 저장한다(mockClothes, Lab G001) | 채도로 나눈다: high → bright, low·medium → light. 무채색 흰색은 관례에 따라 bright |
-| bright vs vivid | 둘 다 고채도다. vivid는 가장 강한 원색(중명도), bright는 밝은 고채도다. 형광 옐로처럼 명도가 높고 채도가 높은 색은 둘 다 맞다 | 명도로 나눈다: light → bright, medium → vivid. 우선순위는 **명도 dark > 채도 high > 채도 low**(dark를 먼저 결정해야 진한 버건디가 vivid가 되지 않음) |
-| muted의 명도 | 차콜·더스티 네이비(어두움)도 muted로 불린다 | 명도 dark면 dark가 우선이다. muted는 medium+low만 대응 |
-| colorTone 원래 값이 명도·채도 판정과 모순 | 예: 원래 vivid인데 측정 결과 dark·high | 앱 colorTone은 바꾸지 않는다. 판정 표에만 기록하고, 모순 비율을 Gemini 품질 지표로 쓴다 |
-
-### 4.4 Lab 테스트 시나리오와 다른 점 (Claude C 확인 필요)
-
-- **C2(차콜 코트 muted):** Lab 기대값은 "채도 low derived"이다. 그런데 같은 문서 3.3의 추가 제한은 "주색상이 무채색이면 채도는 채우지 않음"이다. 차콜은 Lab 기준으로 gray(무채색)이다.
-  - 초안은 **무채색 제한을 우선**한다. 채도는 해당 없음이다.
-  - 유채색 muted(더스티 네이비)는 채도 low가 된다.
-- **무채색 목록:** black·white·gray·silver로 정했다. ivory(미세한 노란빛)와 navy·beige·brown(앱 엔진의 "무채색 계열"이지만 색조가 있음)은 **유채색으로 보고 채도를 평가한다.** 엔진의 `NEUTRAL_COLORS`(어울림용)와 명도·채도의 무채색(채도 개념 유무)은 다른 개념이므로 섞지 않는다.
+| 1 | 3×3 변환표 미승인, 대안 분석 | practical 권장 | **권장 철회.** 세 가지 쟁점을 분석하고 대안 3개를 비교했다. 권장은 "축약하지 않음"(3장) |
+| 2 | 무채색 = 채도 low | 채도 "해당 없음" | **채도 low + 무채색 여부를 별도 칸(`achromatic`)으로** 둔다(4장) |
+| 3 | multi는 특성이 없는 게 아님 | 명도·채도 "해당 없음" | 상태 4가지로 나눈다: 평가됨·미평가·판단 불가·**단일 대표값 없음(multiple)**. "해당 없음"은 쓰지 않는다(5장) |
+| 4 | silver 별도 검증 | 무채색 목록에 silver 포함 | silver·gold는 **금속색 별도 검증 대상**이다. 일반 역산과 측정 확정을 하지 않는다(6장) |
+| 5 | colorTone 영향과 사용 단계 구분 | "엔진 미사용" 한 줄 | 단계 0~4로 나누고, 단계 0을 회귀 테스트로 고정했다(7장) |
+| 6 | 테스트 추가 | r1 11개 | r1 11개 유지 + r2 22개 + 엔진 6개 |
 
 ---
 
-## 5. multi와 무채색 별도 처리 [제안][실행]
+## 1. 현재 colorTone (r1과 같음) [코드]
 
-### 5.1 처리 가능 여부
+| 항목 | 상태 |
+|---|---|
+| 정의 | 5개 값(bright·light·muted·dark·vivid). 의미를 설명하는 문장이 코드와 프롬프트에 없다 |
+| 생성 | Gemini 필수 enum. 판단 기준 없음 |
+| 사람 확인 | 없다. 분석·수정 화면에 표시하지 않는다 → 저장된 값은 모두 사람 검토 없는 Gemini 값이다 |
+| 저장 | `clothes.color_tone text not null`, 값 검사 없음 |
+| 엔진 | **사용하지 않는다**(7장, 테스트로 고정) |
+| 상품 | CSV 필수 열. Core 교체 추천은 `muted`로 고정 |
 
-| 경우 | 처리 | 근거 |
+## 2. 권장 데이터 구조 r2 [제안]
+
+### 2.1 칸과 상태
+
+| 칸 | 값 | 비고 |
 |---|---|---|
-| multi | 명도·채도 둘 다 `not_applicable`. colorTone은 원래 값을 유지하되 명도·채도로 해석하지 않는다. 측정·Gemini 출력이 있어도 저장하지 않는다(검증 오류 E_MULTI_HAS_TONE) | 결정 4. 테스트 C5·C7 |
-| 무채색 | 명도는 평가하고, 채도는 `not_applicable`이다. 측정에서는 **C\* < 8이면 무채색 후보**다 | 요구 3.3, 측정 결과(흰 셔츠 C\*0) |
-| 무채색 판정이 주색상과 어긋남 | 주색상은 navy인데 측정 C\*가 7.4(무채색 범위)인 경우(5.2의 스커트) | 주색상을 우선한다. 채도는 측정값대로 low로 하되, `metrics.near_achromatic = true`를 표시한다 |
-| 보조색(결정 4 확장) | `secondary_colors`(목록)과 색상 구성(비율·패턴)을 연구 전용으로 먼저 수집한다. 측정의 색상각 군집으로 후보를 낼 수 있다 | 2라운드 |
+| `value` | light · medium · dark · (비어 있음) | 명도 |
+| `value_status` | assessed · unrecorded · undeterminable · multiple | 5장 |
+| `saturation` | low · medium · high · (비어 있음) | 무채색도 low(4장) |
+| `saturation_status` | 같음 | |
+| `achromatic` | true · false · (비어 있음 = 미확인) | 무채색 여부. 채도와 분리 |
+| `metallic` | true · false · (비어 있음) | 금속색 여부(6장). 소재 광택(glossy)과는 다르다 |
+| `*_source` | human · measured · gemini · derived_from_color_tone · derived_from_main_color | 칸별 출처 |
+| `reason` | 예: no_image, mask_failed, low_light, metallic_reflection, metallic_pending, no_single_main_color | `undeterminable`이면 필수 |
+| `rules_version` | 예: `D-F02-draft-r2` | |
 
-### 5.2 측정 시제품 결과 [실행]
+- **값과 상태는 항상 맞아야 한다.** `assessed`일 때만 값이 있고, 다른 상태일 때는 값이 비어 있다. 이를 어기면 검증 오류다.
+- 예약 값(`none`, `na`)은 쓰지 않는다.
 
-- 경계는 가설값이다: 명도 light ≥ L\*70 > medium ≥ 40 > dark, 무채색 C\* < 8, 채도 low < 18 ≤ medium < 40 ≤ high.
-- 사진은 저장소 상품 사진이다. 원본 외 조명은 사진에 인위적으로 입혀서 만들었다.
+### 2.2 앱 DB(제안, 운영 적용은 별도 승인)
 
-| 사진(실제) | 원본 | 따뜻한 조명 | 따뜻한 조명 + 배경 보정 | 차가운 조명 + 보정 | 그림자 |
+- `clothes`는 바꾸지 않는다. `color`·`color_tone`은 필수로 두고 덮어쓰지 않는다.
+- 판정 이력 표 `clothing_color_assessments`를 추가한다. 추가(insert)만 하고, 출처·방법 버전마다 1행이다.
+- r1 대비 변경:
+  - 상태 값을 `assessed / undeterminable / multiple`로 바꾼다. 미평가(`unrecorded`)는 **행이 없는 것**으로 표현한다.
+  - `achromatic boolean`, `metallic boolean`, `reason text` 열을 추가한다.
+  - `check ((value is null) = (value_status <> 'assessed'))`는 유지한다.
+- 엔진·화면은 해석된 값 하나만 읽는다.
+  - 출처 우선순위는 human > measured > gemini > derived이다.
+  - 판정 당시 주색상이 지금 주색상과 다르면 그 판정은 무시한다.
+
+---
+
+## 3. 3×3 → colorTone 축약: 쟁점과 대안 [제안][실행]
+
+### 3.1 쟁점 세 가지
+
+**(가) 중간 명도·중간 채도(대응값 없음)**
+
+- 해당 색: 더스티 로즈, 세이지 그린, 중간 톤 데님처럼 "적당히 탁한 중간색". 일상복에서 흔한 영역으로 추정한다. [추론, 비율은 실측 필요]
+- PCCS 같은 색 톤 체계에서는 soft·dull에 해당한다. 앱 5개에는 이 톤이 없다.
+- 처리 방안:
+  - ① 미해결로 남긴다(정보 정확, 앱 값은 비어 있음)
+  - ② muted로 넣는다(muted의 뜻이 "선명하지 않음 전체"로 넓어짐)
+  - ③ colorTone에 값을 추가한다(결정 2 "colorTone을 기준으로 쓰지 않음"과 맞지 않음)
+
+**(나) 밝음·높은 채도: bright와 vivid 중 무엇인가**
+
+- 고정표는 항상 bright로 바꾼다.
+- 그런데 **색마다 순색(가장 선명한 상태)의 명도가 다르다.** 노랑 순색은 원래 밝고(L\* 약 97), 파랑 순색은 어둡다(L\* 약 30).
+  - 그래서 형광 노랑은 "vivid"인데 고정표로는 bright가 된다.
+  - 같은 "밝음·높은 채도"가 노랑에서는 순색(vivid)이고, 분홍에서는 순색보다 밝은 색(bright)이다.
+- 즉 bright와 vivid는 **명도·채도만으로는 나눌 수 없고, 색상(hue)이 필요하다.**
+
+**(다) 어두움·높은 채도: 정보 손실**
+
+- 고정표는 dark로 바꾼다. 코발트 블루, 로열 퍼플, 에메랄드처럼 진하면서 선명한 색이 블랙 계열 dark와 같아진다.
+- 일부는 주색상 이름이 이미 깊이를 담고 있다(navy, burgundy). 이런 색은 dark여도 손실이 작다.
+- 반면 blue·purple·green·red의 진하고 선명한 색은 손실이 크다.
+
+### 3.2 대안 비교
+
+| 대안 | 내용 | (가) 중간·중간 | (나) 밝음·높음 | (다) 어두움·높음 | 단점 |
 |---|---|---|---|---|---|
-| 흰 셔츠 | L\*88 C\*0 → light/무채색 | C\*22 → **light/medium(아이보리처럼 보임)** | C\*6.5 → 무채색 복구 | C\*11.4 → low(**복구 실패**) | L\*54 → **medium** |
-| 흰 운동화 | L\*82 C\*3 → light/무채색 | C\*23 → medium | C\*7 → 복구 | C\*8.5 → low | L\*51 → medium |
-| 브라운 로퍼(유광 가죽) | L\*20 C\*10 → dark/low | C\*16 | C\*11 | C\*11 | L\*11 |
-| 블랙 데님 | L\*20 C\*0 → dark/무채색 | 그대로 | 그대로 | 그대로 | 그대로 |
-| 진한 네이비 스커트 | L\*23 C\*7.4 → dark/**무채색 경계** | C\*3.5 | C\*8 | C\*11.6 → low | L\*13 |
+| **N. 축약하지 않음(권장)** | colorTone은 **자기 출처로만** 채운다(Gemini 출력, Lab `color_tone`). 명도·채도에서 만들지 않는다. colorTone이 없는 새 데이터는 colorTone 없이 저장하는 쪽으로 간다(2라운드에 `color_tone` nullable 전환, 승인 필요) | 문제 없음 | 문제 없음 | 문제 없음 | Gemini가 colorTone을 계속 출력해야 한다(지금과 같음, 비용 차이 없음). colorTone 폐지 일정이 필요하다 |
+| A. 고정표(r1) | 9칸 중 8칸 대응 | 미해결 | 항상 bright → 형광 노랑 오류 | 모두 dark → 손실 큼 | 위 세 쟁점이 모두 남는다 |
+| B. 색상별 기준 | 채도 high일 때 주색상의 순색 명도와 비교: 더 밝으면 bright, 같으면 vivid, 더 어두우면 dark. navy·burgundy·brown은 이름상 진한 색이라 dark | 미해결(또는 ②) | 노랑 → vivid, 분홍 → bright | 블루·퍼플 → vivid, 그린·레드 → dark | 순색 명도표를 공동창업자가 정해야 한다. multi·무채색·금속색은 대응하지 않는다 |
 
-**확인된 점:**
+**공통으로 발견한 충돌 [실행]:**
+- 흰 옷은 명도 light, 채도 low(무채색이므로)다. 그래서 A·B 모두 **light**로 축약한다.
+- 하지만 앱과 Lab 예시 데이터는 흰 옷을 **bright**로 저장해 왔다(mockClothes, Lab G001).
+- 축약표를 도입하면 기존 흰 옷 데이터와 체계적으로 어긋난다.
+- 이것도 N을 권장하는 이유다.
 
-1. **따뜻한 조명에서 흰 옷이 유채색(아이보리)으로 측정된다.** 배경을 기준으로 보정하면 복구된다. 흰 배경 상품 사진에서는 이 보정이 잘 듣는다.
-2. **배경이 과노출(255로 잘림)이면 차가운 색조를 보정하지 못한다.** 배경 픽셀이 이미 최댓값이라 색 틀어짐을 읽을 수 없다. 사용자 사진(배경 없음, 혼합 조명)에서는 보정 기준이 더 약하다.
-3. **명도는 노출에 크게 흔들린다.** 그림자 하나로 흰 셔츠가 light에서 medium이 됐다. 배경 기준 보정은 색조만 고치고 밝기는 고치지 못한다. 명도는 **사진 단독 측정으로 확정하지 않는다**(5.3).
-4. **네이비와 블랙 경계는 측정으로도 불안정하다**(C\* 3.5~11.6). 주색상 검토의 black/navy 경계와 같은 문제다.
-5. **광택:** 유광 로퍼의 반사광은 현재 기준(L\* > 92, C\* < 6)에 걸리지 않았다. 반사광 검출 기준을 실제 사진으로 다시 정해야 한다. 지금은 중앙값으로 영향을 줄이고 있다.
-
-### 5.3 측정과 Gemini의 역할 구분
-
-| 항목 | 색상 공간 측정 | Gemini 시각 판단 |
-|---|---|---|
-| 잘하는 것 | 같은 사진이면 항상 같은 값. 수치(L\*, C\*, h)와 근거 기록. 비용 0, 외부 전송 없음 | 조명·그림자를 감안한 "원래 색" 추정, 주색상 영역 선택, multi·패턴·광택 소재 인식, 무채색 여부 |
-| 약한 것 | 노출·화이트밸런스·배경 혼입·반사광에 직접 흔들림. 주름 그림자, 워싱 | 매번 다를 수 있음(반복 일관성), 기준 문장이 없으면 임의 판단, 근거 수치 없음 |
-| 담당 | **채도와 무채색 판정의 1차 근거**(상대값이라 노출 영향이 작음), 모든 판정의 수치 기록, Gemini 결과 검사 | **명도의 1차 근거**(노출 보정을 사람처럼 함), multi·광택 판단, 측정 신뢰도가 낮은 경우 |
-| 둘이 다를 때 | 일치하면 신뢰도를 올린다. 다르면 두 값을 모두 기록하고 엔진에는 Gemini 값을 쓰며, 차이를 검토 대상으로 표시한다 | |
-
-### 5.4 실사용 검증 방법
-
-1. **기준 세트(공동창업자 촬영, 약 40벌):** 옷마다 자연광, 따뜻한 실내등, 그늘 3장씩 찍고, 회색 기준 카드(18% 그레이 카드)를 함께 넣는다. 주색상 검토의 경계 사례(아이보리, 차콜·네이비, 버건디, 유광 가죽, 워싱 데님, 다색 패턴)를 포함한다.
-2. **정답:** 두 사람이 따로 명도·채도를 판단한다(Lab 절차). 둘의 일치도(가중 kappa)를 **상한선**으로 둔다.
-3. **지표:**
-   - 측정·Gemini 각각의 사람 일치율
-   - 같은 옷의 조명 3장 간 일관성(조명 견고성)
-   - 무채색 판정 정확도
-   - multi 오판율
-   - 기준 카드로 보정한 경우와 보정하지 않은 경우의 차이
-4. **경계값 조정:** 사람 정답으로 L\*·C\* 경계를 맞춘다. 개발용 절반으로 맞추고 나머지 절반으로 확인한다.
-5. **실사용 표본:** 승인 후 QA 테스트 계정 사진만 쓴다. 실제 사용자 사진은 처리방침을 확인하고 PO가 승인한 뒤 집계 지표만 본다.
-6. **Gemini 호출:** 40벌 × 3장 × 반복 2회 ≈ 240회. 무료 등급이면 0원이지만, 우리 소유 사진만 쓴다. 실행 전에 승인받는다.
+**권장 근거:**
+1. 엔진이 colorTone을 쓰지 않는다(7장). 축약한 colorTone을 쓸 곳이 없다.
+2. 축약은 정보가 사라지는 변환이다. 결정 2는 "강제 통합하지 않음"이다.
+3. 데이터 계약상 Lab 의류는 `color_tone`이 필수다. 앱 의류는 Gemini가 colorTone을 출력하므로 **축약이 필요한 상황이 실제로 없다.**
+4. 축약표가 필요한 곳은 연구 분석(Gemini colorTone과 명도·채도의 일관성 비교)뿐이다. 여기에는 A·B를 **분석 도구**로만 쓴다.
 
 ---
 
-## 6. 영향 분석 [코드][제안]
+## 4. 무채색: 채도 low + 무채색 여부 분리 [제안][실행]
 
-| 영역 | 지금 | 전환 시 변경 | 위험 |
+### 4.1 r1에서 '해당 없음'으로 처리했던 이유
+
+- Claude C 요구 3.3의 추가 제한("무채색이면 채도는 채우지 않음")과 Lab 후속안 L2("채도가 없는 색은 기록하지 않는다")를 따랐다.
+- 그런데 Lab 채도 판단 기준("회색기가 많으면 low")과 PO 의견에 따르면 무채색은 low다.
+- Lab 문서 안에서 두 원칙이 충돌했고, r1은 그중 한쪽을 골랐던 것이다.
+
+### 4.2 r2 구조
+
+| 주색상 | 채도 | `achromatic` | 근거 |
 |---|---|---|---|
-| Gemini 분석 | colorTone 필수 enum, 기준 문장 없음 | colorTone은 그대로 둔다(필수). 선택 필드 `value`·`saturation`(nullable enum)과 `toneApplicable`(multi·무채색 표시)를 추가하고 프롬프트에 기준 3~4줄을 넣는다. `server.js`는 Claude B에게 인계 | 출력 토큰이 조금 늘어난다. 스키마를 바꾸면 기존 앱이 모르는 필드가 들어오지만 무시되므로 오류는 없다 |
-| Supabase | `clothes.color_tone` 필수 | 판정 표 추가(2.2). `clothes`는 변경 없음 | 마이그레이션은 추가만 한다. RLS 정책이 필요하다 |
-| 저장(`saveClothingToSupabase`) | clothes insert | 분석에 명도·채도가 있으면 판정 행(source = gemini)을 추가한다. 실패해도 옷 저장은 성공시킨다 | 저장 흐름에 실패 지점이 하나 늘어난다 → 비차단으로 처리 |
-| 수정 화면 | colorTone 표시·수정 없음 | 1단계는 표시하지 않는다. 2단계에서 "밝기·선명도" 칩을 추가하고, 사람이 고치면 source = human. 주색상을 바꾸면 기존 판정을 무효로 표시 | 사용자에게 개념이 어렵다. 2라운드 UX 검토 필요 |
-| Styling·Looks·Today | colorTone 미사용 | 1단계는 **변경 없음.** 2단계 톤 조화 규칙(명도 대비, 채도 균형)은 해석된 톤이 있는 옷끼리만 적용하고, 미평가는 중립으로 둔다(가점·감점 없음, 제외 금지, V5) | 규칙 자체가 새 기능이다. 엔진 스냅샷 갱신과 평가 데이터 검증이 필요하다 |
-| 상품 매칭 | colorTone 미사용, Core 상품은 muted 고정 | 상품 CSV에 `value`·`saturation`을 선택 열로 둔다(상품 계약 변경 = 승인). 고정 muted를 제거한다 | 브랜드 입력 부담 → 선택 열로 시작 |
-| 점프수트·베스트 호환 | `taxonomyCompat.ts`(category·subCategory) | **영향 없음.** 다른 필드다. 판정 표도 `clothes_id`만 참조한다 | — |
-| 주색상 신규 6색 | 설계 단계(검토 6장) | 무채색 목록에 silver를 포함하고, ivory는 유채색(저채도)으로 본다. 두 설계는 같은 "원래 값 보존, 엔진은 해석" 원칙을 따른다 | 주색상 결정(C-8)과 함께 정해야 한다 |
+| black·white·gray | **low**(source `derived_from_main_color`) | true | 정의상 무채색. colorTone과 관계없이 정한다 |
+| ivory·beige·navy·brown 등 저채도 유채색 | 판정값(low일 수 있음) | false 또는 측정값 | **low라도 무채색과 구분된다** |
+| silver·gold | 6장(별도 검증) | 비어 있음(미확인) | |
+| multi | 5장 | 비어 있음 | |
+
+- 엔진의 어울림용 `NEUTRAL_COLORS`(navy·beige·brown 포함)와 `achromatic`(채도가 거의 없음)은 **서로 다른 개념**이다. 섞지 않는다.
+- **모순 처리:**
+  - 무채색인데 colorTone이 vivid면 채도는 low로 두고 경고(`W_ACHROMATIC_COLOR_TONE_VIVID`)만 남긴다. colorTone 원본은 그대로 둔다.
+  - 무채색인데 측정 채도가 높으면(따뜻한 조명) 조명 경고를 남긴다. 주색상은 바꾸지 않는다.
+  - 진한 네이비가 측정상 무채색이면 무채색 경계 경고를 남기고 사람 검토로 보낸다.
+- **효과:** Lab 테스트 C2(차콜 muted → 채도 low)가 이제 Lab 기대값과 일치한다(r1에서는 충돌했다).
 
 ---
 
-## 7. 단계별 전환 계획
+## 5. 상태 4가지와 multi [제안][실행]
 
-### P0: 전환 전에 반드시 지킬 안전장치 (지금, 일부 완료)
+| 상태 | 뜻 | 값 | 예 | 표현 |
+|---|---|---|---|---|
+| **assessed** 평가됨 | 누군가(사람·측정·Gemini·규칙) 판단해 값을 정함 | 있음 | 블랙 니트 명도 dark | 출처 필수 |
+| **unrecorded** 미평가 | 아직 아무도 판단하지 않음. 판단은 가능함 | 없음 | 기존 사용자 옷 전부(시작 상태), colorTone bright인 옷의 명도 | 판정 행이 없음 |
+| **undeterminable** 판단 불가 | 판단을 시도했으나 정보가 부족해 정할 수 없음. 정보가 생기면 다시 판단할 수 있음 | 없음 | 사진 없음, 누끼 실패, 너무 어두운 사진, 금속 반사 | **사유(reason) 필수** |
+| **multiple** 단일 대표값 없음 | 색 특성은 있지만 여러 색이 비슷하게 섞여 **하나로 대표할 수 없음** | 없음(단일 칸) | multi 주색상 | 주색상이 multi일 때만 허용 |
 
-| # | 내용 | 상태 |
-|---|---|---|
-| P0-1 | colorTone → 명도·채도 일대일 역산 금지. MATCH_SCORE 3.4 역산 5행 폐기 표시 | **완료**(문서) |
-| P0-2 | `clothes.color`·`color_tone`·기존 행은 바꾸지 않는다. 새 정보는 추가 표에만 넣는다 | 설계 확정(2.2) |
-| P0-3 | 엔진은 1단계에서 colorTone·명도·채도를 읽지 않는다 → 기존 점수 불변(V4). 점프수트·베스트 호환은 손대지 않는다 | 현재 구조로 보장(C4) |
-| P0-4 | multi·무채색 규칙과 칸별 상태를 규칙 초안과 테스트로 고정 | **완료**(초안 11개 테스트) |
-| P0-5 | 기존 사용자 사진을 외부(Gemini)로 다시 보내지 않는다 | 원칙 |
+- **"해당 없음(not_applicable)"은 쓰지 않는다.** multi도 각 부분의 명도·채도는 있다. 무채색도 채도 low가 있다. "해당 없음"이라고 하면 특성이 없다는 뜻으로 읽힌다.
+- **multi의 색 특성 보존(결정 4 확장, 2라운드, 연구 전용):** `color_components = [{ color, value, saturation, share }]`
+  - 예: 흰색 50% light·low + 네이비 50% dark·low
+  - 측정의 색상각 군집으로 후보를 내고, 사람이 확정한다.
+- **검증 규칙:**
+  - multi인데 단일 명도·채도가 있으면 오류
+  - multi가 아닌데 `multiple`이면 오류
+  - `undeterminable`인데 사유가 없으면 오류
+  - 상태와 값이 맞지 않으면 오류
 
-### P1: 1라운드 안에서 가능한 것 (모두 승인 필요)
+---
 
-| # | 내용 | 코드 변경 |
-|---|---|---|
-| P1-1 | 계약 0.3: 칸별 상태·출처·규칙 버전, multi 검증 | `data/fkd/contract`, `scripts/fkd/validate.mjs`, 예시와 테스트 |
-| P1-2 | 규칙 모듈을 앱으로 옮김(`src/utils/colorTone.ts`, 엔진에는 연결하지 않음) + 타입 | `src/types`, 단위 테스트 |
-| P1-3 | 5.4 기준 세트 촬영과 사람 판정, 측정 경계값 조정 | `scripts/analysis/color-tone-*`(측정 시제품 확장) |
-| P1-4 | Gemini 기준 세트 실측(약 240회, 우리 소유 사진) | 기존 A/B 스크립트 방식 |
+## 6. silver·gold: 금속색 별도 검증 [제안][실행]
 
-### P2: 2라운드 이후
+### 6.1 별도로 다루는 이유
 
-| # | 내용 |
+- **반사광:** 금속 표면은 주변을 비춘다. 매우 밝은 반사와 어두운 반사가 함께 나타나서, 같은 은색 가방의 측정 명도가 촬영 환경에 따라 크게 달라진다.
+- **Gemini colorTone도 반사의 영향을 받는다**(추론). 그래서 colorTone 역산도 믿기 어렵다.
+- 일반 gray는 확산 반사라 측정이 안정적이다. 실버를 gray 규칙으로 처리하면 안 된다.
+
+### 6.2 r2 규칙
+
+| 경로 | 처리 |
 |---|---|
-| P2-1 | 판정 표 마이그레이션(QA → 운영), 새 업로드에 측정과 Gemini 판정 기록(엔진 미사용 상태로 시작) |
-| P2-2 | Gemini 스키마에 명도·채도 추가(Claude B 인계) |
-| P2-3 | 기존 사용자 사진 측정 재분석(② 방식, 처리방침 확인 + PO 승인) |
-| P2-4 | 엔진 톤 조화 규칙(평가 데이터로 검증 후), 수정 화면의 밝기·선명도 칩 |
-| P2-5 | 상품 CSV 명도·채도 열, Core 상품 muted 고정 제거 |
-| P2-6 | 보조색·색상 구성 속성 |
+| colorTone 역산 | **하지 않는다.** 명도·채도는 미평가, 사유 `metallic_pending`. 역산값이 들어오면 오류(`E_METALLIC_DERIVED`) |
+| 색 측정 | 반사광 비율 ≥ 8%이고 밝기 퍼짐(IQR) ≥ 25면 **금속성 의심** → 판단 불가(`metallic_reflection`). 주색상이 silver·gold면 항상 판단 불가로 둔다 |
+| gray인데 금속성 의심 | 주색상은 바꾸지 않고 경고(`W_METALLIC_SUSPECT_NON_METAL_COLOR`)를 남겨 사람 검토로 보낸다 |
+| 광택 새틴(비금속 광택) | 반사광 비율이 작고 밝기 퍼짐도 작아 금속성으로 오판하지 않는다(합성 테스트로 확인) |
+| 확정 방법 | 사람 판단 또는 Gemini(금속 표면의 기본 색으로 판단하라는 지시 포함) + 기준 세트 검증 후 규칙을 정한다 |
+| achromatic | silver도 비워 둔다(미확인). 은색이 무채색처럼 어울리는지는 주색상 검토 C-8·C-9 결정과 함께 정한다 |
+
+### 6.3 검증 세트(5.4 기준 세트에 추가)
+
+- 실버 링, 메탈릭 실버 가방, 은색 코팅 신발, 회색 새틴 블라우스(비금속 광택), 무광 회색 니트
+- 각각 자연광·실내등·그늘에서 촬영한다.
+- 금 귀걸이, 금색 가죽, 머스터드 니트(비금속 노랑)도 같은 방식으로 촬영한다.
+- 지표: 금속성 의심 검출률, 비금속 광택 오검출률, 금속색의 사람 판단 일치율
 
 ---
 
-## 8. 예상 정보 손실
+## 7. colorTone·명도·채도의 엔진 사용 단계 [코드][실행]
 
-| 경우 | 손실 | 보존 방법 |
+| 단계 | 시기 | colorTone | 명도·채도 | 엔진 결과 영향 | 확인 방법 |
+|---|---|---|---|---|---|
+| **0 현재** | 지금 | 저장만, **엔진 미사용** | 없음 | 없음 | `color.tone.invariance.test.mjs` 6개: colorTone 5값 일괄·혼합·목록 밖·빈 값, 새 필드 추가 시 Styling·Looks·Today·Core·Missing·인사이트가 모두 같음 + 서명이 실제 차이(color 변경)를 잡아냄 |
+| 1 계약·규칙 | 1라운드(승인 후) | 같음 | 계약 0.3·Lab 연구 데이터, 앱 타입만 | 없음 | 단계 0 테스트 그대로 통과 |
+| 2 기록(그림자 모드) | 2라운드 전반 | 같음 | 새 업로드에 측정·Gemini 판정 저장, 평가·로그에만 사용 | 없음 | 단계 0 테스트 + 판정 저장 실패가 옷 저장을 막지 않음 |
+| 3 엔진 사용 | 2라운드 후반, **평가 데이터로 효과 확인 + 공동창업자 승인 후** | **계속 미사용** | 해석된 명도·채도로 "명도 대비·채도 균형" 하위 점수. 미평가·판단 불가·multiple·금속 대기는 **중립**(가점·감점 없음, 옷 제외 금지) | 있음(의도된 변경) | 단계 0 테스트를 이 단계에서 **명시적으로 개정**, 엔진 스냅샷 갱신 승인 |
+| 4 colorTone 정리 | 단계 3 안정 후 | `color_tone` nullable 전환 검토(폐지 아님, 기존 값 유지) | 표준 | — | 승인 필요 |
+
+- **결론:** colorTone은 어느 단계에서도 엔진이 직접 쓰지 않는다. 명도·채도는 단계 3에서 처음 엔진에 들어간다.
+- MATCH_SCORE V0.1의 색 차원 "명도 대비·채도 균형"은 아직 구현되지 않았다. 계약 rubric은 사람 평가용 문장이다.
+
+---
+
+## 8. 재분석 전략 (r1 3장 유지, 상태 이름만 변경)
+
+| 단계 | 결과 상태 |
+|---|---|
+| ① colorTone·주색상 부분 역산(사진 불필요) | 해당 칸 assessed(derived), 나머지 미평가. 금속색은 미평가(metallic_pending), multi는 multiple |
+| ② 누끼 이미지 측정(서버, 외부 전송 없음) | assessed(measured) 또는 판단 불가(사유). 경고가 있으면 사람 검토 대상 |
+| ③ 새 업로드 Gemini 판정 | assessed(gemini) |
+| 사진 없음 | 판단 불가(`no_image`). 행을 남겨서 "아직 안 봄"과 구분한다 |
+
+- 기존 사용자 사진은 ②만 쓴다. 이것도 처리방침을 확인하고(Claude B) PO가 승인한 뒤에 한다.
+- 무료 등급 Gemini로 사용자 사진을 다시 보내지 않는다.
+
+---
+
+## 9. 측정과 Gemini 역할, 실사용 검증 (r1 5.2~5.4 유지)
+
+- 측정 결과(r1과 같음):
+  - 따뜻한 조명에서 흰 셔츠가 C\* 22로 나온다. 배경 기준으로 보정하면 복구된다.
+  - 배경이 과노출이면 차가운 조명을 보정하지 못한다.
+  - 그림자 하나로 명도가 light에서 medium이 된다.
+  - 진한 네이비는 무채색 경계(C\* 7.4)에 걸린다.
+- r2에서 바뀐 점:
+  - 측정 채도는 무채색도 그대로 low로 낸다. 무채색 여부는 `achromatic`으로 따로 낸다.
+  - 금속성이 의심되면 `confidence: low`로 표시하고 확정하지 않는다.
+- 역할 분담:
+  - 측정: 채도와 무채색 판정의 1차 근거, 수치 근거
+  - Gemini: 명도의 1차 근거, multi·금속·광택 판단
+  - 둘이 다르면 사람 검토로 보낸다.
+- 기준 세트: 약 40벌 + 금속·광택 세트(6.3). 회색 기준 카드를 넣고 조명 3가지로 찍는다. 두 사람이 따로 판정한다. 경계값은 절반으로 맞추고 나머지 절반으로 확인한다.
+
+---
+
+## 10. 단계별 계획 r2
+
+| 구분 | 내용 | 상태 |
 |---|---|---|
-| colorTone → 명도·채도 | 손실은 없다. 다만 **대부분 채워지지 않는다**. bright는 0칸, 나머지는 1칸만 채운다 | 원래 colorTone 유지, 미기록 상태 표시 |
-| 명도·채도 → colorTone(축약) | 9 → 5. dark 행의 채도(진한 버건디 vs 블랙 계열 dark), light 행의 low/medium 구분이 사라진다. (medium, medium)은 대응값이 없다 | 원래 값 우선, 판정 표에 원래 명도·채도 보존, 미해결 보고 |
-| 사진이 없는 옷 | 명도·채도를 영구히 알 수 없다(사용자가 다시 찍기 전까지) | 미기록 / unknown(no_image) |
-| 누끼 실패 옷 | 배경이 섞여 측정 신뢰도가 낮다 | `metrics.mask = estimated`, 신뢰도 낮음 표시 |
-| multi | 단일 명도·채도 없음(의도된 결정) | 보조색 확장(P2-6) |
-| 측정만 쓰는 경우 | 조명이 강하면 명도가 왜곡된다 | 명도는 Gemini 또는 사람 우선, 측정은 수치 근거로 남김 |
+| P0-1 | colorTone → 명도·채도 일대일 역산 금지(MATCH_SCORE 3.4 폐기 표시) | 완료(r1) |
+| P0-2 | 기존 칸·행은 바꾸지 않음, 판정 이력 표는 추가만 | 설계 |
+| P0-3 | 엔진은 colorTone·명도·채도를 읽지 않음 → **회귀 테스트로 고정** | **완료(r2)** |
+| P0-4 | 무채색 low + achromatic, 상태 4가지, multi·금속색 규칙을 초안과 테스트로 고정 | **완료(r2)** |
+| P0-5 | 축약표를 앱·계약에 넣지 않음(대안 N) | 결정 요청 |
+| P1-1 | 계약 0.3: 2.1 칸, 상태·사유, 검증 규칙(5장·6장) | 승인 대기 |
+| P1-2 | 규칙 r2를 앱 타입·유틸로 이전(엔진 미연결) | 승인 대기 |
+| P1-3 | 기준 세트(금속·광택 포함) 촬영, 사람 판정, 측정 경계값 조정 | 공동창업자 |
+| P1-4 | Gemini 기준 세트 실측(우리 소유 사진) | 승인 대기 |
+| P2 | 판정 표(QA → 운영), 그림자 모드 기록, 기존 사진 측정, 단계 3 엔진, multi 색 구성, colorTone nullable | 2라운드 |
 
-## 9. 검증 테스트
+## 11. 예상 정보 손실 r2
 
-| 테스트 | 위치 | 상태 |
+| 경우 | 손실 |
+|---|---|
+| 대안 N(권장) | 없음. colorTone과 명도·채도가 서로 독립이다 |
+| 대안 A 고정표 | 중간·중간 대응 없음. 밝은 순색(노랑) 오분류. 진하고 선명한 색(코발트, 에메랄드)이 dark로 합쳐짐. 흰 옷 bright 관례와 충돌 |
+| 대안 B 색상별 기준 | 중간·중간 대응 없음. 진한 초록·빨강은 여전히 dark. 흰 옷 관례 충돌. 순색 명도표 오류 위험 |
+| 무채색 low | 없음(`achromatic`으로 구분) |
+| multi | 단일 칸은 비어 있음. 색 구성 속성 전까지 부분별 정보 없음 |
+| 금속색 | 검증 전까지 명도·채도 미평가 |
+
+## 12. 검증 테스트
+
+| 묶음 | 수 | 결과 |
 |---|---|---|
-| 규칙 초안: Lab C1~C8, 축약표 커버리지, 왕복, 우선순위 | `scripts/analysis/color-tone-2026-10-22/tone-rules.test.mjs` | **11/11 통과** |
-| 측정 시제품: 7장 × 조명 4가지 | `measure.cjs` | 실행 완료(5.2) |
-| 기존 엔진 회귀(colorTone 무관) | 주색상 검토 C4 + `test:engine` | 통과 |
-| 이후: 계약 0.3 검증 예시, 판정 표 RLS(교차 사용자), 저장 비차단, 엔진 미평가 중립 | P1·P2에서 작성 | 미작성 |
+| r1 규칙(기록 보존) | 11 | 통과 |
+| r2 규칙: 무채색 5, 상태·multi 4, 금속·측정 5, 조명 2, 축약 대안 6 | 22 | 통과 |
+| 엔진 기존(스냅샷 + 점프수트·베스트 호환) | 25 | 통과 |
+| 엔진 단계 0 불변(신규) | 6 | 통과 |
+| 측정 시제품 출력(공통 모듈 분리 전후) | — | 동일 |

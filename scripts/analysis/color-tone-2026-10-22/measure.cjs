@@ -7,25 +7,8 @@ const sharp = require("sharp");
 const ROOT = path.join(__dirname, "../../..");
 const { cases } = require(path.join(ROOT, "backend/test/fixtures/cutout-cases.json"));
 
-// 후보 경계(보정 전 가설). 실측 세트로 조정한다
-const BANDS = { valueLight: 70, valueDark: 40, achromaticC: 8, satLow: 18, satHigh: 40 };
-
-const toLinear = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-const f = (t) => (t > 216 / 24389 ? Math.cbrt(t) : (841 / 108) * t + 4 / 29);
-const rgbToLab = (r, g, b) => {
-  const [R, G, B] = [r, g, b].map((x) => toLinear(x / 255));
-  const X = (0.4124 * R + 0.3576 * G + 0.1805 * B) / 0.95047;
-  const Y = 0.2126 * R + 0.7152 * G + 0.0722 * B;
-  const Z = (0.0193 * R + 0.1192 * G + 0.9505 * B) / 1.08883;
-  const L = 116 * f(Y) - 16;
-  const a = 500 * (f(X) - f(Y));
-  const bb = 200 * (f(Y) - f(Z));
-  return [L, a, bb];
-};
-const quantile = (arr, q) => {
-  const s = [...arr].sort((x, y) => x - y);
-  return s[Math.min(s.length - 1, Math.floor(q * s.length))];
-};
+// 경계(가설)·Lab 변환은 measure-core.cjs와 같은 것을 쓴다
+const { BANDS, rgbToLab, quantile } = require("./measure-core.cjs");
 
 // 조명 변형: 채널 배수(따뜻한 조명·그림자·차가운 조명)
 const LIGHTS = {

@@ -1,5 +1,7 @@
 # 색상 데이터 계약 요구사항(D-F02) 회신 (Claude A → Claude C)
 
+> **r2로 일부 대체됨(2026-10-22):** R-1·R-2·R-3·R-5는 `knowledge-lab-color-tone-agreements-r2.md`가 대체한다(무채색 채도 low, 상태 4가지, 축약표 미승인). R-4·R-6은 유지한다.
+
 - 작성: 2026-10-22 (Claude A)
 - 회신 대상: `KNOWLEDGE_LAB_COLOR_CONTRACT_REQUIREMENTS.md` r1 (Lab 커밋 `efc7a31`, sha256 `2035d9aebcb0`)
 - 상세 설계: `docs/recommendation/COLOR_VALUE_SATURATION_DESIGN.md`
