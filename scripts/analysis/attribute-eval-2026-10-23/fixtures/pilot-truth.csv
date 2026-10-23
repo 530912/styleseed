@@ -1,0 +1,13 @@
+garment_id,image,shot_type,category,category_app,subcategory,subcategory_app,main_color,fit,fit_status,silhouette,silhouette_status,acceptable,boundary_set,labeler,note
+P01,p01.jpg,worn,top,,shirt,,white,slim,,rectangular,,,,E1,합성 픽스처(실제 의류 아님)
+P02,p02.jpg,worn,bottom,,jeans,,blue,regular,,straight,,,,E1,
+P03,p03.jpg,product,bottom,,slacks,,black,,undeterminable,wide,,,,E1,제품 단독 사진이라 핏 판단 불가
+P04,p04.jpg,worn,bottom,,skirt,,beige,regular,,A,,silhouette:flared,A_vs_flared,E1,
+P05,p05.jpg,worn,dress,,mini-dress,,red,fitted,,X,,silhouette:flared,X_vs_flared,E1,피트 앤 플레어
+P06,p06.jpg,product,shoes,,sneakers,,white,,not_applicable,,not_applicable,,,E1,
+P07,p07.jpg,worn,outer,,coat,,gray,oversized,,cocoon,,,cocoon_vs_boxy,E1,
+P08,p08.jpg,worn,jumpsuit,dress,jumpsuit,,green,relaxed,,wide,,,jumpsuit_vs_romper,E1,Lab 대분류 jumpsuit → 앱 dress
+P09,p09.jpg,worn,bottom,,leggings,,black,compression,,,,,,E1,상품 설명에 압박 기능 명시(사진만으로는 판단 불가)
+P10,p10.jpg,worn,top,,knit,,navy,semi-fitted,,rectangular,,,,E1,
+P11,p11.jpg,product,bottom,,trousers,,brown,,undeterminable,barrel,,silhouette:balloon,barrel_vs_balloon,E1,
+P12,p12.jpg,worn,bottom,,jeans,,blue,slim,,bootcut,,,bootcut_vs_flared,E1,

@@ -1,0 +1,227 @@
+{
+ "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다",
+ "active": [
+  {
+   "attribute_key": "silhouette",
+   "value_key": "A",
+   "value_ko": "A",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "A 자리표시 정의",
+   "guide": "포함: 자리표시 A라인.\n제외: 무릎 부근에서 크게 퍼지면 `mermaid`로 구분한다.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "X",
+   "value_ko": "X",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "X 자리표시 정의",
+   "guide": "포함: X 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "straight",
+   "value_ko": "straight",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "straight 자리표시 정의",
+   "guide": "포함: straight 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "flared",
+   "value_ko": "flared",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "flared 자리표시 정의",
+   "guide": "포함: flared 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "wide",
+   "value_ko": "wide",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "wide 자리표시 정의",
+   "guide": "포함: wide 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "Y",
+   "value_ko": "Y",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "Y 자리표시 정의",
+   "guide": "포함: Y 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "cocoon",
+   "value_ko": "cocoon",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "cocoon 자리표시 정의",
+   "guide": "포함: cocoon 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "balloon",
+   "value_ko": "balloon",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "balloon 자리표시 정의",
+   "guide": "포함: balloon 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "mermaid",
+   "value_ko": "mermaid",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "mermaid 자리표시 정의",
+   "guide": "포함: 자리표시.\n제외: 위에서부터 퍼지면 `A`, 특정 지점부터 퍼지면 flared로 구분한다.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "boxy",
+   "value_ko": "boxy",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "boxy 자리표시 정의",
+   "guide": "포함: boxy 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "rectangular",
+   "value_ko": "rectangular",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "rectangular 자리표시 정의",
+   "guide": "포함: rectangular 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "bootcut",
+   "value_ko": "bootcut",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "bootcut 자리표시 정의",
+   "guide": "포함: bootcut 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "tapered",
+   "value_ko": "tapered",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "tapered 자리표시 정의",
+   "guide": "포함: tapered 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "barrel",
+   "value_ko": "barrel",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "barrel 자리표시 정의",
+   "guide": "포함: barrel 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "jogger",
+   "value_ko": "jogger",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "jogger 자리표시 정의",
+   "guide": "포함: jogger 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "tulip",
+   "value_ko": "tulip",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "tulip 자리표시 정의",
+   "guide": "포함: tulip 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "circle",
+   "value_ko": "circle",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "circle 자리표시 정의",
+   "guide": "포함: 자리표시.\n제외: 짧은 스커트는 skater를 우선 검토한다.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  }
+ ],
+ "retired": [
+  {
+   "attribute_key": "silhouette",
+   "value_key": "I",
+   "value_ko": "I",
+   "status": "retired",
+   "data_origin": "human",
+   "definition": "I 자리표시 정의",
+   "guide": "포함: I 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "H",
+   "value_ko": "H",
+   "status": "retired",
+   "data_origin": "human",
+   "definition": "H 자리표시 정의",
+   "guide": "포함: H 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "silhouette",
+   "value_key": "volume",
+   "value_ko": "volume",
+   "status": "retired",
+   "data_origin": "human",
+   "definition": "volume 자리표시 정의",
+   "guide": "포함: volume 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  }
+ ]
+}
