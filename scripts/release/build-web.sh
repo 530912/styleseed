@@ -2,6 +2,7 @@
 # 모바일 웹 MVP 정적 빌드 — 지정한 환경변수 파일의 값만 앱에 넣고, 결과물을 검사한다
 #   bash scripts/release/build-web.sh <환경변수 파일> [출력 폴더(기본 dist-web)]
 #   예) bash scripts/release/build-web.sh .env.research.web
+#   로컬 시험 빌드(가짜 Supabase·로컬 서버)만: ALLOW_LOCAL=1 bash scripts/release/build-web.sh <파일> <폴더>
 #
 # 왜 이렇게 하나(2026-10-27 확인):
 # - expo export는 변환 캐시를 다시 써서, 명령줄에 준 EXPO_PUBLIC_* 대신 예전 빌드 값(로컬 .env = 운영 Supabase)이
@@ -61,6 +62,18 @@ check() {
 grep -qF "$EXPO_PUBLIC_SUPABASE_URL" $BUNDLE && check ok "Supabase 주소 = 파일 값" || check fail "Supabase 주소가 번들에 없음"
 grep -qF "$EXPO_PUBLIC_API_URL" $BUNDLE && check ok "API 주소 = 파일 값" || check fail "API 주소가 번들에 없음"
 grep -q "localhost:3001" $BUNDLE && check fail "API 기본값(localhost:3001)이 남아 있음" || check ok "API 기본값 없음"
+
+# 번들 안의 Supabase 주소는 파일에 적은 것 하나뿐이어야 한다(테스트·운영 프로젝트가 섞이지 않게)
+OTHER_SUPABASE="$(grep -ohE "https://[a-z0-9]+\.supabase\.co" $BUNDLE | sort -u | grep -vxF "$EXPO_PUBLIC_SUPABASE_URL" || true)"
+[ -z "$OTHER_SUPABASE" ] && check ok "다른 Supabase 주소 없음" || check fail "다른 Supabase 주소: $OTHER_SUPABASE"
+
+# 조사·배포 빌드에는 로컬 주소가 없어야 한다(시험 빌드만 ALLOW_LOCAL=1)
+if [ "${ALLOW_LOCAL:-}" != "1" ]; then
+  # supabase-js 인증 라이브러리의 기본값 상수(http://localhost:9999)는 앱이 쓰지 않으므로 제외
+  LOCAL_HITS="$(grep -ohE "//(localhost|127\.0\.0\.1)(:[0-9]+)?" $BUNDLE | sort -u | grep -vx "//localhost:9999" || true)"
+  [ -z "$LOCAL_HITS" ] && check ok "로컬 주소 없음" || check fail "로컬 주소가 번들에 있음: $(echo $LOCAL_HITS)"
+  case "$EXPO_PUBLIC_API_URL" in https://*) check ok "API 주소 https";; *) check fail "API 주소가 https가 아님(Safari가 막음)";; esac
+fi
 
 # 로컬 개발 .env의 Supabase 주소가 파일 값과 다르면 번들에 없어야 한다
 if [ -f .env ]; then

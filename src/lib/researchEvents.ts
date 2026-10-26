@@ -12,8 +12,10 @@ import { RESEARCH_MODE } from "./featureFlags";
 
 import {
   appendResearchEvent,
+  buildExportFileName,
   buildResearchEvent,
   createUuid,
+  selectEventsForExport,
   startResearchSession,
   toJsonLines,
   type ResearchContract,
@@ -119,7 +121,18 @@ export const clearResearchEvents = () =>
     await AsyncStorage.removeItem(EVENTS_KEY);
   });
 
-export const exportResearchEvents = async () => toJsonLines(await loadEvents());
+// 지금 세션 기록만 내보낸다(scope "all"이면 이 기기 전체). 파일 이름도 함께 돌려준다
+export const exportResearchEvents = async (scope: "session" | "all" = "session") => {
+  const session = scope === "session" ? await getResearchSession() : null;
+
+  const events = selectEventsForExport(await loadEvents(), session);
+
+  return {
+    text: toJsonLines(events),
+    count: events.length,
+    fileName: buildExportFileName(session, new Date()),
+  };
+};
 
 // 화면·흐름에서 부르는 기록 함수. 기다릴 필요 없다(await 하지 않아도 됨)
 export const logResearchEvent = (

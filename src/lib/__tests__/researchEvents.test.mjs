@@ -215,3 +215,18 @@ test("서버의 잘못된 이미지 응답(INVALID_IMAGE)은 그대로 기록한
   assert.equal(toAnalysisErrorCode("INVALID_IMAGE"), "INVALID_IMAGE");
   assert.ok(contract.enums.analysis_error.includes("INVALID_IMAGE"));
 });
+
+test("세션별 내보내기: 지금 세션 기록만, 파일 이름에 코드·환경·세션 시작 시각(개인정보 없음)", async () => {
+  const { selectEventsForExport, buildExportFileName } = await import("../researchEventsPolicy.ts");
+  const a = openSession("R1-P05");
+  const b = openSession("R1-T02", "rehearsal");
+  const events = [make(a, "app_opened"), make(b, "app_opened"), make(a, "register_started", { source: "camera" })];
+
+  assert.equal(selectEventsForExport(events, a).length, 2);
+  assert.equal(selectEventsForExport(events, b).length, 1);
+  assert.equal(selectEventsForExport(events, null).length, 3);
+
+  assert.equal(buildExportFileName(a, new Date("2026-11-09T12:00:00Z")), "styleseed-events-R1-P05-research-20261109T1000Z.jsonl");
+  assert.equal(buildExportFileName(b, new Date()), "styleseed-events-R1-T02-rehearsal-20261109T1000Z.jsonl");
+  assert.match(buildExportFileName(null, new Date("2026-11-09T12:34:00Z")), /^styleseed-events-all-20261109T1234Z\.jsonl$/);
+});

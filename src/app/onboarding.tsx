@@ -8,6 +8,8 @@ import { Button, Label, Screen } from "../components/styleseed/ui";
 
 import { palette } from "../constants/ui";
 
+import { RESEARCH_MODE } from "../lib/featureFlags";
+
 import { markOnboardingSeen } from "../lib/onboarding";
 
 import { logResearchEvent } from "../lib/researchEvents";
@@ -87,6 +89,19 @@ export default function OnboardingScreen() {
         <Text style={styles.title}>{current.title}</Text>
 
         <Text style={styles.text}>{current.body}</Text>
+
+        {/* 연구 모드: 참가자에게 무엇이 기록되는지 알린다(동의는 연구 동의서로 받음) */}
+        {RESEARCH_MODE && isLast ? (
+          <View style={styles.researchNote}>
+            <Label>사용자 조사 참여 안내</Label>
+
+            <Text style={styles.researchText}>
+              조사 동안 앱 사용 기록(누른 화면과 시각, AI 분석 결과를 고쳤는지, 등록한 옷의 종류)이 이 기기의
+              브라우저에 저장되고, 세션이 끝나면 진행자가 참가 코드로 받아 갑니다. 사진·이메일·위치·계정 정보는
+              기록에 넣지 않아요. 원하지 않으면 진행자에게 기록 삭제를 요청할 수 있어요.
+            </Text>
+          </View>
+        ) : null}
       </View>
     </Screen>
   );
@@ -130,6 +145,19 @@ const styles = StyleSheet.create({
     lineHeight: 38,
     fontWeight: "700",
     color: palette.ink,
+  },
+
+  researchNote: {
+    marginTop: 28,
+    padding: 16,
+    backgroundColor: palette.surface,
+    gap: 8,
+  },
+
+  researchText: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: palette.body,
   },
 
   text: {

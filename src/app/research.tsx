@@ -76,6 +76,8 @@ function ResearchScreen() {
 
   const [eventCount, setEventCount] = useState(0);
 
+  const [sessionEventCount, setSessionEventCount] = useState(0);
+
   const [code, setCode] = useState("");
 
   const [message, setMessage] = useState<string | null>(null);
@@ -84,9 +86,17 @@ function ResearchScreen() {
   const [confirming, setConfirming] = useState<"end" | "clear" | null>(null);
 
   const refresh = useCallback(async () => {
-    setSession(await getResearchSession());
+    const current = await getResearchSession();
 
-    setEventCount((await getResearchEvents()).length);
+    const events = await getResearchEvents();
+
+    setSession(current);
+
+    setEventCount(events.length);
+
+    setSessionEventCount(
+      current ? events.filter((event) => event.session_id === current.sessionId).length : 0,
+    );
   }, []);
 
   useEffect(() => {
@@ -110,8 +120,9 @@ function ResearchScreen() {
     await refresh();
   };
 
-  const handleExport = async () => {
-    const text = await exportResearchEvents();
+  // 세션 중에는 이번 세션 기록만, 세션이 없으면 이 기기 전체
+  const handleExport = async (scope: "session" | "all") => {
+    const { text, count, fileName } = await exportResearchEvents(scope);
 
     if (!text) {
       setMessage("내보낼 기록이 없어요.");
@@ -119,12 +130,12 @@ function ResearchScreen() {
       return;
     }
 
-    const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "");
-
     try {
-      await shareText(`styleseed-events-${session?.participantCode ?? "all"}-${stamp}.jsonl`, text);
+      await shareText(fileName, text);
 
-      setMessage("내보내기를 열었어요. 진행자 PC나 메모로 보낸 뒤 확인하세요.");
+      setMessage(`${count}개 기록을 ${fileName}로 내보냈어요. 진행자 PC에 도착했는지 확인한 뒤 세션을 종료하세요.`);
+
+      await refresh();
     } catch (error) {
       console.warn("이벤트 내보내기 실패:", error);
 
@@ -184,7 +195,7 @@ function ResearchScreen() {
         eyebrow="RESEARCH"
         badge="진행자 전용"
         title="사용자 조사 세션"
-        description="이 기기에만 저장되는 행동 기록이에요. 사진·이메일·위치는 기록하지 않아요."
+        description="이 기기(브라우저)에만 저장되는 행동 기록이에요. 사진·이메일·위치·계정 정보는 기록하지 않아요."
       />
 
       <View style={styles.card}>
@@ -196,8 +207,15 @@ function ResearchScreen() {
             : "시작 전"}
         </Text>
 
-        <Text style={styles.meta}>이 기기에 쌓인 기록 {eventCount}개</Text>
+        <Text style={styles.meta}>
+          {session ? `이번 세션 기록 ${sessionEventCount}개 · ` : ""}이 기기에 쌓인 기록 {eventCount}개
+        </Text>
       </View>
+
+      <Text style={styles.notice}>
+        세션이 끝나면 반드시 [이번 세션 기록 내보내기]로 진행자에게 보내 주세요. 웹(Safari)에서는 개인정보 보호
+        브라우징이면 탭을 닫을 때, 7일 넘게 방문하지 않으면 브라우저가 기록을 지울 수 있어요.
+      </Text>
 
       {session ? null : (
         <>
@@ -226,7 +244,15 @@ function ResearchScreen() {
       {message ? <Text style={styles.message}>{message}</Text> : null}
 
       <View style={styles.actions}>
-        <Button label="기록 내보내기" variant="secondary" onPress={handleExport} />
+        {session ? (
+          <Button label="이번 세션 기록 내보내기" onPress={() => handleExport("session")} />
+        ) : null}
+
+        <Button
+          label="이 기기 전체 기록 내보내기"
+          variant="secondary"
+          onPress={() => handleExport("all")}
+        />
 
         {session ? (
           <Button
@@ -292,6 +318,13 @@ const styles = StyleSheet.create({
 
   rowButton: {
     flex: 1,
+  },
+
+  notice: {
+    marginBottom: 8,
+    fontSize: 13,
+    lineHeight: 19,
+    color: palette.danger,
   },
 
   message: {

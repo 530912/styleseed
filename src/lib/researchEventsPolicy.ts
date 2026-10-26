@@ -261,3 +261,23 @@ export const toAnalysisErrorCode = (code: string | undefined) => {
       return "OTHER";
   }
 };
+
+// 세션별 내보내기: 지금 세션의 기록만(세션이 없으면 이 기기 전체)
+export const selectEventsForExport = (
+  events: ResearchEvent[],
+  session: ResearchSession | null,
+) => (session ? events.filter((event) => event.session_id === session.sessionId) : events);
+
+// 파일 이름: 참가 코드·환경·세션 시작 시각(같은 참가자가 두 번 와도 겹치지 않게). 개인정보는 넣지 않는다
+// 시각은 UTC이며 끝에 Z를 붙여 한국 시간과 헷갈리지 않게 한다(예: 20261109T0100Z = 한국 10:00)
+export const buildExportFileName = (session: ResearchSession | null, now: Date) => {
+  const stamp = (date: Date) => `${date.toISOString().slice(0, 16).replace(/[-:]/g, "")}Z`;
+
+  if (!session) {
+    return `styleseed-events-all-${stamp(now)}.jsonl`;
+  }
+
+  const env = session.testEnv === "rehearsal" ? "rehearsal" : "research";
+
+  return `styleseed-events-${session.participantCode}-${env}-${stamp(new Date(session.startedAt))}.jsonl`;
+};
