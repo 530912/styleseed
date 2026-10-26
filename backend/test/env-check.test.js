@@ -92,3 +92,29 @@ test("EV-05 결과 어디에도 실제 값이 들어가지 않는다", async () 
     assert.ok(!serialized.includes(value), `값 노출: ${value.slice(0, 6)}…`);
   }
 });
+
+test("EV-06 앱 빌드 변수(R-13): API 주소 누락·localhost·http는 오류, 조사 빌드 조건", async () => {
+  const { checkAppEnv, PRODUCTION_PROJECT_REF } = await load();
+
+  const app = {
+    EXPO_PUBLIC_API_URL: "https://styleseed-api.up.railway.app",
+    EXPO_PUBLIC_SUPABASE_URL: "https://abcdefghijklmnopqrst.supabase.co",
+    EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_abc",
+    EXPO_PUBLIC_RESEARCH_MODE: "true",
+    EXPO_PUBLIC_GEMINI_PAID_TIER: "true",
+  };
+
+  const errors = (env) => checkAppEnv(env, { target: "research" }).filter((r) => r.status === "error").map((r) => r.name);
+
+  assert.deepEqual(errors(app), []);
+  assert.deepEqual(errors({ ...app, EXPO_PUBLIC_API_URL: "" }), ["EXPO_PUBLIC_API_URL"]);
+  assert.deepEqual(errors({ ...app, EXPO_PUBLIC_API_URL: "http://192.168.0.5:3001" }), ["EXPO_PUBLIC_API_URL"]);
+  assert.deepEqual(errors({ ...app, EXPO_PUBLIC_API_URL: "https://localhost:3001" }), ["EXPO_PUBLIC_API_URL"]);
+  assert.deepEqual(errors({ ...app, EXPO_PUBLIC_RESEARCH_MODE: "" }), ["EXPO_PUBLIC_RESEARCH_MODE"]);
+  assert.deepEqual(errors({ ...app, EXPO_PUBLIC_SHOW_PROTOTYPES: "true" }), ["EXPO_PUBLIC_SHOW_PROTOTYPES"]);
+  assert.deepEqual(
+    errors({ ...app, EXPO_PUBLIC_SUPABASE_URL: `https://${PRODUCTION_PROJECT_REF}.supabase.co` }),
+    ["(앱 대상 프로젝트)"],
+  );
+  assert.ok(errors({ ...app, EXPO_PUBLIC_GEMINI_API_KEY: "x" }).includes("EXPO_PUBLIC_GEMINI_API_KEY"));
+});

@@ -69,6 +69,15 @@
 | `EXPO_PUBLIC_PRIVACY_POLICY_URL` | 선택 | 게시 후 | **필수** | 비우면 "준비 중" 표시. 스토어 제출에도 필요 |
 | `EXPO_PUBLIC_TERMS_URL` | 선택 | 게시 후 | **필수** | |
 | `EXPO_PUBLIC_GEMINI_PAID_TIER` | 비움 | 비움 | 유료 전환 후 `true` | 무료 등급 고지 문구 표시 여부 |
+| `EXPO_PUBLIC_RESEARCH_MODE` | 비움 | **2026-11 조사 빌드만 `true`** | 비움 | 기기 내 이벤트 기록·진행자 화면(`/research`) |
+| `EXPO_PUBLIC_SHOW_PROTOTYPES` | 비움 | 비움 | 비움 | 영상 촬영용 빌드만 `true`(프로토타입 화면) |
+
+**2026-11 사용자 조사 빌드(`preview`):** Supabase는 **조사 전용 프로젝트**, API는 Railway 주소, `EXPO_PUBLIC_RESEARCH_MODE=true`, 유료 전환 후 `EXPO_PUBLIC_GEMINI_PAID_TIER=true`. 빌드 전 확인:
+
+```bash
+# EAS 환경 값을 셸에 넣은 뒤(값은 출력하지 않음)
+node backend/scripts/check-env.mjs --app --target research   # API 주소 누락·localhost·운영 DB면 오류
+```
 
 ## 5. 필요한 에셋
 
