@@ -117,3 +117,17 @@ TestFlight·Apple 가입은 보류(설정·코드 유지). 상세: `docs/release
 | R-30 | 조사 Supabase Site URL을 웹 주소로(앱은 리디렉션을 쓰지 않음, 이메일 인증 끔·익명 로그인 켬 유지) |
 | R-31 | 처리방침 초안 보완(`MOBILE-WEB.md` 6장: 조사 기록·브라우저 저장·서버 위치·웹 호스팅·연령) — 공개 주소는 웹 앱 안 정적 페이지 권장 |
 | R-32 | 운영 Supabase에 A 시험이 만든 **익명 사용자 1명**(10/27 01:59 KST) — 익명 정리(KI-4) 때 함께 |
+
+---
+
+## 8. 7차 (2026-10-27 밤) — 크래시 원인·QA 도구·빌드 검사
+
+- **웹 Alert 중복 구현:** B `388e051`과 A `20a2951`이 같은 기능을 따로 만들었다. 병합 때 **B 것(`webAlert.ts`·`planWebAlert`)을 남기고** A의 `installWebAlert.ts`는 지웠다(`b95b0cb`).
+- 크래시는 Playwright WebKit 도구 결함이다(앱 수정 없음). 실제 Safari 회귀 시험은 `scripts/webqa/run-safari-sim.sh`.
+
+| # | 요청 |
+|---|---|
+| R-33 | `deploy/vm/api.env.example`(B 파일)에 **`GEMINI_TIMEOUT_MS=45000`**. 기본값 25초가 그대로라 실측 시간 초과가 다시 난다(앱은 50초로 준비됨) |
+| R-34 | `deploy/vm/deploy-web.sh` 머리말의 빌드 안내를 `bash scripts/release/build-web.sh <파일> dist`로 바꿔 달라. `expo export`를 바로 쓰면 캐시·로컬 `.env`(운영 Supabase) 값이 들어갈 수 있다(BUG-40). build-web.sh가 다른 Supabase·로컬 주소·http API·비밀키를 막는다 |
+| R-35 | Caddyfile `header Cache-Control "no-cache"`가 `@static`의 1년 캐시 설정을 덮는지 확인(두 header의 적용 순서). 덮으면 `@html not path /_expo/static/* /assets/*`처럼 나눠 달라 |
+| R-28(재) | Node `keepAliveTimeout` 65초 — Caddy가 끊긴 연결을 다시 쓰면 POST 502 가능 |
