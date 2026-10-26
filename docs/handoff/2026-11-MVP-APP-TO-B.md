@@ -77,3 +77,25 @@
 | R-19 (B-7) | SDK 57 패치 16개 정렬(`npx expo install --check`) — A·B 중 한 명만, 별도 커밋 | 실기기 E2E 전 |
 | R-20 (B-3·B-4) | PO 결정 후 `owner`, 앱 이름·아이콘 | eas init 전 |
 | R-21 | (B 계정 삭제 흐름) 계정 삭제 성공 시 기기 저장 데이터도 정리: `useSavedLooksStore.getState().clearLooks()` 호출 권장. 지금도 다른 계정에는 보이지 않지만(옷 ID로 구분) 기기에 남는다 | 낮음 |
+
+---
+
+## 6. 5차 (2026-10-27 오후) — iOS TestFlight 우선 전환 (PO 지시)
+
+PO가 첫 배포를 **iOS TestFlight 외부 테스터**로 바꾸고, A에게 EAS 설정·Bundle ID·앱 이름·아이콘·권한 문구 준비를 직접 지시했다. 그래서 **A가 B 담당 파일 `app.json`·`eas.json`을 고쳤다**(`app/mvp-2026-11`, 같은 커밋). 충돌을 피하려면 B는 아래 항목을 다시 하지 말고 병합만 해 달라.
+
+| 파일 | 변경 |
+|---|---|
+| `app.json` | `name` → `STYLESEED`, `userInterfaceStyle` → `light`, `ios.icon` → `./assets/images/icon.png`(임시 아이콘), `ios.privacyManifests`(API 사유 4종, 추적 없음), Android 적응형 배경색 `#FEFCFA`, `expo-image-picker` `cameraPermission` 한국어 문구(Android `CAMERA` 다시 포함) |
+| `eas.json` | `build.testflight`(store + `preview` 환경 + iOS 빌드 번호 자동 증가), `submit.testflight` |
+| `assets/images/*.png` | 임시 STYLESEED 아이콘 세트 |
+| `src/lib/camera.ts` | `EXPO_PUBLIC_CAMERA_ENABLED` **삭제** — 앞의 R-16 중 EAS 변수·`check-env` 항목은 필요 없음 |
+| `src/lib/__tests__/appConfig.test.mjs`(새) | 권한 문구·이름·Bundle ID·매니페스트·`testflight` 프로필 검사 |
+
+B에게 남은 요청(상세 `docs/release/2026-11-MVP-TESTFLIGHT-PLAN.md` 4·5장):
+- R-17 `.easignore`, R-18 `yarn.lock` 삭제, R-19 SDK 패치 — 그대로(빌드 전 필수).
+- **R-22** 서버 **HTTPS** 주소(iOS 출시 빌드는 http에 연결 안 함).
+- **R-23** 개인정보처리방침 공개 URL(외부 테스트 입력값) — 참가자가 **본인 iPhone·본인 이메일**로 가입하게 되었으므로 처리방침·동의서에 이메일·옷 사진·조사 이벤트 반영.
+- **R-24** Beta App Review용 **데모 계정**(조사 DB, 만료 없음, 옷 3~4벌) — 비밀번호는 App Store Connect에만.
+- R-25 EAS `preview` 환경 = TestFlight 조사 빌드 값(`testflight` 프로필이 `preview` 환경을 씀).
+- (결정 후) R-26 7일 사용 기록을 받으면 `research_events` 테이블(⛔, 계정 삭제 연쇄 포함) — A가 앱 전송 코드 작성.

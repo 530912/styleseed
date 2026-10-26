@@ -4,6 +4,7 @@
 |---|---|
 | 작성 | 2026-10-26, Claude A |
 | 대상 | PO(직접 휴대폰으로 실행), Claude B(빌드·배포) |
+| 우선순위 | **10/27 iOS TestFlight 우선** — iPhone 필수 항목은 `2026-11-MVP-TESTFLIGHT-PLAN.md` 6장(iOS-1~12). Expo Go(M2)는 TestFlight 빌드 전 개발 확인용 |
 | 원칙 | 이 문서의 절차는 **아직 아무도 실기기에서 실행하지 않았다.** 결과 칸을 채운 항목만 "확인됨"으로 본다 |
 | 함께 볼 문서 | `2026-11-MVP-RELEASE-PLAN.md` 3장(로그인 15분 점검표)·4장(D-1~D-12), `2026-11-MVP-RESEARCH-EVENTS.md` |
 
@@ -14,7 +15,7 @@
 | 기능 | Expo Go | 내부 빌드(EAS preview) | 비고 |
 |---|---|---|---|
 | 앨범 사진 선택(`expo-image-picker`) | 됨 | 됨 | 권한 문구가 Expo Go에서는 Expo Go의 문구, 빌드에서는 B가 넣은 한국어 문구 |
-| 카메라 촬영 | **됨**(Expo Go 자체 권한 문구) | **B-1 반영 후**(카메라 권한 문구 + `EXPO_PUBLIC_CAMERA_ENABLED=true`). 반영 전 빌드에서는 버튼 숨김 | 10/27 구현. 웹은 버튼 숨김. 실기기 미확인 |
+| 카메라 촬영 | **됨**(Expo Go 자체 권한 문구) | **됨**(10/27 `app.json`에 카메라 권한 문구 추가, prebuild로 `NSCameraUsageDescription` 확인) | 웹은 버튼 숨김. 실기기 미확인 |
 | 사진 준비(HEIC→JPEG, 1600px, EXIF 회전) | 됨 | 됨 | `expo-image-manipulator` |
 | 로그인 유지(AsyncStorage) | 됨 | 됨 | |
 | 위치 → 날씨 | 됨 | 됨 | 거부해도 기본 코디 |

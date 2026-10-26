@@ -16,10 +16,3 @@ export const SHOW_PROTOTYPES = isPrototypeEnabled(
 export const RESEARCH_MODE = isPrototypeEnabled(
   process.env.EXPO_PUBLIC_RESEARCH_MODE,
 );
-
-// 카메라 촬영 버튼: 빌드(EAS)에서는 카메라 권한 문구(app.json expo-image-picker cameraPermission)를
-// 넣은 빌드에서만 EXPO_PUBLIC_CAMERA_ENABLED=true로 켠다. 문구 없이 카메라를 열면 iOS 앱이 종료된다.
-// Expo Go는 자체 권한 문구가 있어 이 값과 상관없이 쓸 수 있다(src/lib/camera.ts).
-export const CAMERA_ENABLED_IN_BUILD = isPrototypeEnabled(
-  process.env.EXPO_PUBLIC_CAMERA_ENABLED,
-);

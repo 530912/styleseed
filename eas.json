@@ -35,6 +35,14 @@
       "android": {
         "buildType": "app-bundle"
       }
+    },
+    "testflight": {
+      "extends": "base",
+      "distribution": "store",
+      "environment": "preview",
+      "ios": {
+        "autoIncrement": true
+      }
     }
   },
   "submit": {
@@ -43,6 +51,9 @@
         "track": "internal",
         "releaseStatus": "draft"
       }
+    },
+    "testflight": {
+      "ios": {}
     }
   }
 }

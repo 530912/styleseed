@@ -1,18 +1,6 @@
-import Constants, { ExecutionEnvironment } from "expo-constants";
-
 import { Platform } from "react-native";
 
-import { CAMERA_ENABLED_IN_BUILD } from "./featureFlags";
-
-// 카메라 촬영을 보여줄지: 웹은 숨기고(사진 선택만), Expo Go는 항상, 빌드는 권한 문구를 넣었을 때만
-export const isCameraCaptureAvailable = () => {
-  if (Platform.OS === "web") {
-    return false;
-  }
-
-  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
-    return true;
-  }
-
-  return CAMERA_ENABLED_IN_BUILD;
-};
+// 카메라 촬영을 보여줄지: 웹은 숨기고(사진 선택만), iOS·Android는 보여준다.
+// 빌드에는 app.json expo-image-picker cameraPermission 문구가 꼭 있어야 한다(없으면 iOS에서 카메라를 열 때 앱 종료).
+// src/lib/__tests__/appConfig.test.mjs가 문구가 있는지 확인한다.
+export const isCameraCaptureAvailable = () => Platform.OS !== "web";

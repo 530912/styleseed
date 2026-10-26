@@ -5,6 +5,7 @@
 | 작성 | 2026-10-27, Claude A |
 | 기준 | 로컬 브랜치 `app/mvp-2026-11` = `integration/mvp-2026-11`(B, `ce5334d`) + A 1차 범위 추가 기능(`14cea07`). Push 안 함 |
 | 하지 않은 것 | `eas init`, 빌드, EAS 환경변수 등록, 계정·결제 변경. 아래 명령은 모두 **읽기 전용**(`eas whoami`, `eas account:view`, `expo config`, `expo export`, `expo-doctor`) |
+| 갱신 | **10/27 오후 iOS TestFlight 우선으로 변경** → `2026-11-MVP-TESTFLIGHT-PLAN.md`. A가 PO 지시로 `app.json`(이름 STYLESEED·카메라 문구·개인정보 매니페스트·임시 아이콘·light)과 `eas.json`(`testflight` 프로필)을 준비함 → 아래 B-1·B-4(이름)는 **완료**, O-2는 **iOS 우선으로 결정됨** |
 | 판정 | **코드는 빌드 가능**(네이티브 번들 로컬 생성 성공). `eas init` 전에 **PO가 정할 것 3개**(소유 계정, 앱 이름·아이콘, 카메라 권한)와 **B가 고칠 설정 4개**가 있다 |
 
 ## 1. 이번 빌드에 들어가는 변경 사항
@@ -18,7 +19,7 @@
 | 이벤트 기록 | 기기 저장, 계약 v0.3 | 없음 |
 | B 변경(통합본) | AI 동의 사용자 단위·로그아웃 시 삭제, 앱 빌드 변수 검사(`check-env --app`) | 없음 |
 | `package.json`·`app.json`·`eas.json` | **이번 A 작업에서 변경 없음** | — |
-| 새 앱 환경변수 | `EXPO_PUBLIC_RESEARCH_MODE`(B 표 반영됨), **`EXPO_PUBLIC_CAMERA_ENABLED`**(신규, 4장 B-1) | EAS 환경에 등록 필요 |
+| 새 앱 환경변수 | `EXPO_PUBLIC_RESEARCH_MODE`(B 표 반영됨). ~~`EXPO_PUBLIC_CAMERA_ENABLED`~~ 10/27 삭제 — 카메라 권한 문구를 `app.json`에 넣어 빌드에서 항상 사용 | EAS 환경에 등록 필요 |
 
 ## 2. 계정 소유권
 
