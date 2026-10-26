@@ -1,5 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 
+import { PrototypeGate } from "../components/styleseed/prototype-gate";
+
 import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -31,7 +33,7 @@ import {
 } from "../utils/prototypeCore";
 
 // CORE ENGINE — BETA: 코어 적합도를 높여주는 아이템 추천 (프로토타입 점수)
-export default function CoreShopScreen() {
+function CoreShopScreen() {
   const { replaceId } = useLocalSearchParams<{
     replaceId?: string;
   }>();
@@ -272,3 +274,12 @@ const styles = StyleSheet.create({
     color: palette.muted,
   },
 });
+
+// 사용자 조사·배포 빌드에서는 숨김(src/lib/featureFlags.ts)
+export default function CoreShopScreenRoute() {
+  return (
+    <PrototypeGate>
+      <CoreShopScreen />
+    </PrototypeGate>
+  );
+}

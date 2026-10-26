@@ -18,6 +18,8 @@ import {
 
 import { palette } from "../constants/ui";
 
+import { SHOW_PROTOTYPES } from "../lib/featureFlags";
+
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
 import { useClosetStore } from "../store/useClosetStore";
@@ -131,9 +133,12 @@ export default function StylingScreen() {
         title="베스트 코디"
         description={`${getClothingName(selectedClothing)} 기준으로 만든 코디예요.`}
         right={
-          <Pressable onPress={() => router.push("/ideal-style")} hitSlop={8}>
-            <Badge label="IDEAL STYLE · BETA" />
-          </Pressable>
+          // 고정 데모 규칙 프로토타입이라 사용자 조사·배포 빌드에서는 숨긴다
+          SHOW_PROTOTYPES ? (
+            <Pressable onPress={() => router.push("/ideal-style")} hitSlop={8}>
+              <Badge label="IDEAL STYLE · BETA" />
+            </Pressable>
+          ) : undefined
         }
       />
 

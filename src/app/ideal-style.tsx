@@ -1,5 +1,7 @@
 import { router } from "expo-router";
 
+import { PrototypeGate } from "../components/styleseed/prototype-gate";
+
 import { useState } from "react";
 
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -11,7 +13,7 @@ import { palette } from "../constants/ui";
 import { DEMO_CORE_OPTIONS, type CoreId } from "../data/coreDemo";
 
 // NEXT / BETA: 다음 고도화 기능의 UI prototype
-export default function IdealStyleScreen() {
+function IdealStyleScreen() {
   const [selectedCoreId, setSelectedCoreId] = useState<CoreId | null>(null);
 
   const selectedCore =
@@ -153,3 +155,12 @@ const styles = StyleSheet.create({
     color: palette.background,
   },
 });
+
+// 사용자 조사·배포 빌드에서는 숨김(src/lib/featureFlags.ts)
+export default function IdealStyleScreenRoute() {
+  return (
+    <PrototypeGate>
+      <IdealStyleScreen />
+    </PrototypeGate>
+  );
+}

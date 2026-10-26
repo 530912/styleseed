@@ -33,6 +33,8 @@ import { isSignedIn } from "../lib/sessionPolicy";
 
 import { supabase } from "../lib/supabase";
 
+import { getUserErrorMessage } from "../lib/userErrors";
+
 import { useClosetStore } from "../store/useClosetStore";
 
 import {
@@ -146,9 +148,10 @@ export default function ClothingImageScreen() {
 
       Alert.alert(
         "사진 변경 실패",
-        error instanceof Error && error.message
-          ? error.message
-          : "사진을 바꾸지 못했어요. 잠시 후 다시 시도해주세요.",
+        getUserErrorMessage(
+          error,
+          "사진을 바꾸지 못했어요. 잠시 후 다시 시도해주세요.",
+        ),
       );
     } finally {
       setReplacing(false);

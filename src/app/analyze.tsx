@@ -43,6 +43,8 @@ import { now, perfLog } from "../lib/perf";
 
 import { supabase } from "../lib/supabase";
 
+import { getUserErrorMessage } from "../lib/userErrors";
+
 import { useAnalysisStore } from "../store/useAnalysisStore";
 
 import { useClosetStore } from "../store/useClosetStore";
@@ -72,7 +74,8 @@ const ANALYZE_TIMEOUT_MS = 30_000;
 // 백엔드 실패를 사용자가 이해할 수 있는 원인별 문구로 바꾼다.
 const getAnalysisErrorMessage = (error: unknown) => {
   if (isApiError(error) && error.code === "NETWORK") {
-    return "분석 서버에 연결하지 못했어요. 백엔드 실행 상태를 확인해주세요.";
+    // 사용자에게 보이는 문구라 개발 용어(백엔드)를 쓰지 않는다
+    return "분석 서버에 연결하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해주세요.";
   }
 
   return getApiErrorMessage(error, "옷 분석 중 오류가 발생했습니다.");
@@ -295,9 +298,10 @@ export default function AnalyzeScreen() {
 
       Alert.alert(
         "저장 실패",
-        error instanceof Error && error.message
-          ? error.message
-          : "옷을 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+        getUserErrorMessage(
+          error,
+          "옷을 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+        ),
       );
     } finally {
       setSaving(false);
