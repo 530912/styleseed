@@ -65,3 +65,13 @@
 2. B: `verify-deploy --suite smoke` → `--suite full --analyze 1`(실제 Gemini 1회, 테스트 계정 자동 정리) → `verify-research-db.sql`
 3. A: 위 주소로 Expo Go(또는 preview 빌드)에서 S1~S8 + BUG-31 확인(참가자 1 동의 → [세션 종료] → 참가자 2 동의 화면)
 4. A·B: 동시 저장 2건(E6) — `bash deploy/vm/status.sh`로 메모리 확인
+
+---
+
+## 4차 (2026-10-27) — iPhone Safari 모바일 웹 전환
+
+상세: `docs/launch/2026-11-MOBILE-WEB-BACKEND.md` 3장(빌드 변수·업로드·테스트 W-1~W-11).
+
+- **API 주소: `EXPO_PUBLIC_API_URL=https://styleseed.mycafe24.com/api`** — 웹 화면(`/`)과 API(`/api`)를 같은 도메인에 둔다(CORS 설정 불필요).
+- **A 파일 변경 1건**: `src/app/_layout.tsx`에 `installWebAlert()` 호출 추가. react-native-web의 `Alert.alert`는 빈 함수라 **웹에서 옷 삭제·계정 삭제 확인 창이 안 떠서 삭제가 안 되고, 로그인·저장 실패 안내도 보이지 않았다.** 웹에서만 브라우저 `alert`/`confirm`으로 연결(`src/lib/webAlert.ts`). 기존 `Alert.alert` 호출은 그대로 둬도 된다.
+- 웹 빌드는 `npx expo export --platform web --output-dir dist` → B가 `deploy/vm/deploy-web.sh dist`로 서버에 올림.

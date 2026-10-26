@@ -25,7 +25,10 @@ cat supabase/migrations/*.sql | pbcopy
 | 같은 화면 → Allow new users to sign up | 켬 |
 | 같은 화면 → **Allow anonymous sign-ins** | **켬**(로그인 전 분석) |
 
-Site URL·리디렉션 URL은 앱이 쓰지 않는다. Edge Function·트리거·추가 확장은 없다.
+| Authentication → URL Configuration → **Site URL** | `https://styleseed.mycafe24.com` (모바일 웹 주소) |
+| 같은 화면 → **Redirect URLs** | `https://styleseed.mycafe24.com/**` |
+
+앱은 리디렉션(매직 링크·OAuth)을 쓰지 않지만, 혹시 발송되는 메일 링크가 웹 주소로 가도록 둔다. Edge Function·트리거·추가 확장은 없다.
 
 ## 4. 키
 
