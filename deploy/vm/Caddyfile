@@ -1,0 +1,11 @@
+# API_DOMAIN(예: api.styleseed.kr)의 인증서를 Let's Encrypt로 자동 발급·갱신하고 api로 전달한다
+{$API_DOMAIN} {
+	encode gzip
+
+	# 분석 요청은 사진 base64(서버 한도 10MB)라 프록시 한도를 조금 크게
+	request_body {
+		max_size 12MB
+	}
+
+	reverse_proxy api:3001
+}
