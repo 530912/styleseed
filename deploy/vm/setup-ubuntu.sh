@@ -18,6 +18,11 @@ apt-get "${APT_OPTS[@]}" install docker.io docker-compose-v2 ufw unattended-upgr
 
 systemctl enable --now docker
 
+# 카페24 기본 이미지의 FTP(vsftpd, 21번)는 쓰지 않는다. 비밀번호가 평문으로 오가므로 끈다(패키지는 남김)
+if systemctl list-unit-files vsftpd.service >/dev/null 2>&1; then
+  systemctl disable --now vsftpd || true
+fi
+
 # 22번을 먼저 허용한 뒤 켠다(켜는 순간 SSH가 끊기지 않게)
 ufw allow 22/tcp
 ufw allow 80/tcp
