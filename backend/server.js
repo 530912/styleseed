@@ -75,6 +75,18 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:8081")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+// 모바일 웹(2026-11): 웹 화면과 API를 한 도메인에 둘 때 API는 /api 아래로 받는다(카페24 Caddy).
+// /api/x 와 /x 를 같은 경로로 처리해, Railway처럼 접두어 없이 배포해도 앱의 API 주소(…/api)를 그대로 쓸 수 있다
+app.use((req, res, next) => {
+  if (req.url === "/api" || req.url.startsWith("/api/") || req.url.startsWith("/api?")) {
+    const rest = req.url.slice(4);
+
+    req.url = rest.startsWith("/") ? rest : `/${rest}`;
+  }
+
+  next();
+});
+
 // 400 이상 응답을 한 줄 JSON으로 기록(R-9). 토큰·본문은 남기지 않는다
 app.use(createErrorLogger());
 

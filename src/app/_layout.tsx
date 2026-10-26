@@ -4,11 +4,11 @@ import { useEffect } from "react";
 
 import { startAiConsentSignOutSync } from "../lib/aiConsent";
 
-import { installWebAlert } from "../lib/installWebAlert";
-
 import { logResearchEvent } from "../lib/researchEvents";
 
-// 웹: react-native-web의 Alert.alert는 아무 동작도 하지 않아 삭제 확인·오류 안내가 보이지 않는다 → 브라우저 대화상자로
+import { installWebAlert } from "../lib/webAlert";
+
+// 웹에서는 Alert.alert가 아무것도 하지 않으므로 브라우저 대화상자로 바꾼다(2026-11 모바일 웹)
 installWebAlert();
 
 export default function RootLayout() {

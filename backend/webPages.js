@@ -84,7 +84,7 @@ ${DELETED_DATA}
 
 ${error ? `<p class="error" role="alert">${escapeHtml(error)}</p>` : ""}
 
-<form method="post" action="/account-deletion" autocomplete="on">
+<form method="post" action="" autocomplete="on">
   <label for="email">이메일</label>
   <input id="email" name="email" type="email" required autocomplete="username" value="${escapeHtml(email)}">
 
