@@ -40,9 +40,17 @@ const START_ERRORS: Record<string, string> = {
   E_TEST_ENV: "기록 환경 값이 올바르지 않아요.",
 };
 
-// 웹에는 공유 시트가 없어 파일로 내려받는다
+// 웹: 모바일 Safari는 파일 공유(AirDrop·메일)를 지원하면 공유 시트로, 아니면 파일로 내려받는다
 const shareText = async (fileName: string, text: string) => {
   if (Platform.OS === "web") {
+    const file = new File([text], fileName, { type: "text/plain" });
+
+    if (typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: fileName });
+
+      return;
+    }
+
     const blob = new Blob([text], { type: "application/x-ndjson" });
 
     const url = URL.createObjectURL(blob);

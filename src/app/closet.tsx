@@ -287,6 +287,8 @@ export default function ClosetScreen() {
 
                 <Pressable
                   style={styles.deleteButton}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${getClothingName(item)} 삭제`}
                   disabled={deletingId === item.id}
                   hitSlop={6}
                   onPress={(event) => {

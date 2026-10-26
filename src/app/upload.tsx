@@ -2,7 +2,7 @@ import * as ImagePicker from "expo-image-picker";
 
 import { router } from "expo-router";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { logResearchEvent } from "../lib/researchEvents";
 
@@ -36,7 +36,12 @@ export default function UploadScreen() {
 
   const setImage = useAnalysisStore((state) => state.setImage);
 
-  const canUseCamera = isCameraCaptureAvailable();
+  // 웹은 미리 렌더링한 HTML과 첫 화면이 같아야 하므로(하이드레이션) 화면이 뜬 뒤에 판단한다
+  const [canUseCamera, setCanUseCamera] = useState(false);
+
+  useEffect(() => {
+    setCanUseCamera(isCameraCaptureAvailable());
+  }, []);
 
   // 카메라 권한이 없으면 설정으로 안내한다. 허용되면 true
   const ensureCameraPermission = async () => {

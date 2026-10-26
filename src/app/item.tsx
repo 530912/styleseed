@@ -29,6 +29,8 @@ import { useClosetLoader } from "../hooks/use-closet-loader";
 
 import { replaceClothingImage } from "../lib/clothes";
 
+import { prepareClothingImage } from "../lib/imagePrep";
+
 import { isSignedIn } from "../lib/sessionPolicy";
 
 import { supabase } from "../lib/supabase";
@@ -133,10 +135,13 @@ export default function ClothingImageScreen() {
         return;
       }
 
+      // 등록 때와 같이 긴 변 1600px JPEG로 줄여 올린다(iPhone 24MP 원본·HEIC를 그대로 올리지 않음)
+      const prepared = await prepareClothingImage(result.assets[0].uri);
+
       const patch = await replaceClothingImage(
         clothing.id,
         session.user.id,
-        result.assets[0].uri,
+        prepared.uri,
       );
 
       updateClothing(clothing.id, patch);

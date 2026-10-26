@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# 모바일 웹 MVP 정적 빌드 — 지정한 환경변수 파일의 값만 앱에 넣고, 결과물을 검사한다
+#   bash scripts/release/build-web.sh <환경변수 파일> [출력 폴더(기본 dist-web)]
+#   예) bash scripts/release/build-web.sh .env.research.web
+#
+# 왜 이렇게 하나(2026-10-27 확인):
+# - expo export는 변환 캐시를 다시 써서, 명령줄에 준 EXPO_PUBLIC_* 대신 예전 빌드 값(로컬 .env = 운영 Supabase)이
+#   번들에 남을 수 있었다 → 항상 --clear
+# - 로컬 .env를 읽지 않게 EXPO_NO_DOTENV=1. 값은 인자로 준 파일에서만 읽는다(파일은 git에 넣지 않는다)
+# - 빌드 후 번들 안의 Supabase·API 주소가 파일 값과 같은지, 로컬 .env의 다른 주소가 없는지, 서버 비밀키가 없는지 확인
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+
+ENV_FILE="${1:?환경변수 파일을 지정하세요 (예: .env.research.web)}"
+OUT="${2:-dist-web}"
+
+if [ ! -f "$ENV_FILE" ]; then
+  echo "파일 없음: $ENV_FILE" >&2
+  exit 2
+fi
+
+# EXPO_PUBLIC_ 값만 읽는다(서버 비밀값이 섞여 있어도 빌드에 넘기지 않음)
+while IFS= read -r line; do
+  case "$line" in
+    EXPO_PUBLIC_*=*) export "${line?}" ;;
+  esac
+done < "$ENV_FILE"
+
+for name in EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY EXPO_PUBLIC_API_URL; do
+  if [ -z "${!name:-}" ]; then
+    echo "필수 값 없음: $name" >&2
+    exit 2
+  fi
+done
+
+rm -rf "$OUT"
+EXPO_NO_DOTENV=1 npx expo export --platform web --clear --output-dir "$OUT"
+
+BUNDLE="$(ls "$OUT"/_expo/static/js/web/*.js)"
+
+# 정적 호스팅 설정(Cloudflare Pages·Netlify가 읽음, 다른 곳에서는 무시됨)
+# - HTML은 매번 새로 받게(배포 직후 옛 화면이 남지 않게), 해시가 붙은 JS·이미지는 오래 캐시
+# - 없는 주소는 Expo가 만든 not-found 화면으로
+cp "$OUT/+not-found.html" "$OUT/404.html"
+cat > "$OUT/_headers" <<'HEADERS'
+/*
+  Cache-Control: no-cache
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+/_expo/static/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+HEADERS
+
+fail=0
+check() {
+  if [ "$1" = ok ]; then echo "OK    $2"; else echo "FAIL  $2"; fail=1; fi
+}
+
+grep -qF "$EXPO_PUBLIC_SUPABASE_URL" $BUNDLE && check ok "Supabase 주소 = 파일 값" || check fail "Supabase 주소가 번들에 없음"
+grep -qF "$EXPO_PUBLIC_API_URL" $BUNDLE && check ok "API 주소 = 파일 값" || check fail "API 주소가 번들에 없음"
+grep -q "localhost:3001" $BUNDLE && check fail "API 기본값(localhost:3001)이 남아 있음" || check ok "API 기본값 없음"
+
+# 로컬 개발 .env의 Supabase 주소가 파일 값과 다르면 번들에 없어야 한다
+if [ -f .env ]; then
+  DEV_SUPABASE="$(grep -E '^EXPO_PUBLIC_SUPABASE_URL=' .env | head -1 | cut -d= -f2- || true)"
+  if [ -n "$DEV_SUPABASE" ] && [ "$DEV_SUPABASE" != "$EXPO_PUBLIC_SUPABASE_URL" ]; then
+    grep -qF "$DEV_SUPABASE" $BUNDLE && check fail "개발 .env의 Supabase 주소가 번들에 들어감" || check ok "개발 .env 주소 없음"
+  fi
+fi
+
+# 서버 비밀키 형식(Gemini AIza…, Supabase secret 값) — sb_secret_ 접두어 검사 문자열만 있는 것은 정상
+grep -qE "AIza[0-9A-Za-z_-]{30,}" $BUNDLE && check fail "Google API 키 형식 문자열 발견" || check ok "Google API 키 없음"
+grep -qE "sb_secret_[0-9A-Za-z_-]{20,}" $BUNDLE && check fail "Supabase secret 키 발견" || check ok "Supabase secret 키 없음"
+
+if [ "${EXPO_PUBLIC_RESEARCH_MODE:-}" = "true" ]; then
+  echo "info  연구 모드 빌드"
+fi
+if [ -n "${EXPO_PUBLIC_SHOW_PROTOTYPES:-}" ]; then
+  check fail "EXPO_PUBLIC_SHOW_PROTOTYPES는 조사 빌드에 넣지 않는다"
+fi
+
+[ $fail -eq 0 ] && echo "웹 빌드 검사 통과: $OUT" || { echo "웹 빌드 검사 실패" >&2; exit 1; }
