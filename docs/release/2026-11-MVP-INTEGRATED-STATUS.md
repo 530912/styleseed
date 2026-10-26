@@ -172,6 +172,8 @@
 | `tsc --noEmit` | 오류 0 |
 | 로컬 서버(포트 3101) | `GET /` 200, 이미지 3경로 토큰 없음/무효 401, `/healthz` 404(예상대로, 통합 필요) |
 
+**병합 시험 (`git merge-tree` 결과를 scratchpad에 풀어 실행, 브랜치는 만들지 않음):** 충돌 0 · `test:backend` **86 pass / 1 skip**(DV-03) · `test:client` 38 · `test:engine` 35 · `test:fkd` 36 · `test:round1` 16 · `tsc` 오류 0(단, git 무시 파일 `expo-env.d.ts`를 복사해야 함 — 새 작업 트리·CI에서 `npx expo customize` 또는 `expo start`로 생성 필요). 병합본 `upload.tsx`에 AI 동의 코드가 남아 있음(정적 확인만, 화면 미실행). R-1은 이 결과를 기준으로 B가 실제 브랜치를 만들면 된다.
+
 **주의 — 외부 요청 1건:** 새 테스트 첫 실행 때 fal 경로 테스트가 실제 fal.ai에 요청 1건을 보냈다(fal 클라이언트가 테스트의 fetch 차단을 거치지 않고, 로컬 `.env`의 실제 `FAL_KEY`를 읽음). fal이 잔액 소진으로 403 거절 → **과금 없음**, 보낸 이미지 주소는 가짜 테스트 URL. 테스트를 `fal.subscribe` 대체로 고쳐 재실행 시 외부 요청 0건 확인. 기존 테스트 중 fal까지 가는 것은 없음(`auth.test.js`는 인증 단계에서 끝남).
 
 ## 9. 사용자 조사 시작 조건 (모두 충족 시 11/09 시작)
