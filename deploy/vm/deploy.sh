@@ -58,6 +58,6 @@ ssh "${SSH_OPTS[@]}" "$SERVER" 'set -e
   test -f .env || { echo ".env(API_DOMAIN) 없음 — deploy/vm/README.md 3단계"; exit 1; }
   chmod 600 api.env .env
   # porttest.sh 임시 응답기가 남아 80·443을 잡고 있으면 Caddy가 못 뜬다(보통 20초 뒤 자동 종료)
-  pkill -f "python3 -m http.server" 2>/dev/null && echo "남은 임시 응답기 종료" || true
+  pkill -f "[p]ython3 -m http.server" 2>/dev/null && echo "남은 임시 응답기 종료" || true
   docker compose up -d --build
   docker compose ps'
