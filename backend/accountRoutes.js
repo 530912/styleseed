@@ -161,6 +161,14 @@ const registerAccountRoutes = (
 
     const body = { status: "ok", uptimeSeconds: Math.round(process.uptime()) };
 
+    // 조사 기간 모델 확인용(R-3): 설정한 모델과 마지막 응답의 실제 모델
+    if (app.locals.gemini) {
+      body.gemini = {
+        model: app.locals.gemini.model,
+        lastServedModel: app.locals.gemini.lastServedModel,
+      };
+    }
+
     // 배포 검증용 지표. 토큰이 없거나 틀리면 기본 응답과 똑같이 보낸다(지표의 존재를 드러내지 않음)
     if (isOpsTokenValid(req.get("x-ops-token"), env.OPS_METRICS_TOKEN)) {
       const memory = process.memoryUsage();
@@ -172,6 +180,9 @@ const registerAccountRoutes = (
         // R-8: 서버가 본 클라이언트 IP. 프록시 주소(사설 대역)면 TRUST_PROXY가 빠진 것
         clientIp: req.ip,
         trustProxy: app.get("trust proxy") || 0,
+        // 오늘(한국 시간) Gemini 호출 수와 서버 전체 일일 상한(0이면 없음)
+        geminiToday: app.locals.geminiDailyCap?.snapshot().count ?? null,
+        geminiDailyLimit: app.locals.geminiDailyLimit ?? null,
         memoryMB: {
           rss: toMB(memory.rss),
           heapUsed: toMB(memory.heapUsed),

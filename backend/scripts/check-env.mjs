@@ -5,6 +5,7 @@
 //
 //   node backend/scripts/check-env.mjs --target qa
 //   node backend/scripts/check-env.mjs --target production
+//   node backend/scripts/check-env.mjs --target research     # 2026-11 사용자 조사 전용 프로젝트(운영·QA가 아니어야 함)
 //   railway run node scripts/check-env.mjs --target production     # (승인 후) 서비스 변수로 실행
 //
 // 종료 코드: 오류(error)가 하나라도 있으면 1. 경고(warn)만 있으면 0.
@@ -12,6 +13,10 @@
 import { fileURLToPath } from "node:url";
 
 export const PRODUCTION_PROJECT_REF = "zkgsxavpyvxhrivzmqsp";
+
+export const QA_PROJECT_REF = "xcwlgaoknxkxoqzfcrdf";
+
+export const TARGETS = ["qa", "production", "research"];
 
 const SUPABASE_URL_PATTERN = /^https:\/\/([a-z0-9]{20})\.supabase\.co\/?$/;
 
@@ -36,6 +41,11 @@ export const ENV_SPEC = [
   { name: "GEMINI_THINKING_LEVEL", level: "optional", secret: false, check: () => true },
   { name: "GEMINI_REQUEST_MASK", level: "optional", secret: false, check: (v) => !["true", "1", "on", "yes"].includes(v.toLowerCase()) || "운영은 비워 두는 것이 기준(개발 트랙 인계)" },
   { name: "ALLOWED_ORIGINS", level: "optional", secret: false, check: (v) => v.split(",").every((o) => /^https?:\/\/[^/]+$/.test(o.trim())) || "Origin 목록 형식이 아님" },
+  { name: "GEMINI_DAILY_LIMIT", level: "recommended", secret: false, check: (v) => isPositiveInt(v) || "양의 정수가 아님(서버 전체 Gemini 일일 상한, 한국 시간 자정 초기화)" },
+  { name: "IMAGE_TASK_LIMIT_PER_HOUR", level: "optional", secret: false, check: (v) => isPositiveInt(v) || "양의 정수가 아님" },
+  { name: "SLIMSAM_CONCURRENCY", level: "optional", secret: false, check: (v) => isPositiveInt(v) || "양의 정수가 아님" },
+  { name: "SLIMSAM_MAX_QUEUE", level: "optional", secret: false, check: (v) => isPositiveInt(v) || "양의 정수가 아님" },
+  { name: "SLIMSAM_QUEUE_WAIT_MS", level: "optional", secret: false, check: (v) => isPositiveInt(v) || "양의 정수가 아님" },
   { name: "ACCOUNT_DELETE_REAUTH_MAX_AGE_SECONDS", level: "optional", secret: false, check: (v) => isPositiveInt(v) || "양의 정수가 아님" },
   { name: "ACCOUNT_DELETE_WEB_ATTEMPTS_PER_HOUR", level: "optional", secret: false, check: (v) => isPositiveInt(v) || "양의 정수가 아님" },
   { name: "FAL_KEY", level: "forbidden", secret: true, reason: "앱이 fal 경로를 쓰지 않음 — 넣지 않는 것을 권장" },
@@ -77,13 +87,19 @@ export const checkEnv = (env, { target } = {}) => {
   if (target && ref) {
     const isProduction = ref === PRODUCTION_PROJECT_REF;
 
-    const mismatch = (target === "production") !== isProduction;
+    const isQa = ref === QA_PROJECT_REF;
+
+    // research: 조사 데이터가 기존 운영·QA 데이터와 섞이지 않도록 둘 다 아니어야 한다
+    const mismatch =
+      target === "research" ? isProduction || isQa : (target === "production") !== isProduction;
+
+    const kind = isProduction ? "운영" : isQa ? "QA" : "운영·QA가 아닌";
 
     results.push({
       name: "(대상 프로젝트)",
       status: mismatch ? "error" : "ok",
       note: mismatch
-        ? `--target ${target} 인데 SUPABASE_URL은 ${isProduction ? "운영" : "운영이 아닌"} 프로젝트`
+        ? `--target ${target} 인데 SUPABASE_URL은 ${kind} 프로젝트`
         : `${target} 프로젝트와 일치`,
     });
   }
@@ -113,8 +129,8 @@ if (isMain) {
 
   const target = targetIndex === -1 ? undefined : process.argv[targetIndex + 1];
 
-  if (target && !["qa", "production"].includes(target)) {
-    console.error("--target 은 qa 또는 production");
+  if (target && !TARGETS.includes(target)) {
+    console.error("--target 은 qa, production, research 중 하나");
     process.exit(2);
   }
 

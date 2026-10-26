@@ -53,6 +53,16 @@ test("EV-03 대상 프로젝트가 다르면 오류(QA 검증에 운영 DB 금�
   assert.equal(statusOf(checkEnv(validEnv(), { target: "production" }), "(대상 프로젝트)"), "error");
 });
 
+test("EV-03b research 대상은 운영·QA 프로젝트가 아니어야 한다(2026-11 조사 DB 분리)", async () => {
+  const { checkEnv, PRODUCTION_PROJECT_REF, QA_PROJECT_REF } = await load();
+
+  const withRef = (ref) => ({ ...validEnv(), SUPABASE_URL: `https://${ref}.supabase.co` });
+
+  assert.equal(statusOf(checkEnv(withRef(PRODUCTION_PROJECT_REF), { target: "research" }), "(대상 프로젝트)"), "error");
+  assert.equal(statusOf(checkEnv(withRef(QA_PROJECT_REF), { target: "research" }), "(대상 프로젝트)"), "error");
+  assert.equal(statusOf(checkEnv(withRef("abcdefghijklmnopqrst"), { target: "research" }), "(대상 프로젝트)"), "ok");
+});
+
 test("EV-04 위험한 설정: 공개·관리자 키 중복, 비밀값처럼 보이는 EXPO_PUBLIC_, FAL_KEY", async () => {
   const { checkEnv } = await load();
 

@@ -197,12 +197,16 @@ test("S-7 fal 경로 500 응답에 내부 오류 문구를 담지 않는다", as
   // fal 클라이언트는 globalThis.fetch를 거치지 않으므로 호출 자체를 바꿔 외부 요청을 막는다
   const originalSubscribe = fal.subscribe;
 
+  // 운영 기본값은 꺼짐(FAL_KEY 없음, R-4). 이 테스트는 경로를 켜고 오류 문구만 확인한다
+  app.locals.falEnabled = true;
+
   fal.subscribe = async () => {
     throw new Error("internal detail: upstream secret path");
   };
 
   t.after(() => {
     fal.subscribe = originalSubscribe;
+    app.locals.falEnabled = false;
   });
 
   const response = await post(baseUrl, "/segment-garment", {

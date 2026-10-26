@@ -507,7 +507,8 @@ test("AD-22 /healthz 운영 지표: 토큰이 없거나 틀리면 숨기고, 맞
 
     assert.equal(plain.ops, undefined);
     assert.equal(wrong.ops, undefined);
-    assert.deepEqual(Object.keys(wrong).sort(), ["status", "uptimeSeconds"]);
+    // gemini: 조사 기간 모델 확인용 공개 필드(R-3, 비밀값 아님)
+    assert.deepEqual(Object.keys(wrong).sort(), ["gemini", "status", "uptimeSeconds"]);
 
     const first = await (
       await realFetch(`${baseUrl}/healthz`, { headers: { "X-Ops-Token": "ops-test-token-1234" } })

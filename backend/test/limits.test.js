@@ -38,6 +38,9 @@ globalThis.fetch = async (url, options) => {
   return realFetch(url, options);
 };
 
+// JPEG 시그니처(FF D8 FF E0 00 10)로 시작하는 최소 base64. 이미지 사전 검사(R-8)를 통과한다
+const FAKE_JPEG = "/9j/4AAQ";
+
 const jsonResponse = (status, body) =>
   new Response(JSON.stringify(body), {
     status,
@@ -113,7 +116,7 @@ test("TS-08b 10MB 이하 분석 요청은 크기 제한에 걸리지 않는다",
   geminiBehavior = geminiSuccess;
 
   const response = await post(baseUrl, "/analyze-clothing", {
-    body: { imageBase64: "a".repeat(8 * 1024 * 1024) },
+    body: { imageBase64: FAKE_JPEG + "A".repeat(8 * 1024 * 1024) },
   });
 
   assert.equal(response.status, 200);
@@ -152,7 +155,7 @@ test("TS-10 Gemini가 응답하지 않으면 제한 시간 안에 504 AI_TIMEOUT
   const startedAt = Date.now();
 
   const response = await post(baseUrl, "/analyze-clothing", {
-    body: { imageBase64: "abc" },
+    body: { imageBase64: FAKE_JPEG },
   });
 
   const elapsed = Date.now() - startedAt;
@@ -166,7 +169,7 @@ test("TS-10b 503이 계속되면 남은 시간 안에서만 재시도하고 AI_B
   geminiBehavior = () => jsonResponse(503, { error: { message: "busy" } });
 
   const response = await post(baseUrl, "/analyze-clothing", {
-    body: { imageBase64: "abc" },
+    body: { imageBase64: FAKE_JPEG },
   });
 
   // GEMINI_TIMEOUT_MS(400ms)가 첫 재시도 대기(2초)보다 짧으므로 재시도 없이 응답
@@ -184,7 +187,7 @@ test("회귀: Gemini 429는 기존처럼 429 AI_RATE_LIMITED + retryAfterSeconds
     });
 
   const response = await post(baseUrl, "/analyze-clothing", {
-    body: { imageBase64: "abc" },
+    body: { imageBase64: FAKE_JPEG },
   });
 
   const body = await response.json();
@@ -198,7 +201,7 @@ test("회귀: 정상 분석 응답은 기존 형식(box2d 보정, mask 필터)�
   geminiBehavior = geminiSuccess;
 
   const response = await post(baseUrl, "/analyze-clothing", {
-    body: { imageBase64: "abc" },
+    body: { imageBase64: FAKE_JPEG },
   });
 
   const body = await response.json();
@@ -233,7 +236,7 @@ test("Sprint 1A-3: 기본 설정에서는 Gemini에 mask를 요청하지 않고,
       ],
     });
 
-  const response = await post(baseUrl, "/analyze-clothing", { body: { imageBase64: "abc" } });
+  const response = await post(baseUrl, "/analyze-clothing", { body: { imageBase64: FAKE_JPEG } });
 
   const body = await response.json();
 

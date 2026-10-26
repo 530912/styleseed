@@ -25,6 +25,13 @@ const { createResolveImagePath } = require("./storagePaths");
 const { createUserSupabaseFactory } = require("./userSupabase");
 
 const {
+  inspectImageBase64,
+  createDailyCap,
+  logEvent,
+  createErrorLogger,
+} = require("./opsGuards");
+
+const {
   QUALITY,
   toPixelBox,
   buildPromptPoints,
@@ -68,6 +75,9 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:8081")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+// 400 이상 응답을 한 줄 JSON으로 기록(R-9). 토큰·본문은 남기지 않는다
+app.use(createErrorLogger());
+
 app.use(
   cors({
     origin: (origin, callback) =>
@@ -80,6 +90,20 @@ fal.config({
 });
 
 console.log("FAL key loaded:", Boolean(process.env.FAL_KEY));
+
+// 앱이 쓰지 않는 fal 경로(/segment-garment)는 FAL_KEY가 있을 때만 연다(R-4). 운영에는 FAL_KEY를 넣지 않는다
+app.locals.falEnabled = Boolean(process.env.FAL_KEY);
+
+const requireFalEnabled = (req, res, next) => {
+  if (!app.locals.falEnabled) {
+    return res.status(404).json({
+      code: "FEATURE_DISABLED",
+      message: "사용하지 않는 기능입니다.",
+    });
+  }
+
+  return next();
+};
 
 // 요청 본문 크기 제한
 // - 분석: 앱이 원본 사진을 base64로 보낸다(upload.tsx quality 0.7)
@@ -340,6 +364,15 @@ const GEMINI_THINKING_LEVEL = process.env.GEMINI_THINKING_LEVEL || "minimal";
 
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
+// /healthz에 요청 모델과 실제 응답 모델(modelVersion)을 함께 보여준다(R-3).
+// 요청한 이름과 응답 모델이 다를 수 있다(2026-10-26: gemini-3.5-flash 요청 → 3.6-flash 응답)
+app.locals.gemini = { model: GEMINI_MODEL, lastServedModel: null };
+
+// 서버 전체 Gemini 일일 상한(한국 시간 자정 초기화). 0 또는 비우면 끔
+app.locals.geminiDailyLimit = Number.parseInt(process.env.GEMINI_DAILY_LIMIT ?? "", 10) || 0;
+
+app.locals.geminiDailyCap = createDailyCap();
+
 // Gemini 다각형 mask 요청 여부 (Sprint 1A-3)
 // 앱은 이 값을 쓰지 않는다(배경 제거는 SlimSAM/BRIA). 출력 토큰의 큰 부분을 차지하므로 기본으로 요청하지 않는다.
 // 필요하면 GEMINI_REQUEST_MASK=true로 되돌린다. 응답에는 형식 유지를 위해 항상 mask 필드(빈 배열 가능)를 둔다.
@@ -501,6 +534,32 @@ app.post(
         });
       }
 
+      // 이미지가 아니면 Gemini를 부르지 않는다(R-8)
+      const image = inspectImageBase64(imageBase64);
+
+      if (!image.ok) {
+        return res.status(400).json({
+          code: "INVALID_IMAGE",
+          message: "이미지 형식을 확인하지 못했어요. 다른 사진으로 다시 시도해주세요.",
+          reason: image.reason,
+        });
+      }
+
+      const dailyCap = app.locals.geminiDailyCap.take(app.locals.geminiDailyLimit);
+
+      if (!dailyCap.allowed) {
+        logEvent("gemini_daily_cap", { limit: app.locals.geminiDailyLimit });
+
+        // 앱은 AI_RATE_LIMITED를 이미 안내하므로 같은 코드를 쓴다
+        return res.status(429).json({
+          code: "AI_RATE_LIMITED",
+          message: "오늘 AI 분석 한도에 도달했습니다. 내일 다시 시도해주세요.",
+          retryAfterSeconds: dailyCap.retryAfterSeconds,
+        });
+      }
+
+      const geminiStartedAt = Date.now();
+
       const { response, data } = await fetchGeminiWithRetry(
         GEMINI_ENDPOINT,
         {
@@ -562,7 +621,7 @@ ${GEMINI_MASK_INSTRUCTIONS}  Return the result using only the allowed values def
 
                   {
                     inlineData: {
-                      mimeType: "image/jpeg",
+                      mimeType: image.mimeType,
 
                       data: imageBase64,
                     },
@@ -769,6 +828,29 @@ ${GEMINI_MASK_INSTRUCTIONS}  Return the result using only the allowed values def
         },
       );
 
+      // 호출 1건 = 한 줄(R-3·R-9): 요청·응답 모델, 상태, 토큰. 매일 비용·오류 집계용
+      const usage = data?.usageMetadata ?? {};
+
+      const servedModel = data?.modelVersion ?? null;
+
+      if (servedModel) {
+        app.locals.gemini.lastServedModel = servedModel;
+      }
+
+      logEvent("gemini_call", {
+        model: GEMINI_MODEL,
+        servedModel,
+        modelMismatch: Boolean(servedModel) && servedModel !== GEMINI_MODEL,
+        status: response.status,
+        ms: Date.now() - geminiStartedAt,
+        mask: GEMINI_REQUEST_MASK,
+        prompt: usage.promptTokenCount ?? null,
+        output: usage.candidatesTokenCount ?? null,
+        thoughts: usage.thoughtsTokenCount ?? 0,
+        total: usage.totalTokenCount ?? null,
+        dailyCount: dailyCap.count,
+      });
+
       if (!response.ok) {
         console.error("Gemini API Error:", JSON.stringify(data));
 
@@ -792,21 +874,7 @@ ${GEMINI_MASK_INSTRUCTIONS}  Return the result using only the allowed values def
         });
       }
 
-      // 토큰 사용량 기록(비용 추정·mask 제거 효과 측정용, Sprint 1A-3)
-      const usage = data?.usageMetadata ?? {};
-
-      console.log(
-        "Gemini 사용량:",
-        JSON.stringify({
-          model: data?.modelVersion,
-          mask: GEMINI_REQUEST_MASK,
-          prompt: usage.promptTokenCount,
-          output: usage.candidatesTokenCount,
-          thoughts: usage.thoughtsTokenCount ?? 0,
-          total: usage.totalTokenCount,
-        }),
-      );
-
+      // 토큰 사용량은 위 gemini_call 로그에 함께 남긴다(Sprint 1A-3의 "Gemini 사용량:" 줄을 대체)
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (!text) {
@@ -849,6 +917,15 @@ ${GEMINI_MASK_INSTRUCTIONS}  Return the result using only the allowed values def
       if (error instanceof UpstreamTimeoutError) {
         console.error("Gemini 응답 시간 초과");
 
+        // 시간 초과도 호출 1건으로 집계한다(응답이 없어 토큰·응답 모델은 모름)
+        logEvent("gemini_call", {
+          model: GEMINI_MODEL,
+          servedModel: null,
+          modelMismatch: false,
+          status: "timeout",
+          timeoutMs: GEMINI_TIMEOUT_MS,
+        });
+
         return res.status(504).json({
           code: "AI_TIMEOUT",
           message: "AI 응답이 늦어지고 있습니다. 잠시 후 다시 시도해주세요.",
@@ -864,7 +941,7 @@ ${GEMINI_MASK_INSTRUCTIONS}  Return the result using only the allowed values def
   },
 );
 
-app.post("/segment-garment", ...imageTaskGuards, async (req, res) => {
+app.post("/segment-garment", ...imageTaskGuards, requireFalEnabled, async (req, res) => {
   try {
     // 이미지는 서버가 만든 서명 URL만 쓴다(resolveImagePath)
     const imageUrl = req.imageUrl;
@@ -1272,7 +1349,30 @@ app.use((error, req, res, next) => {
     });
   }
 
-  return next(error);
+  // 그 밖의 처리되지 않은 오류도 HTML 대신 JSON으로 응답한다(내부 문구는 로그에만)
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  logEvent("unhandled_error", {
+    method: req.method,
+    path: req.path,
+    name: error?.name ?? null,
+    message: error?.message ?? String(error),
+  });
+
+  return res.status(500).json({
+    code: "SERVER_ERROR",
+    message: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+  });
+});
+
+// 등록되지 않은 경로는 JSON 404
+app.use((req, res) => {
+  res.status(404).json({
+    code: "NOT_FOUND",
+    message: "요청한 주소를 찾을 수 없습니다.",
+  });
 });
 
 module.exports = app;
