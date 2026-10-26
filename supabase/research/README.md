@@ -24,7 +24,6 @@ cat supabase/migrations/*.sql | pbcopy
 | Authentication → Sign In / Providers → Email | 켬, **Confirm email 끔**(앱의 "가입 직후 저장"이 의존) |
 | 같은 화면 → Allow new users to sign up | 켬 |
 | 같은 화면 → **Allow anonymous sign-ins** | **켬**(로그인 전 분석) |
-
 | Authentication → URL Configuration → **Site URL** | `https://styleseed.mycafe24.com` (모바일 웹 주소) |
 | 같은 화면 → **Redirect URLs** | `https://styleseed.mycafe24.com/**` |
 
@@ -34,8 +33,8 @@ cat supabase/migrations/*.sql | pbcopy
 
 Project Settings → API Keys:
 
-- **Publishable key**(`sb_publishable_…`): 앱 빌드·Railway 둘 다. 공개 값
-- **Secret key 새로 만들기** → 이름 `railway-research`(`sb_secret_…`): **Railway 변수에만** 직접 붙여넣는다. 채팅·파일에 적지 않는다
+- **Publishable key**(`sb_publishable_…`): 웹 빌드와 서버 둘 다. 공개 값
+- **Secret key 새로 만들기** → 이름 `server-research`(`sb_secret_…`): **서버 비밀값 파일(`deploy/vm/api.env`, 이후 Railway 변수)에만** 넣는다. 채팅·파일에 적지 않는다
 
 ## 5. 확인
 
