@@ -99,3 +99,21 @@ B에게 남은 요청(상세 `docs/release/2026-11-MVP-TESTFLIGHT-PLAN.md` 4·5�
 - **R-24** Beta App Review용 **데모 계정**(조사 DB, 만료 없음, 옷 3~4벌) — 비밀번호는 App Store Connect에만.
 - R-25 EAS `preview` 환경 = TestFlight 조사 빌드 값(`testflight` 프로필이 `preview` 환경을 씀).
 - (결정 후) R-26 7일 사용 기록을 받으면 `research_events` 테이블(⛔, 계정 삭제 연쇄 포함) — A가 앱 전송 코드 작성.
+
+---
+
+## 7. 6차 (2026-10-27 밤) — 1차 조사 배포를 모바일 웹(Safari)으로 변경 (PO 지시)
+
+TestFlight·Apple 가입은 보류(설정·코드 유지). 상세: `docs/release/2026-11-MVP-MOBILE-WEB.md`.
+
+**A가 고친 것(`app/mvp-2026-11` `20a2951`):** 웹 전용 사진 준비(24MP canvas 상한), 웹 `Alert.alert` 대체(삭제·로그인 오류·**B의 계정 삭제 확인 창 포함**이 웹에서 안 보였음 — B 파일은 고치지 않고 앱 시작 시 한 번 바꿈), 휴대폰 웹 카메라 버튼, 기록 공유 시트, `scripts/release/build-web.sh`.
+
+**B 요청(R-27~):**
+| # | 요청 |
+|---|---|
+| R-27 | HTTPS API 주소 + `ALLOWED_ORIGINS`에 웹 주소(예: `https://<프로젝트>.pages.dev`) 정확히 |
+| R-28 | `server.keepAliveTimeout = 65000`, `headersTimeout = 66000`(Node 기본 5초 → 프록시·Safari 연결 재사용 시 POST "Load failed", 가짜 서버로 재현) — `server.js`의 listen 부분(공유 파일)이라 B가 반영 |
+| R-29 | `GEMINI_TIMEOUT_MS` 40~45초(오늘 25초 초과 1회), Gemini 유료(오늘 429 2회) |
+| R-30 | 조사 Supabase Site URL을 웹 주소로(앱은 리디렉션을 쓰지 않음, 이메일 인증 끔·익명 로그인 켬 유지) |
+| R-31 | 처리방침 초안 보완(`MOBILE-WEB.md` 6장: 조사 기록·브라우저 저장·서버 위치·웹 호스팅·연령) — 공개 주소는 웹 앱 안 정적 페이지 권장 |
+| R-32 | 운영 Supabase에 A 시험이 만든 **익명 사용자 1명**(10/27 01:59 KST) — 익명 정리(KI-4) 때 함께 |
