@@ -1,11 +1,29 @@
-# API_DOMAIN(예: api.styleseed.kr)의 인증서를 Let's Encrypt로 자동 발급·갱신하고 api로 전달한다
+# 한 도메인(API_DOMAIN)에서 모바일 웹 화면과 API를 함께 제공한다(2026-11 모바일 웹 MVP)
+#   /api/*  → api:3001 (서버가 /api 접두어를 떼고 처리)  — 같은 출처라 CORS·쿠키 문제가 없다
+#   그 외    → Expo Web 정적 파일(/srv/web, deploy-web.sh로 업로드). 없으면 404
+# 인증서는 Let's Encrypt로 자동 발급·갱신
 {$API_DOMAIN} {
 	encode gzip
 
-	# 분석 요청은 사진 base64(서버 한도 10MB)라 프록시 한도를 조금 크게
-	request_body {
-		max_size 12MB
+	handle /api* {
+		# 분석 요청은 사진 base64(서버 한도 10MB)라 프록시 한도를 조금 크게
+		request_body {
+			max_size 12MB
+		}
+
+		reverse_proxy api:3001
 	}
 
-	reverse_proxy api:3001
+	handle {
+		root * /srv/web
+
+		# 해시가 붙은 번들은 오래 캐시, HTML은 매번 확인(배포 즉시 반영)
+		@static path /_expo/static/* /assets/*
+		header @static Cache-Control "public, max-age=31536000, immutable"
+		header Cache-Control "no-cache"
+
+		# Expo 정적 출력: /upload → upload.html, 없는 경로 → +not-found.html
+		try_files {path} {path}.html {path}/index.html /+not-found.html
+		file_server
+	}
 }

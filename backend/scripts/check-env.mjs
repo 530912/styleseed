@@ -136,8 +136,8 @@ export const checkAppEnv = (env, { target } = {}) => {
 
   if (!apiUrl) {
     push("EXPO_PUBLIC_API_URL", "error", "설정 안 됨 — 앱이 localhost로 요청함");
-  } else if (!/^https:\/\/[^/\s]+\/?$/.test(apiUrl) || /localhost|127\.0\.0\.1/.test(apiUrl)) {
-    push("EXPO_PUBLIC_API_URL", "error", "배포 서버의 https 주소가 아님(경로 없이 https://<호스트>)");
+  } else if (!/^https:\/\/[^/\s]+(\/api)?\/?$/.test(apiUrl) || /localhost|127\.0\.0\.1/.test(apiUrl)) {
+    push("EXPO_PUBLIC_API_URL", "error", "배포 서버의 https 주소가 아님(https://<호스트> 또는 같은 도메인 웹이면 https://<호스트>/api)");
   } else {
     push("EXPO_PUBLIC_API_URL", "ok", "형식 확인");
   }

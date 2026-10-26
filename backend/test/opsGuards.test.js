@@ -5,6 +5,7 @@ process.env.SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
 process.env.GEMINI_TIMEOUT_MS = "400";
 process.env.GUEST_ANALYZE_LIMIT_PER_HOUR = "100";
 process.env.IP_ANALYZE_LIMIT_PER_HOUR = "100";
+process.env.ALLOWED_ORIGINS = "https://web.example";
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
@@ -380,4 +381,56 @@ test("OG-13 Gemini 402(선불 크레딧 소진)는 503 AI_CREDIT_EXHAUSTED + 로
   assert.equal(geminiCalls, 1);
   assert.ok(lines.some((line) => line.evt === "gemini_credit_exhausted"));
   assert.ok(lines.some((line) => line.evt === "gemini_call" && line.status === 402));
+});
+
+// ── 모바일 웹(2026-11) ──
+
+test("OG-14 /api 접두어: /api/x 와 /x 가 같은 경로(같은 도메인 배포·Railway 이전 공용)", async () => {
+  const health = await realFetch(`${baseUrl}/api/healthz`);
+
+  assert.equal(health.status, 200);
+  assert.equal((await health.json()).status, "ok");
+
+  const root = await realFetch(`${baseUrl}/api`);
+
+  assert.equal(root.status, 200);
+  await root.text();
+
+  const invalid = await post(baseUrl, "/api/analyze-clothing", { body: { imageBase64: "abc" } });
+
+  assert.equal(invalid.status, 400);
+  assert.equal((await invalid.json()).code, "INVALID_IMAGE");
+
+  const lookalike = await realFetch(`${baseUrl}/apix/healthz`);
+
+  assert.equal(lookalike.status, 404, "/api로 시작하는 다른 경로는 건드리지 않음");
+  await lookalike.text();
+
+  const deletionPage = await realFetch(`${baseUrl}/api/account-deletion`);
+
+  assert.equal(deletionPage.status, 200);
+  assert.match(await deletionPage.text(), /<form method="post" action=""/, "폼은 현재 주소로 전송(/api 아래에서도 동작)");
+});
+
+test("OG-15 다른 도메인 웹: 허용 Origin의 사전 요청(Authorization 헤더)은 통과, 그 외 Origin은 CORS 헤더 없음", async () => {
+  const preflight = (origin) =>
+    realFetch(`${baseUrl}/api/analyze-clothing`, {
+      method: "OPTIONS",
+      headers: {
+        Origin: origin,
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "authorization,content-type",
+      },
+    });
+
+  const allowed = await preflight("https://web.example");
+
+  assert.equal(allowed.status, 204);
+  assert.equal(allowed.headers.get("access-control-allow-origin"), "https://web.example");
+  assert.match(allowed.headers.get("access-control-allow-headers") ?? "", /authorization/i);
+  assert.match(allowed.headers.get("access-control-allow-methods") ?? "", /POST/);
+
+  const other = await preflight("https://evil.example");
+
+  assert.equal(other.headers.get("access-control-allow-origin"), null);
 });

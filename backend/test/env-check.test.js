@@ -108,6 +108,9 @@ test("EV-06 앱 빌드 변수(R-13): API 주소 누락·localhost·http는 오�
 
   assert.deepEqual(errors(app), []);
   assert.deepEqual(errors({ ...app, EXPO_PUBLIC_API_URL: "" }), ["EXPO_PUBLIC_API_URL"]);
+  // 모바일 웹 같은 도메인 배포: https://<호스트>/api 허용, 다른 경로는 오류
+  assert.deepEqual(errors({ ...app, EXPO_PUBLIC_API_URL: "https://styleseed.mycafe24.com/api" }), []);
+  assert.deepEqual(errors({ ...app, EXPO_PUBLIC_API_URL: "https://styleseed.mycafe24.com/v1" }), ["EXPO_PUBLIC_API_URL"]);
   assert.deepEqual(errors({ ...app, EXPO_PUBLIC_API_URL: "http://192.168.0.5:3001" }), ["EXPO_PUBLIC_API_URL"]);
   assert.deepEqual(errors({ ...app, EXPO_PUBLIC_API_URL: "https://localhost:3001" }), ["EXPO_PUBLIC_API_URL"]);
   assert.deepEqual(errors({ ...app, EXPO_PUBLIC_RESEARCH_MODE: "" }), ["EXPO_PUBLIC_RESEARCH_MODE"]);

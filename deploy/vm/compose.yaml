@@ -1,7 +1,8 @@
 # STYLESEED 백엔드 — 국내 가상서버(Ubuntu 24.04, 8GB) 배포 (2026-11 사용자 조사)
 # Railway 대신 쓰는 구성. 앱 코드는 바꾸지 않고 저장소 루트 Dockerfile을 그대로 빌드한다.
 #   api   : Express + SlimSAM (포트 3001, 외부에 직접 열지 않음)
-#   caddy : HTTPS(Let's Encrypt 자동 발급·갱신) → api로 전달. X-Forwarded-For 1단계 → TRUST_PROXY=1
+#   caddy : HTTPS(Let's Encrypt 자동 발급·갱신). /api/* → api, 그 외 → Expo Web 정적 파일(./web)
+#           X-Forwarded-For 1단계 → TRUST_PROXY=1
 # 실행: deploy/vm/README.md
 
 services:
@@ -43,6 +44,7 @@ services:
       API_DOMAIN: ${API_DOMAIN:?API_DOMAIN을 deploy/vm/.env에 지정}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./web:/srv/web:ro
       - caddy_data:/data
       - caddy_config:/config
 
