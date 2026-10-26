@@ -6,6 +6,8 @@ import { apiPost } from "./api";
 
 import { now, perfLog } from "./perf";
 
+import { logResearchEvent } from "./researchEvents";
+
 import { supabase } from "./supabase";
 
 const STORAGE_BUCKET = "clothing-images";
@@ -301,10 +303,10 @@ const uploadCutoutBuffer = async (arrayBuffer: ArrayBuffer, userId: string) => {
   return filePath;
 };
 
-export const saveClothingToSupabase = async (
+const saveClothingRecord = async (
   clothing: Clothing,
   userId: string,
-): Promise<Clothing> => {
+): Promise<{ clothing: Clothing; cutoutVia: string }> => {
   let originalImagePath: string | null = null;
 
   let cutoutImagePath: string | null = null;
@@ -443,9 +445,40 @@ export const saveClothingToSupabase = async (
    * 4. 반드시 Clothing 반환
    */
   return {
-    ...clothing,
-    id: Number(data.id),
+    clothing: {
+      ...clothing,
+      id: Number(data.id),
+    },
+    cutoutVia,
   };
+};
+
+// 저장 + 사용자 조사 이벤트(등록 완료·실패). afterAuth: 로그인·가입 직후 보류 항목 저장
+export const saveClothingToSupabase = async (
+  clothing: Clothing,
+  userId: string,
+  { afterAuth = false }: { afterAuth?: boolean } = {},
+): Promise<Clothing> => {
+  const startedAt = Date.now();
+
+  try {
+    const result = await saveClothingRecord(clothing, userId);
+
+    logResearchEvent("register_completed", {
+      duration_ms: Date.now() - startedAt,
+      cutout_via: result.cutoutVia,
+      after_auth: afterAuth,
+    });
+
+    return result.clothing;
+  } catch (error) {
+    logResearchEvent("register_failed", {
+      duration_ms: Date.now() - startedAt,
+      after_auth: afterAuth,
+    });
+
+    throw error;
+  }
 };
 /**
  * Storage path를

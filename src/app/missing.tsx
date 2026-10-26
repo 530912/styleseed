@@ -1,5 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 
+import { useEffect, useRef } from "react";
+
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { LookBoard } from "../components/styleseed/look-board";
@@ -15,6 +17,8 @@ import {
 import { palette } from "../constants/ui";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
+
+import { logResearchEvent } from "../lib/researchEvents";
 
 import { useClosetStore } from "../store/useClosetStore";
 
@@ -37,6 +41,28 @@ export default function MissingItemScreen() {
   const selectedClothing = clothes.find(
     (clothing) => clothing.id === Number(clothingId),
   );
+
+  // 사용자 조사: Missing Item 결과 조회(화면당 1번)
+  const loggedMissing = useRef(false);
+
+  useEffect(() => {
+    if (!selectedClothing || loggedMissing.current) {
+      return;
+    }
+
+    loggedMissing.current = true;
+
+    const outfit = getRecommendedOutfit(selectedClothing, clothes);
+
+    const category = outfit.missingCategories[0];
+
+    logResearchEvent("missing_item_viewed", {
+      missing_category: category,
+      has_suggestion: Boolean(
+        category && getMissingItemSuggestion(category, outfit.items),
+      ),
+    });
+  }, [selectedClothing, clothes]);
 
   if (!selectedClothing) {
     return (
@@ -99,7 +125,11 @@ export default function MissingItemScreen() {
       footer={
         <Button
           label="예시 상품 보기"
-          onPress={() =>
+          onPress={() => {
+            logResearchEvent("missing_products_clicked", {
+              missing_category: suggestion.category,
+            });
+
             router.push({
               pathname: "/shop",
 
@@ -114,8 +144,8 @@ export default function MissingItemScreen() {
 
                 missingStyle: suggestion.style,
               },
-            })
-          }
+            });
+          }}
         />
       }
     >

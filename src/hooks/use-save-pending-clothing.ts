@@ -40,7 +40,9 @@ export const useSavePendingClothing = () => {
     }
 
     try {
-      const savedClothing = await saveClothingToSupabase(clothing, userId);
+      const savedClothing = await saveClothingToSupabase(clothing, userId, {
+        afterAuth: true,
+      });
 
       addClothing(savedClothing);
 

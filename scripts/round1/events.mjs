@@ -229,6 +229,101 @@ export const analyzeExperiment = (contract, rows) => {
   return groups;
 };
 
+// 핵심 흐름(kind=core) 참가자별 집계: 등록·분석·AI 결과 수정·코디 조회·Missing (2026-11 MVP)
+export const coreRows = (contract, kept) => {
+  const rows = new Map();
+  for (const event of kept) {
+    if (contract.events[event.event_name]?.kind !== "core") continue;
+    const code = event.participant_code;
+    if (!rows.has(code)) {
+      rows.set(code, {
+        participant_code: code, app_opens: 0, registers_started: 0, registers_completed: 0, registers_failed: 0,
+        analyses_started: 0, analyses_completed: 0, analyses_failed: 0, analysis_ms: [], reviews: 0, reviews_edited: 0,
+        edited_fields: {}, outfits_styling: 0, outfits_looks: 0, missing_clicked: 0, missing_viewed: 0, missing_products_clicked: 0,
+      });
+    }
+    const row = rows.get(code);
+    const props = event.properties ?? {};
+    switch (event.event_name) {
+      case "app_opened": row.app_opens += 1; break;
+      case "register_started": row.registers_started += 1; break;
+      case "register_completed": row.registers_completed += 1; break;
+      case "register_failed": row.registers_failed += 1; break;
+      case "analysis_started": row.analyses_started += 1; break;
+      case "analysis_completed":
+        row.analyses_completed += 1;
+        if (Number.isInteger(props.duration_ms)) row.analysis_ms.push(props.duration_ms);
+        break;
+      case "analysis_failed": row.analyses_failed += 1; break;
+      case "analysis_reviewed":
+        row.reviews += 1;
+        if (props.edited) {
+          row.reviews_edited += 1;
+          for (const field of String(props.edited_fields ?? "").split("|").filter((f) => f && f !== "none")) {
+            row.edited_fields[field] = (row.edited_fields[field] ?? 0) + 1;
+          }
+        }
+        break;
+      case "outfit_viewed":
+        if (props.screen === "looks") row.outfits_looks += 1;
+        else row.outfits_styling += 1;
+        break;
+      case "missing_item_clicked": row.missing_clicked += 1; break;
+      case "missing_item_viewed": row.missing_viewed += 1; break;
+      case "missing_products_clicked": row.missing_products_clicked += 1; break;
+      default: break;
+    }
+  }
+  return [...rows.values()]
+    .map(({ analysis_ms: ms, edited_fields: fields, ...row }) => ({
+      ...row,
+      analysis_median_ms: median(ms),
+      edited_fields: Object.entries(fields).sort().map(([k, n]) => `${k}:${n}`).join(" ") || "none",
+    }))
+    .sort((a, b) => a.participant_code.localeCompare(b.participant_code));
+};
+
+// 핵심 흐름 요약. 비율은 분모와 함께 둔다
+export const coreSummary = (rows) => {
+  const sum = (key) => rows.reduce((total, r) => total + r[key], 0);
+  const fieldTotals = {};
+  for (const r of rows) {
+    for (const part of r.edited_fields === "none" ? [] : r.edited_fields.split(" ")) {
+      const [field, n] = part.split(":");
+      fieldTotals[field] = (fieldTotals[field] ?? 0) + Number(n);
+    }
+  }
+  const sawStyling = rows.filter((r) => r.outfits_styling > 0);
+  return {
+    participants: rows.length,
+    register_completion: ratio(sum("registers_completed"), sum("registers_started")),
+    register_failures: sum("registers_failed"),
+    analysis_failure: ratio(sum("analyses_failed"), sum("analyses_started")),
+    analysis_median_ms: median(rows.map((r) => r.analysis_median_ms).filter((v) => v !== null)),
+    ai_edit_rate: ratio(sum("reviews_edited"), sum("reviews")),
+    edited_fields: fieldTotals,
+    missing_click_participants: ratio(sawStyling.filter((r) => r.missing_clicked > 0).length, sawStyling.length),
+    missing_products_participants: ratio(rows.filter((r) => r.missing_products_clicked > 0).length, rows.filter((r) => r.missing_viewed > 0).length),
+  };
+};
+
+export const coreSummaryMarkdown = (core) => [
+  "## 핵심 흐름 (등록·분석·코디·Missing)",
+  "",
+  "| 항목 | 값 |",
+  "|---|---|",
+  `| 이벤트가 있는 참가자 | ${core.participants} |`,
+  `| 의류 등록 완료 (완료/시작) | ${core.register_completion.text} |`,
+  `| 등록 실패 | ${core.register_failures}건 |`,
+  `| AI 분석 실패 (실패/시작) | ${core.analysis_failure.text} |`,
+  `| AI 분석 시간 중앙값 | ${fmtMs(core.analysis_median_ms)} |`,
+  `| AI 결과를 고친 비율 (고침/저장 시도) | ${core.ai_edit_rate.text} |`,
+  `| 고친 속성 | ${Object.entries(core.edited_fields).map(([k, n]) => `${k} ${n}`).join(", ") || "없음"} |`,
+  `| Missing Item 클릭 (클릭한 사람/코디 본 사람) | ${core.missing_click_participants.text} |`,
+  `| 예시 상품 보기 (누른 사람/Missing 본 사람) | ${core.missing_products_participants.text} |`,
+  "",
+].join("\n");
+
 const fmtMs = (ms) => (ms === null ? "—" : `${(ms / 1000).toFixed(1)}초`);
 
 export const summaryMarkdown = (contract, groups, excluded) => {
@@ -285,7 +380,11 @@ export const runAnalysis = (events, contract = loadEventsContract(), assignment 
   const prepared = prepareEvents(contract, events, assignment);
   const rows = participantRows(contract, prepared.kept);
   const groups = analyzeExperiment(contract, rows);
-  return { ...prepared, rows, groups, summary: summaryMarkdown(contract, groups, prepared.excluded) };
+  const core = coreSummary(coreRows(contract, prepared.kept));
+  return {
+    ...prepared, rows, groups, coreRows: coreRows(contract, prepared.kept), core,
+    summary: `${summaryMarkdown(contract, groups, prepared.excluded)}\n${coreSummaryMarkdown(core)}`,
+  };
 };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
@@ -305,6 +404,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(im
     fs.writeFileSync(path.join(dir, "r1_plus_events.csv"), eventsCsv(contract, result.kept));
     fs.writeFileSync(path.join(dir, "r1_plus_events.json"), `${JSON.stringify(result.kept, null, 1)}\n`);
     fs.writeFileSync(path.join(dir, "r1_plus_participants.csv"), participantsCsv(result.rows));
+    fs.writeFileSync(path.join(dir, "r1_core_participants.csv"), participantsCsv(result.coreRows));
     fs.writeFileSync(path.join(dir, "r1_plus_summary.md"), result.summary);
     fs.writeFileSync(path.join(dir, "r1_plus_exclusions.json"), `${JSON.stringify({ excluded: result.excluded, issues: result.issues }, null, 1)}\n`);
     console.log(`내보냄: ${path.relative(ROOT, dir)}`);

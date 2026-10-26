@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import {
   ActivityIndicator,
@@ -26,6 +26,8 @@ import {
 import { palette } from "../constants/ui";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
+
+import { logResearchEvent } from "../lib/researchEvents";
 
 import { useClosetStore } from "../store/useClosetStore";
 
@@ -61,6 +63,24 @@ export default function TopLooksScreen() {
 
   const [bestLook, ...otherLooks] = looks;
 
+  // 사용자 조사: TOP 3 조회. items_count = 보여준 코디 수(0이면 옷이 부족해 코디 없음)
+  const loggedLooks = useRef(false);
+
+  useEffect(() => {
+    if (status === "loading" || loggedLooks.current) {
+      return;
+    }
+
+    loggedLooks.current = true;
+
+    logResearchEvent("outfit_viewed", {
+      screen: "looks",
+      items_count: looks.length,
+      missing_count: 0,
+      closet_size: clothes.length,
+    });
+  }, [status, looks, clothes]);
+
   if (!bestLook) {
     return (
       <Screen>
@@ -68,6 +88,13 @@ export default function TopLooksScreen() {
 
         {status === "loading" ? (
           <ActivityIndicator color={palette.ink} />
+        ) : status === "signed-out" ? (
+          <EmptyState
+            title="로그인하고 내 옷으로 코디를 확인하세요"
+            action={
+              <Button label="로그인" onPress={() => router.push("/login")} />
+            }
+          />
         ) : (
           <EmptyState
             title="코디를 만들 옷이 부족해요"

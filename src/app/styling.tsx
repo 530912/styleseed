@@ -1,5 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 
+import { useEffect, useRef } from "react";
+
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ScoreBars } from "../components/styleseed/score-bars";
@@ -19,6 +21,8 @@ import {
 import { palette } from "../constants/ui";
 
 import { SHOW_PROTOTYPES } from "../lib/featureFlags";
+
+import { logResearchEvent } from "../lib/researchEvents";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
@@ -47,6 +51,26 @@ export default function StylingScreen() {
   const selectedClothing = clothes.find(
     (clothing) => clothing.id === Number(clothingId),
   );
+
+  // 사용자 조사: 코디 추천 결과 조회. 추천은 기기 안에서 바로 계산되므로 요청 = 조회, 화면당 1번
+  const loggedOutfit = useRef(false);
+
+  useEffect(() => {
+    if (!selectedClothing || loggedOutfit.current) {
+      return;
+    }
+
+    loggedOutfit.current = true;
+
+    const outfit = getRecommendedOutfit(selectedClothing, clothes);
+
+    logResearchEvent("outfit_viewed", {
+      screen: "styling",
+      items_count: outfit.items.length,
+      missing_count: outfit.missingCategories.length,
+      closet_size: clothes.length,
+    });
+  }, [selectedClothing, clothes]);
 
   // 선택한 옷을 찾을 수 없는 경우
   if (!selectedClothing) {
@@ -114,14 +138,16 @@ export default function StylingScreen() {
             <Button
               label="코디 완성하기"
               disabled={!missingItemSuggestion}
-              onPress={() =>
+              onPress={() => {
+                logResearchEvent("missing_item_clicked");
+
                 router.push({
                   pathname: "/missing",
                   params: {
                     clothingId: String(selectedClothing.id),
                   },
-                })
-              }
+                });
+              }}
               style={styles.footerButton}
             />
           </View>

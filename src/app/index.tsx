@@ -1,8 +1,8 @@
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import { useCallback, useMemo, useState } from "react";
 
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { SplashIntro } from "../components/SplashIntro";
 
@@ -15,6 +15,10 @@ import { palette } from "../constants/ui";
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
 import { useWeather } from "../hooks/use-weather";
+
+import { RESEARCH_MODE } from "../lib/featureFlags";
+
+import { getResearchSession } from "../lib/researchEvents";
 
 import { isSignedIn } from "../lib/sessionPolicy";
 
@@ -51,6 +55,19 @@ function HomeScreen() {
 
   const { weather, reload: reloadWeather } = useWeather();
 
+  // 연구 모드에서 참가 코드를 아직 정하지 않았으면 진행자에게 안내한다
+  const [needsResearchSetup, setNeedsResearchSetup] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!RESEARCH_MODE) {
+        return;
+      }
+
+      getResearchSession().then((session) => setNeedsResearchSetup(!session));
+    }, []),
+  );
+
   // 현재 날씨 + 내 Digital Closet + 기존 코디 추천 로직
   const todaysLooks = useMemo(
     () =>
@@ -83,9 +100,22 @@ function HomeScreen() {
   return (
     <Screen showBack={false}>
       <View style={styles.brand}>
-        <Text style={styles.logo}>STYLESEED</Text>
+        {/* 연구 모드: 진행자가 로고를 길게 눌러 조사 세션 화면을 연다 */}
+        <Pressable
+          disabled={!RESEARCH_MODE}
+          onLongPress={() => router.push("/research")}
+          delayLongPress={800}
+        >
+          <Text style={styles.logo}>STYLESEED</Text>
+        </Pressable>
 
         <Text style={styles.description}>내 옷에서 시작하는 스타일링</Text>
+
+        {needsResearchSetup ? (
+          <Text style={styles.researchHint}>
+            진행자: 로고를 길게 눌러 참가 코드를 설정하세요
+          </Text>
+        ) : null}
       </View>
 
       <TodayLookCard
@@ -132,6 +162,12 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 14,
     color: palette.body,
+  },
+
+  researchHint: {
+    marginTop: 10,
+    fontSize: 12,
+    color: palette.danger,
   },
 
   buttonGroup: {
