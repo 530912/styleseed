@@ -292,3 +292,19 @@ grep '"evt":"http_error"' railway.log | grep -c '"status":5'              # 5xx
 | Supabase 운영 DB | 읽기 전용 조회 3회 | 쓰기 0 |
 | 운영 Supabase Auth | 무효 토큰 검증 몇 건 | 부작용 없음(사용자 생성 0) |
 | 기타 | PGlite(scratchpad 설치) | 프로젝트 의존성 변경 없음 |
+
+## 10. AP-1 결제 결정 자료 (2026-10-26 추가 확인)
+
+| 항목 | 내용 | 근거 |
+|---|---|---|
+| 상품 | **Railway Hobby 플랜**(워크스페이스 구독) — 서비스 1개, 리전 Southeast Asia Metal(싱가포르, `asia-southeast1-eqsg3a`), 복제 1, 메모리 상한 8GB | 공식: [pricing](https://railway.com/pricing), [plans](https://docs.railway.com/reference/pricing/plans), [regions](https://docs.railway.com/reference/deployment-regions) |
+| 구독료·포함분 | $5/월, 사용량 $5 포함(사용량이 $5를 넘으면 사용량 전액 청구) | 공식 |
+| 단가 | RAM $10/GB·월, CPU $20/vCPU·월, 송신 $0.05/GB | 공식 |
+| Hobby 한도 | 서비스당 48GB·48vCPU, 복제 6, 사용자 도메인 2, 로그 7일 | 공식 |
+| 결제 수단 | **"post-paid card" 필수, 선불 결제 더 이상 받지 않음** → 신한 선불카드 사용 불가 | 공식(plans) |
+| 통화·VAT | 달러 표시. 청구 통화·한국 VAT 부과 여부는 **공식 문서에 없음(미확인)**. Tax ID·청구지 주소 입력란은 있음 | 공식(pricing) |
+| 지출 상한 | 사용량 알림(soft)·**hard limit**(최소 $10, 도달 시 서비스 중지). 모든 플랜 | 공식: [usage limits](https://docs.railway.com/reference/usage-limits) |
+
+**20명 조사 기준 월 예상:** RAM 상시 약 2.2GB(SlimSAM 상주) ≈ $22 + CPU·송신 ≈ $1~2 → 청구 **약 $23~24**. VAT 10%가 붙으면 약 $26, 카드 해외 이용 수수료(약 1~1.5%, 카드사별) 포함 **약 3.3만~3.8만 원/월**(환율 1,400원 가정).
+
+**설정 권장:** soft limit $25, hard limit **$40**(조사 중 서비스가 멈추지 않을 만큼 여유). PR 환경 끔, 복제 1 유지, 조사 종료 즉시 서비스 삭제(삭제 전까지 RAM 과금 계속).
