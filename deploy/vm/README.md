@@ -8,7 +8,9 @@
 | `compose.yaml` | `api`(Express + SlimSAM, 메모리 6GB 제한, 상태 확인) + `caddy`(80·443, 인증서 자동) |
 | `Caddyfile` | `API_DOMAIN` → `api:3001`, 본문 12MB |
 | `setup-ubuntu.sh` | 서버 최초 1회: 업데이트, Docker, 방화벽 22·80·443, 스왑 4GB |
-| `deploy.sh` | 이 PC에서 `git archive` → `scp` → 서버에서 `docker compose up -d --build` (GitHub Push 불필요) |
+| `bootstrap.sh` | **PO가 Mac 터미널에서 1회**: 배포 키 등록(임시 Root 비밀번호 1회 입력) → `setup-ubuntu.sh` → 비밀번호 로그인 끄기 → 아키텍처·Docker 점검 |
+| `deploy.sh` | 로컬 `api.env`를 `check-env --target research`로 점검(값 미출력) → 코드·`api.env`·`.env` 업로드 → 서버 빌드·재시작 (GitHub Push 불필요) |
+| `status.sh` | 컨테이너 상태·메모리·`/healthz`(내부·HTTPS)·24시간 오류 수 |
 | `api.env.example` | 서버 비밀값 목록(서버에서 `api.env`로 복사, git 제외) |
 | `.env.example` | `API_DOMAIN` |
 
