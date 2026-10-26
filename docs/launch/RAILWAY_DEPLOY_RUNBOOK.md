@@ -1,5 +1,7 @@
 # Railway 8GB 배포 검증 런북 (Beta RC1)
 
+> **2026-11 사용자 조사 배포는 `integration/mvp-2026-11` 기준.** 조사 전용 Supabase·변수값·검증 순서는 `2026-11-MVP-DEPLOY-PREP.md`를 우선한다. 이 런북의 R-/S-단계 절차는 그대로 쓴다.
+
 | 항목 | 내용 |
 |---|---|
 | 작성일 | 2026-10-19 |
@@ -66,6 +68,8 @@
 | `ANON_/USER_/IP_/GUEST_ANALYZE_LIMIT_PER_HOUR` | 선택 | | 정수. 운영 한도는 비용 기준 | 기본 | 결정값 |
 | `GEMINI_MODEL`, `GEMINI_THINKING_LEVEL` | 선택 | | 모델 실험 결과 | 기본 | 결정값 |
 | `GEMINI_REQUEST_MASK` | 선택 | | **비움**(개발 트랙 기준) | 비움 | 비움 |
+| `GEMINI_DAILY_LIMIT` | 권장(2026-11 조사) | | 서버 전체 Gemini 일일 상한, 한국 시간 자정 초기화 | 비움 | 300(조사 제안) |
+| `IMAGE_TASK_LIMIT_PER_HOUR`, `SLIMSAM_CONCURRENCY`, `SLIMSAM_MAX_QUEUE`, `SLIMSAM_QUEUE_WAIT_MS` | 선택 | | 기본 60 / 1 / 4 / 45000 (개발 트랙 1A-3 이후) | 기본 | 기본 |
 | `ALLOWED_ORIGINS` | 선택 | | 웹 배포 시 Origin 목록 | 비움 | 비움 |
 | `ACCOUNT_DELETE_REAUTH_MAX_AGE_SECONDS`, `ACCOUNT_DELETE_WEB_ATTEMPTS_PER_HOUR` | 선택 | | 기본 600 / 5 | 기본 | 기본 |
 | `FAL_KEY` | ❌ 넣지 않음 | 🔒 | 앱이 fal 경로를 쓰지 않음 | — | — |
