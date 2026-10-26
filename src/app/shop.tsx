@@ -102,9 +102,9 @@ export default function ShopScreen() {
     <Screen>
       <ScreenHeader
         eyebrow="SHOP"
-        badge="샘플 상품"
+        badge="예시 상품"
         title="내 옷장을 위한 추천 상품"
-        description="이미 가진 옷으로 만든 코디를 완성해줄 아이템이에요."
+        description="코디를 완성해줄 아이템의 예시예요. 실제 판매 상품이 아니며 구매 링크는 없어요."
       />
 
       {missingCategory && missingItemName ? (

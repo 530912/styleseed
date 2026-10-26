@@ -16,6 +16,8 @@ const {
 
 const { createFixedWindowCounter } = require("./guestLimiter");
 
+const { createConcurrencyLimiter } = require("./concurrencyLimiter");
+
 const { createAnalyzeQuota, createSupabaseQuotaStore } = require("./quota");
 
 const { createResolveImagePath } = require("./storagePaths");
@@ -170,13 +172,81 @@ const resolveImagePath = createResolveImagePath({
   getSupabaseUrl: () => SUPABASE_URL,
 });
 
-// 이미지 처리 경로: 정식 로그인 사용자만 → 본문 파싱 → 경로 검사·서명
+// 이미지 처리 한도 (Claude B 점검 S-2): 사용자별 시간당 횟수. 이미지 처리 4경로를 합쳐 센다.
+// 옷 1벌 저장은 보통 1~2회(SlimSAM, 실패 시 BRIA)라 일반 사용에는 닿지 않는다.
+app.locals.imageTaskLimit = readPositiveInt(
+  process.env.IMAGE_TASK_LIMIT_PER_HOUR,
+  60,
+);
+
+const imageTaskCounter = createFixedWindowCounter();
+
+app.locals.resetImageTaskCounter = () => imageTaskCounter.reset();
+
+const limitImageTasks = (req, res, next) => {
+  const result = imageTaskCounter.hit(
+    req.auth.userId,
+    app.locals.imageTaskLimit,
+  );
+
+  if (!result.allowed) {
+    res.set("Retry-After", String(result.retryAfterSeconds));
+
+    return res.status(429).json({
+      code: "IMAGE_TASK_RATE_LIMITED",
+      message: "이미지 처리 요청이 너무 많아요. 잠시 후 다시 시도해주세요.",
+      retryAfterSeconds: result.retryAfterSeconds,
+    });
+  }
+
+  return next();
+};
+
+// 이미지 처리 경로: 정식 로그인 사용자만 → 사용자별 한도 → 본문 파싱 → 경로 검사·서명
 const imageTaskGuards = [
   authenticate,
   requireUser,
+  limitImageTasks,
   parseImageTaskBody,
   resolveImagePath,
 ];
+
+// SlimSAM 동시 처리 1건 + 대기열 (R1-02-01 H-1). 앱 제한 시간(90초) 안에 끝나도록 대기는 45초까지
+app.locals.slimSamLimiter = createConcurrencyLimiter({
+  concurrency: readPositiveInt(process.env.SLIMSAM_CONCURRENCY, 1),
+  maxQueue: readPositiveInt(process.env.SLIMSAM_MAX_QUEUE, 4),
+  maxWaitMs: readPositiveInt(process.env.SLIMSAM_QUEUE_WAIT_MS, 45_000),
+});
+
+const holdSlimSamSlot = async (req, res, next) => {
+  let release;
+
+  try {
+    release = await app.locals.slimSamLimiter.acquire();
+  } catch (error) {
+    // 앱은 이 실패를 받으면 BRIA 대체 경로로 넘어간다
+    console.warn("SlimSAM 대기열 거절:", error.reason ?? error.message);
+
+    res.set("Retry-After", "10");
+
+    return res.status(503).json({
+      code: "CUTOUT_BUSY",
+      message: "지금 이미지 처리 요청이 많아요. 잠시 후 다시 시도해주세요.",
+    });
+  }
+
+  // 기다리는 동안 앱이 연결을 끊었으면 처리하지 않는다
+  if (res.writableEnded || req.socket.destroyed) {
+    release();
+
+    return;
+  }
+
+  res.on("finish", release);
+  res.on("close", release);
+
+  return next();
+};
 
 const buildFalImageInput = ({
   imageUrl,
@@ -829,15 +899,17 @@ app.post("/segment-garment", ...imageTaskGuards, async (req, res) => {
   } catch (error) {
     console.error("segment-garment error:", error);
 
+    // 내부 오류 문구는 로그에만 남긴다 (Claude B 점검 S-7)
     return res.status(500).json({
       success: false,
-      message:
-        error instanceof Error ? error.message : "의류 분리에 실패했습니다.",
+      message: "의류 분리에 실패했습니다.",
     });
   }
 });
 
-app.post("/segment-garment-local", ...imageTaskGuards, async (req, res) => {
+const slimSamGuards = [...imageTaskGuards, holdSlimSamSlot];
+
+app.post("/segment-garment-local", ...slimSamGuards, async (req, res) => {
   try {
     // 이미지는 서버가 만든 서명 URL만 쓴다(resolveImagePath)
     const imageUrl = req.imageUrl;
@@ -996,11 +1068,9 @@ app.post("/segment-garment-local", ...imageTaskGuards, async (req, res) => {
 
     console.error("Local SAM Error:", error);
 
+    // 내부 오류 문구는 로그에만 남긴다 (Claude B 점검 S-7)
     return res.status(500).json({
-      message:
-        error instanceof Error
-          ? error.message
-          : "로컬 의류 분리에 실패했습니다.",
+      message: "로컬 의류 분리에 실패했습니다.",
     });
   }
 });
