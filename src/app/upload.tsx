@@ -4,6 +4,8 @@ import { router } from "expo-router";
 
 import { useState } from "react";
 
+import { logResearchEvent } from "../lib/researchEvents";
+
 import {
   ActivityIndicator,
   Alert,
@@ -54,6 +56,9 @@ export default function UploadScreen() {
       const prepared = await prepareClothingImage(asset.uri);
 
       setImage(prepared.uri, prepared.base64);
+
+      // 사용자 조사: 의류 등록 시작 = 등록할 사진을 고름
+      logResearchEvent("register_started");
     } catch (error) {
       console.warn("사진 준비 실패:", error);
 

@@ -41,6 +41,10 @@ import { saveClothingToSupabase } from "../lib/clothes";
 
 import { now, perfLog } from "../lib/perf";
 
+import { logResearchEvent } from "../lib/researchEvents";
+
+import { getEditedFields, toAnalysisErrorCode } from "../lib/researchEventsPolicy";
+
 import { supabase } from "../lib/supabase";
 
 import { getUserErrorMessage } from "../lib/userErrors";
@@ -143,6 +147,11 @@ export default function AnalyzeScreen() {
       return;
     }
 
+    // 사용자 조사: 분석 시작·완료·실패와 걸린 시간
+    const researchStartedAt = Date.now();
+
+    logResearchEvent("analysis_started");
+
     try {
       setLoading(true);
       setError(null);
@@ -169,6 +178,11 @@ export default function AnalyzeScreen() {
 
       setAnalysisResult(data);
 
+      logResearchEvent("analysis_completed", {
+        duration_ms: Date.now() - researchStartedAt,
+        category: data.category,
+      });
+
       setSelectedCategory(data.category);
       setSelectedSubCategory(data.subCategory);
       setSelectedColor(data.color);
@@ -181,6 +195,11 @@ export default function AnalyzeScreen() {
         "분석 요청 실패:",
         isApiError(error) ? `${error.code} ${error.status ?? ""}` : error,
       );
+
+      logResearchEvent("analysis_failed", {
+        duration_ms: Date.now() - researchStartedAt,
+        error_code: toAnalysisErrorCode(isApiError(error) ? error.code : undefined),
+      });
 
       setError(getAnalysisErrorMessage(error));
     } finally {
@@ -264,6 +283,16 @@ export default function AnalyzeScreen() {
 
         imageUri,
       };
+
+      // 사용자 조사: AI 결과를 고쳤는지(고친 속성 키만, 값은 남기지 않음)
+      const editedFields = getEditedFields(analysisResult, newClothing);
+
+      logResearchEvent("analysis_reviewed", {
+        edited: editedFields.length > 0,
+        edited_count: editedFields.length,
+        edited_fields: editedFields.length > 0 ? editedFields.join("|") : "none",
+        category: newClothing.category,
+      });
 
       const {
         data: { session },

@@ -9,3 +9,10 @@ export const isPrototypeEnabled = (value: string | undefined) => value === "true
 export const SHOW_PROTOTYPES = isPrototypeEnabled(
   process.env.EXPO_PUBLIC_SHOW_PROTOTYPES,
 );
+
+// 연구 모드: 사용자 조사 빌드에서만 켠다(EXPO_PUBLIC_RESEARCH_MODE=true).
+// 켜지면 진행자 화면(/research, 홈 로고 길게 누르기)과 기기 내 이벤트 기록이 동작한다.
+// 꺼져 있으면 이벤트를 전혀 남기지 않는다.
+export const RESEARCH_MODE = isPrototypeEnabled(
+  process.env.EXPO_PUBLIC_RESEARCH_MODE,
+);
