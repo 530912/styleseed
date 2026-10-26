@@ -88,6 +88,13 @@ export default function TopLooksScreen() {
 
         {status === "loading" ? (
           <ActivityIndicator color={palette.ink} />
+        ) : status === "signed-out" ? (
+          <EmptyState
+            title="로그인하고 내 옷으로 코디를 확인하세요"
+            action={
+              <Button label="로그인" onPress={() => router.push("/login")} />
+            }
+          />
         ) : (
           <EmptyState
             title="코디를 만들 옷이 부족해요"
