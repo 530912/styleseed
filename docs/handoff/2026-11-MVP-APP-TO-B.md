@@ -51,3 +51,29 @@
 | 사진 AI 동의 화면 실행 확인 | 통합 |
 | 내부 빌드 설치·권한 문구 확인 | ⛔ `eas init` + preview 빌드 |
 | 조사용 DB에서 로그인 흐름 | BUG-25 조사 DB 확정 |
+
+---
+
+## 5. 4차 (2026-10-27) — 1차 범위 추가 기능 + EAS 초기화 전 점검
+
+**브랜치:** A는 B 요청대로 `integration/mvp-2026-11` 기준 새 로컬 브랜치 **`app/mvp-2026-11`**에서 작업(B의 `ce5334d`까지 병합, 충돌 0). `integration/mvp-2026-11`에 병합해 주면 된다(A가 B 작업 트리를 건드리지 않음). `verify-all.sh --export` 전부 통과: backend 101(+1 skip), client 58, engine 35, fkd 36, round1 16, tsc 0, 웹 내보내기.
+
+| B 요청(B→A 인계) | A 처리 |
+|---|---|
+| `INVALID_IMAGE` 문구 | `apiErrors.ts`에 "이 사진은 분석할 수 없어요. 다른 사진으로 다시 시도해주세요." + 테스트 |
+| 타임아웃 협의 | 앱 `ANALYZE_TIMEOUT_MS` 30초 → **50초**. 서버 `GEMINI_TIMEOUT_MS` 40~45초로 올리는 것은 B·PO 결정대로(앱은 준비됨) |
+| `.expo/types` 오래됨 | `verify-all.sh`가 tsc 실패 시 안내 출력 + 로컬 `.env`의 `GEMINI_MODEL`을 비우고 테스트(OG-12가 로컬 `.env` 값에 따라 실패하던 문제) |
+| BUG-31 | B 방식 그대로 사용. A의 [세션 종료]는 `withdrawAiConsent()`를 **한 번 더** 부른다(로그아웃 실패 대비, B 공개 함수만 사용) — 중복이 불편하면 알려 달라 |
+
+**A가 추가한 1차 범위 기능(PO 10/27 결정, 실기기 검증 후 최종 확정):** 카메라 촬영, 온보딩, 저장 후 정보 수정(`clothes` 기존 열 UPDATE), 코디 저장(기기). DB 스키마·`package.json`·`app.json`·`eas.json` 변경 없음.
+
+**B에게 요청(R-16~, 상세는 `docs/release/2026-11-MVP-EAS-PREFLIGHT.md` 4장 B-1~B-7):**
+
+| # | 요청 | 급함 |
+|---|---|---|
+| R-16 (B-1) | 카메라 권한: `cameraPermission` 한국어 문구, Android `CAMERA` 제거 해제, EAS `preview`에 `EXPO_PUBLIC_CAMERA_ENABLED=true`, `check-env --app` 항목 | 카메라를 빌드에 넣으려면 필수 |
+| R-17 (B-2) | `.easignore`(사업 문서 업로드 방지) | **빌드 전 필수** |
+| R-18 (B-6) | `yarn.lock` 삭제(npm 프로젝트) | **빌드 전 필수** |
+| R-19 (B-7) | SDK 57 패치 16개 정렬(`npx expo install --check`) — A·B 중 한 명만, 별도 커밋 | 실기기 E2E 전 |
+| R-20 (B-3·B-4) | PO 결정 후 `owner`, 앱 이름·아이콘 | eas init 전 |
+| R-21 | (B 계정 삭제 흐름) 계정 삭제 성공 시 기기 저장 데이터도 정리: `useSavedLooksStore.getState().clearLooks()` 호출 권장. 지금도 다른 계정에는 보이지 않지만(옷 ID로 구분) 기기에 남는다 | 낮음 |
