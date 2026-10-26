@@ -1,5 +1,7 @@
 # 2026-11 사용자 조사 MVP — 백엔드 배포 준비 (Claude B)
 
+> **10/27 최종 준비·PO 실행 순서는 `2026-11-MVP-GO-LIVE-STEPS.md`가 우선한다.**
+
 | 항목 | 내용 |
 |---|---|
 | 작성 | 2026-10-26, 출시 트랙 Claude B |
@@ -124,7 +126,7 @@ Supabase Free는 **활성 무료 프로젝트 2개 제한**(공식 가격표, 10
 | T1 | 조사 프로젝트 스키마 | 3-3 #5 카탈로그 조회(읽기) | 운영과 같은 정책·버킷·권한 |
 | T2 | 백엔드 → 조사 DB | `node backend/scripts/check-env.mjs --target research`(Railway 셸) | 오류 0. 운영·QA ref면 **오류로 막힘**(이번 추가, 테스트 EV-03b) |
 | T3 | 배포 smoke | `node backend/scripts/verify-deploy.mjs --api <URL> --suite smoke` | `/healthz` 200, CORS·본문 한도·인증 |
-| T4 | 기능 전체(full) | **QA 변수로** 배포한 상태에서 `--suite full` (테스트 계정·사진을 만들므로 **조사 DB에서는 실행하지 않는다**) | R-1~R-10 pass |
+| T4 | 기능 전체(full) | `--suite full` — **10/27 변경: 조사 DB에서 실행**(끝에 계정 삭제로 테스트 계정 자동 정리, 이어서 `verify-research-db.sql`로 사용자·사진 0 확인). QA 배포 회차 생략 | R-1~R-10 pass, 정리 확인 |
 | T5 | 조사 DB 실사용 | 진행자 테스트 계정으로 S1~S8(7장 표) | 전부 통과 |
 | T6 | 정리 | T5 계정을 **앱의 계정 삭제**로 지움 → 옷·사진·`ai_usage`가 함께 지워지는지 조회 | 조사 시작 전 조사 DB 사용자 0명 |
 

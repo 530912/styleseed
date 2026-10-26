@@ -30,4 +30,8 @@ select 'consume_ai_quota: authenticated만 실행, SECURITY DEFINER',
        and (select prosecdef from pg_proc where proname = 'consume_ai_quota')
 union all
 select '조사 시작 전 사용자 0명(진행자 테스트 계정은 삭제 후)',
-       (select count(*) from auth.users) = 0;
+       (select count(*) from auth.users) = 0
+union all
+select '조사 시작 전 사진 0개·옷 0벌(검증 데이터 정리 확인)',
+       (select count(*) from storage.objects where bucket_id = 'clothing-images') = 0
+       and (select count(*) from public.clothes) = 0;
