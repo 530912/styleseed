@@ -18,7 +18,7 @@ import { coreRows, coreSummary, runAnalysis, validateEvent } from "../../../scri
 
 const readJson = (relative) => JSON.parse(fs.readFileSync(new URL(relative, import.meta.url), "utf8"));
 
-const contract = readJson("../../../data/round1/contract/research-events-v0.2.json");
+const contract = readJson("../../../data/round1/contract/research-events-v0.3.json");
 const assignment = readJson("../../../data/round1/experiment/assignment-r1-plus-price-v1.json");
 
 let counter = 0;
@@ -173,4 +173,45 @@ test("내보낸 JSON Lines → 분석: 리허설 제외, 등록 완료율·AI �
   assert.equal(core.missing_click_participants.text, "1/2");
   assert.equal(core.analysis_median_ms, 7000);
   assert.match(result.summary, /AI 결과를 고친 비율 \(고침\/저장 시도\) \| 1\/2/);
+});
+
+test("1차 범위 추가 기능 이벤트(온보딩·카메라·저장 후 수정·코디 저장)도 분석 검사를 통과하고 집계된다", () => {
+  const p03 = openSession("R1-P03");
+  const p04 = openSession("R1-P04");
+
+  const events = [
+    make(p03, "onboarding_completed", { skipped: false, steps_viewed: 3 }),
+    make(p03, "register_started", { source: "camera" }),
+    make(p03, "register_completed", { duration_ms: 9000, cutout_via: "slimsam", after_auth: false }),
+    make(p03, "attribute_edited", { edited_count: 1, edited_fields: "fit", category: "bottom" }),
+    make(p03, "outfit_viewed", { screen: "styling", items_count: 3, missing_count: 0, closet_size: 3 }),
+    make(p03, "outfit_saved", { screen: "styling", items_count: 3 }),
+    make(p03, "saved_outfits_viewed", { saved_count: 1 }),
+    make(p03, "outfit_unsaved", { screen: "saved" }),
+    make(p04, "onboarding_completed", { skipped: true, steps_viewed: 1 }),
+    make(p04, "register_started", { source: "library" }),
+    make(p04, "register_completed", { duration_ms: 7000, cutout_via: "original", after_auth: true }),
+    make(p04, "outfit_viewed", { screen: "looks", items_count: 2, missing_count: 0, closet_size: 2 }),
+  ];
+
+  for (const event of events) {
+    assert.deepEqual(validateEvent(contract, event, assignment), [], event.event_name);
+  }
+
+  // 허용값 밖의 사진 출처는 버린다
+  assert.deepEqual(make(p03, "register_started", { source: "screenshot" }).properties, {});
+
+  const result = runAnalysis(events, contract, assignment);
+  const core = coreSummary(coreRows(contract, result.kept));
+
+  assert.equal(core.onboarding_completed.text, "1/2");
+  assert.equal(core.camera_registers.text, "1/2");
+  assert.equal(core.attribute_edit_participants.text, "1/2");
+  assert.equal(core.outfit_save_participants.text, "1/2");
+  assert.match(result.summary, /추천 코디 저장 \(저장한 사람\/코디 본 사람\) \| 1\/2/);
+});
+
+test("서버의 잘못된 이미지 응답(INVALID_IMAGE)은 그대로 기록한다", () => {
+  assert.equal(toAnalysisErrorCode("INVALID_IMAGE"), "INVALID_IMAGE");
+  assert.ok(contract.enums.analysis_error.includes("INVALID_IMAGE"));
 });

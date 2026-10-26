@@ -1,5 +1,5 @@
 // 사용자 조사(Round 1) 이벤트 규칙 — 저장소·화면과 분리한 순수 함수 (R1-02-03)
-// 계약: data/round1/contract/research-events-v0.2.json, 분석: scripts/round1/events.mjs
+// 계약: data/round1/contract/research-events-v0.3.json, 분석: scripts/round1/events.mjs
 // 이벤트에는 참가 코드만 담는다. 계정 ID·이메일·사진·위치·자유 입력은 담지 않는다.
 
 export type ResearchContract = {
@@ -42,7 +42,7 @@ export type ResearchEvent = {
 };
 
 // 앱 이벤트 형식 버전. 기록 항목을 바꾸면 올린다
-export const RESEARCH_FEATURE_VERSION = "r1-core-0.2";
+export const RESEARCH_FEATURE_VERSION = "r1-core-0.3";
 
 // 기기에 쌓아 둘 최대 개수(세션 1회 수십~수백 개 예상). 넘으면 오래된 것부터 버린다
 export const MAX_STORED_EVENTS = 5000;
@@ -247,6 +247,7 @@ export const toAnalysisErrorCode = (code: string | undefined) => {
     case "AI_BUSY":
     case "AI_RATE_LIMITED":
     case "PAYLOAD_TOO_LARGE":
+    case "INVALID_IMAGE":
       return code;
     case "USER_RATE_LIMITED":
     case "GUEST_RATE_LIMITED":

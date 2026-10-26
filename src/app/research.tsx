@@ -10,7 +10,11 @@ import { palette } from "../constants/ui";
 
 import { resetClosetSync } from "../hooks/use-closet-loader";
 
+import { withdrawAiConsent } from "../lib/aiConsent";
+
 import { RESEARCH_MODE } from "../lib/featureFlags";
+
+import { resetOnboarding } from "../lib/onboarding";
 
 import {
   beginResearchSession,
@@ -92,6 +96,9 @@ function ResearchScreen() {
 
     setMessage(null);
 
+    // 참가자가 첫 실행 안내를 보도록 기기 기록을 지운다(진행자가 미리 넘겼어도 다시 나옴)
+    await resetOnboarding().catch(() => undefined);
+
     await refresh();
   };
 
@@ -135,7 +142,14 @@ function ResearchScreen() {
 
     clearClothes();
 
-    setMessage("세션을 종료하고 로그아웃했어요. 기록은 지우기 전까지 이 기기에 남아 있어요.");
+    // 사진 AI 동의·첫 실행 안내는 기기 단위 기록이라 참가자마다 다시 받도록 지운다(BUG-31)
+    await withdrawAiConsent().catch(() => undefined);
+
+    await resetOnboarding().catch(() => undefined);
+
+    setMessage(
+      "세션을 종료했어요. 로그아웃하고 사진 AI 동의·첫 실행 안내를 초기화했어요. 기록은 지우기 전까지 이 기기에 남아 있어요.",
+    );
 
     await refresh();
   };

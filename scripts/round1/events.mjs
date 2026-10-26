@@ -240,13 +240,22 @@ export const coreRows = (contract, kept) => {
         participant_code: code, app_opens: 0, registers_started: 0, registers_completed: 0, registers_failed: 0,
         analyses_started: 0, analyses_completed: 0, analyses_failed: 0, analysis_ms: [], reviews: 0, reviews_edited: 0,
         edited_fields: {}, outfits_styling: 0, outfits_looks: 0, missing_clicked: 0, missing_viewed: 0, missing_products_clicked: 0,
+        onboarding: "none", registers_camera: 0, attribute_edits: 0, outfits_saved: 0, outfits_unsaved: 0, saved_views: 0,
       });
     }
     const row = rows.get(code);
     const props = event.properties ?? {};
     switch (event.event_name) {
       case "app_opened": row.app_opens += 1; break;
-      case "register_started": row.registers_started += 1; break;
+      case "register_started":
+        row.registers_started += 1;
+        if (props.source === "camera") row.registers_camera += 1;
+        break;
+      case "onboarding_completed": row.onboarding = props.skipped ? "skipped" : "completed"; break;
+      case "attribute_edited": row.attribute_edits += 1; break;
+      case "outfit_saved": row.outfits_saved += 1; break;
+      case "outfit_unsaved": row.outfits_unsaved += 1; break;
+      case "saved_outfits_viewed": row.saved_views += 1; break;
       case "register_completed": row.registers_completed += 1; break;
       case "register_failed": row.registers_failed += 1; break;
       case "analysis_started": row.analyses_started += 1; break;
@@ -304,6 +313,10 @@ export const coreSummary = (rows) => {
     edited_fields: fieldTotals,
     missing_click_participants: ratio(sawStyling.filter((r) => r.missing_clicked > 0).length, sawStyling.length),
     missing_products_participants: ratio(rows.filter((r) => r.missing_products_clicked > 0).length, rows.filter((r) => r.missing_viewed > 0).length),
+    onboarding_completed: ratio(rows.filter((r) => r.onboarding === "completed").length, rows.filter((r) => r.onboarding !== "none").length),
+    camera_registers: ratio(sum("registers_camera"), sum("registers_started")),
+    attribute_edit_participants: ratio(rows.filter((r) => r.attribute_edits > 0).length, rows.filter((r) => r.registers_completed > 0).length),
+    outfit_save_participants: ratio(rows.filter((r) => r.outfits_saved > 0).length, rows.filter((r) => r.outfits_styling + r.outfits_looks > 0).length),
   };
 };
 
@@ -321,6 +334,10 @@ export const coreSummaryMarkdown = (core) => [
   `| 고친 속성 | ${Object.entries(core.edited_fields).map(([k, n]) => `${k} ${n}`).join(", ") || "없음"} |`,
   `| Missing Item 클릭 (클릭한 사람/코디 본 사람) | ${core.missing_click_participants.text} |`,
   `| 예시 상품 보기 (누른 사람/Missing 본 사람) | ${core.missing_products_participants.text} |`,
+  `| 온보딩 끝까지 봄 (완료/온보딩 본 사람) | ${core.onboarding_completed.text} |`,
+  `| 카메라로 등록 시작 (카메라/등록 시작) | ${core.camera_registers.text} |`,
+  `| 저장 후 정보 수정 (수정한 사람/저장한 사람) | ${core.attribute_edit_participants.text} |`,
+  `| 추천 코디 저장 (저장한 사람/코디 본 사람) | ${core.outfit_save_participants.text} |`,
   "",
 ].join("\n");
 

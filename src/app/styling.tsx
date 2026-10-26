@@ -8,6 +8,8 @@ import { ScoreBars } from "../components/styleseed/score-bars";
 
 import { LookBoard } from "../components/styleseed/look-board";
 
+import { SaveLookButton } from "../components/styleseed/save-look-button";
+
 import {
   Badge,
   Button,
@@ -181,6 +183,12 @@ export default function StylingScreen() {
       <Text style={styles.itemNames} numberOfLines={2}>
         {recommendation.items.map(getClothingName).join("  ·  ")}
       </Text>
+
+      <SaveLookButton
+        itemIds={recommendation.items.map((item) => item.id)}
+        baseItemId={selectedClothing.id}
+        source="styling"
+      />
 
       <View style={styles.scoreRow}>
         <ScoreDisplay

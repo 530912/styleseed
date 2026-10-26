@@ -630,6 +630,51 @@ export const replaceClothingImage = async (
   };
 };
 
+// 저장한 뒤 고칠 수 있는 속성 (분석 화면에서 고칠 수 있는 항목과 같다)
+export type EditableClothingAttributes = Pick<
+  Clothing,
+  "category" | "subCategory" | "color" | "fit" | "material" | "style"
+>;
+
+/**
+ * 저장한 옷의 속성 수정 (2026-11 사용자 조사 1차 범위)
+ *
+ * 기존 열의 값만 바꾼다(스키마 변경 없음). 본인 행만 바뀐다(RLS).
+ */
+export const updateClothingAttributes = async (
+  clothingId: number,
+  attributes: EditableClothingAttributes,
+) => {
+  const { data, error } = await supabase
+    .from("clothes")
+    .update({
+      category: attributes.category,
+
+      sub_category: attributes.subCategory,
+
+      color: attributes.color,
+
+      fit: attributes.fit,
+
+      material: attributes.material,
+
+      style: attributes.style,
+    })
+    .eq("id", clothingId)
+    .select("id");
+
+  if (error) {
+    throw error;
+  }
+
+  // RLS로 막히면 오류 없이 0행이 바뀐다
+  if (!data || data.length === 0) {
+    throw new Error("옷 정보를 바꾸지 못했어요. 다시 로그인한 뒤 시도해주세요.");
+  }
+
+  return attributes;
+};
+
 /**
  * 옷 + 연결된 Storage 이미지 삭제
  */

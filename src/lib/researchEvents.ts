@@ -6,7 +6,7 @@ import { Platform } from "react-native";
 
 import assignmentTable from "../../data/round1/experiment/assignment-r1-plus-price-v1.json";
 
-import eventsContract from "../../data/round1/contract/research-events-v0.2.json";
+import eventsContract from "../../data/round1/contract/research-events-v0.3.json";
 
 import { RESEARCH_MODE } from "./featureFlags";
 

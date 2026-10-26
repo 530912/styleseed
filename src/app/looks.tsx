@@ -12,6 +12,8 @@ import {
 
 import { LookBoard } from "../components/styleseed/look-board";
 
+import { SaveLookButton } from "../components/styleseed/save-look-button";
+
 import { ScoreBars } from "../components/styleseed/score-bars";
 
 import {
@@ -157,6 +159,12 @@ export default function TopLooksScreen() {
         <Text style={styles.itemNames} numberOfLines={1}>
           {bestLook.items.map(getClothingName).join("  ·  ")}
         </Text>
+
+        <SaveLookButton
+          itemIds={bestLook.items.map((item) => item.id)}
+          baseItemId={bestLook.base.id}
+          source="looks"
+        />
 
         {bestLook.reasons.slice(0, 2).map((reason) => (
           <Text key={reason} style={styles.reason} numberOfLines={1}>

@@ -210,7 +210,7 @@ export default function ClosetScreen() {
 
             <View style={styles.footerRow}>
               <Button
-                label="사진 수정"
+                label="옷 수정"
                 variant="secondary"
                 disabled={!selectedClothing}
                 onPress={handleEditImage}
@@ -237,6 +237,10 @@ export default function ClosetScreen() {
             <>
               <Pressable onPress={() => router.push("/upload")} hitSlop={8}>
                 <Text style={styles.headerLink}>+ 추가</Text>
+              </Pressable>
+
+              <Pressable onPress={() => router.push("/saved-looks")} hitSlop={8}>
+                <Text style={styles.headerLink}>저장한 코디</Text>
               </Pressable>
 
               <Pressable onPress={() => router.push("/account")} hitSlop={8}>

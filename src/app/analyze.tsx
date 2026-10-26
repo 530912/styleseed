@@ -72,8 +72,9 @@ const STEP_INTERVAL_MS = 450;
 
 type EditableField = "category" | "color" | "fit" | "material" | "style";
 
-// 로그인 전에도 분석할 수 있다(guest). 백엔드 Gemini 제한 시간(25초)보다 길게 기다린다.
-const ANALYZE_TIMEOUT_MS = 30_000;
+// 로그인 전에도 분석할 수 있다(guest). 백엔드 Gemini 제한 시간보다 길게 기다린다.
+// 서버 GEMINI_TIMEOUT_MS를 40~45초로 올릴 수 있게 50초로 둔다(Claude B 인계 4번, 서버값은 PO 결정)
+const ANALYZE_TIMEOUT_MS = 50_000;
 
 // 백엔드 실패를 사용자가 이해할 수 있는 원인별 문구로 바꾼다.
 const getAnalysisErrorMessage = (error: unknown) => {

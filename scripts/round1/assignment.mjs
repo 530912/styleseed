@@ -9,7 +9,7 @@ import path from "node:path";
 
 import { ROOT } from "../fkd/lib.mjs";
 
-export const EVENTS_CONTRACT_PATH = path.join(ROOT, "data/round1/contract/research-events-v0.2.json");
+export const EVENTS_CONTRACT_PATH = path.join(ROOT, "data/round1/contract/research-events-v0.3.json");
 export const ASSIGNMENT_PATH = path.join(ROOT, "data/round1/experiment/assignment-r1-plus-price-v1.json");
 export const ASSIGNMENT_SEED = "styleseed/r1-plus-price-v1/2026-10-19";
 export const BLOCKS = 7;

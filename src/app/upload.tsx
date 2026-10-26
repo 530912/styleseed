@@ -6,10 +6,13 @@ import { useState } from "react";
 
 import { logResearchEvent } from "../lib/researchEvents";
 
+import { isCameraCaptureAvailable } from "../lib/camera";
+
 import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
@@ -33,7 +36,29 @@ export default function UploadScreen() {
 
   const setImage = useAnalysisStore((state) => state.setImage);
 
-  const pickImage = async () => {
+  const canUseCamera = isCameraCaptureAvailable();
+
+  // 카메라 권한이 없으면 설정으로 안내한다. 허용되면 true
+  const ensureCameraPermission = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (permission.granted) {
+      return true;
+    }
+
+    Alert.alert(
+      "카메라 권한이 필요해요",
+      "옷 사진을 찍으려면 설정에서 카메라 접근을 허용해주세요. 앨범에서 사진을 골라도 돼요.",
+      [
+        { text: "취소", style: "cancel" },
+        { text: "설정 열기", onPress: () => Linking.openSettings() },
+      ],
+    );
+
+    return false;
+  };
+
+  const pickImage = async (source: "library" | "camera" = "library") => {
     if (pickingImage) {
       return;
     }
@@ -41,12 +66,21 @@ export default function UploadScreen() {
     try {
       setPickingImage(true);
 
+      if (source === "camera" && !(await ensureCameraPermission())) {
+        return;
+      }
+
       // 원본은 압축 없이 받고, 아래 prepareClothingImage에서 한 번만 줄이고 압축한다(KI-9)
-      const result = await ImagePicker.launchImageLibraryAsync({
+      const options: ImagePicker.ImagePickerOptions = {
         mediaTypes: ["images"],
         allowsEditing: true,
         quality: 1,
-      });
+      };
+
+      const result =
+        source === "camera"
+          ? await ImagePicker.launchCameraAsync(options)
+          : await ImagePicker.launchImageLibraryAsync(options);
 
       if (result.canceled) {
         return;
@@ -60,7 +94,7 @@ export default function UploadScreen() {
       setImage(prepared.uri, prepared.base64);
 
       // 사용자 조사: 의류 등록 시작 = 등록할 사진을 고름
-      logResearchEvent("register_started");
+      logResearchEvent("register_started", { source });
     } catch (error) {
       console.warn("사진 준비 실패:", error);
 
@@ -108,7 +142,7 @@ export default function UploadScreen() {
 
       <Pressable
         style={styles.imageBox}
-        onPress={pickImage}
+        onPress={() => pickImage("library")}
         disabled={pickingImage}
         accessibilityRole="button"
         accessibilityLabel="옷 사진 선택"
@@ -123,7 +157,7 @@ export default function UploadScreen() {
           <View style={styles.placeholder}>
             <Text style={styles.plus}>+</Text>
 
-            <Text style={styles.placeholderTitle}>탭해서 사진 올리기</Text>
+            <Text style={styles.placeholderTitle}>탭해서 앨범에서 사진 고르기</Text>
 
             <Text style={styles.placeholderText}>
               사진 한 장에 옷 한 벌만 담으면 가장 정확해요.
@@ -139,14 +173,35 @@ export default function UploadScreen() {
       </Pressable>
 
       {imageUri ? (
-        <Pressable
-          style={styles.changeButton}
-          onPress={pickImage}
+        <View style={styles.changeRow}>
+          <Pressable
+            style={styles.changeButton}
+            onPress={() => pickImage("library")}
+            disabled={pickingImage}
+            hitSlop={8}
+          >
+            <Text style={styles.changeText}>사진 바꾸기</Text>
+          </Pressable>
+
+          {canUseCamera ? (
+            <Pressable
+              style={styles.changeButton}
+              onPress={() => pickImage("camera")}
+              disabled={pickingImage}
+              hitSlop={8}
+            >
+              <Text style={styles.changeText}>다시 찍기</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : canUseCamera ? (
+        <Button
+          label="카메라로 찍기"
+          variant="secondary"
+          onPress={() => pickImage("camera")}
           disabled={pickingImage}
-          hitSlop={8}
-        >
-          <Text style={styles.changeText}>사진 바꾸기</Text>
-        </Pressable>
+          style={styles.cameraButton}
+        />
       ) : null}
     </Screen>
   );
@@ -203,9 +258,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
+  changeRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 24,
+  },
+
   changeButton: {
     marginTop: 14,
     alignSelf: "center",
+  },
+
+  cameraButton: {
+    marginTop: 14,
   },
 
   changeText: {

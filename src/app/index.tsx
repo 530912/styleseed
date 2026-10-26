@@ -18,6 +18,8 @@ import { useWeather } from "../hooks/use-weather";
 
 import { RESEARCH_MODE } from "../lib/featureFlags";
 
+import { takeOnboardingTurn } from "../lib/onboarding";
+
 import { getResearchSession } from "../lib/researchEvents";
 
 import { isSignedIn } from "../lib/sessionPolicy";
@@ -58,13 +60,30 @@ function HomeScreen() {
   // 연구 모드에서 참가 코드를 아직 정하지 않았으면 진행자에게 안내한다
   const [needsResearchSetup, setNeedsResearchSetup] = useState(false);
 
+  // 첫 실행 안내: 연구 모드에서는 진행자가 참가 코드를 정한 뒤(참가자에게 기기를 건넨 뒤)에만 띄운다
   useFocusEffect(
     useCallback(() => {
-      if (!RESEARCH_MODE) {
-        return;
-      }
+      let active = true;
 
-      getResearchSession().then((session) => setNeedsResearchSetup(!session));
+      (async () => {
+        const session = RESEARCH_MODE ? await getResearchSession() : null;
+
+        if (!active) {
+          return;
+        }
+
+        if (RESEARCH_MODE) {
+          setNeedsResearchSetup(!session);
+        }
+
+        if ((!RESEARCH_MODE || session) && (await takeOnboardingTurn()) && active) {
+          router.push("/onboarding");
+        }
+      })();
+
+      return () => {
+        active = false;
+      };
     }, []),
   );
 

@@ -73,7 +73,7 @@ export default function ClothingImageScreen() {
   if (!clothing) {
     return (
       <Screen>
-        <ScreenHeader eyebrow="ITEM" title="옷 사진 수정" />
+        <ScreenHeader eyebrow="ITEM" title="옷 수정" />
 
         {status === "loading" ? (
           <ActivityIndicator color={palette.ink} />
@@ -162,8 +162,19 @@ export default function ClothingImageScreen() {
     <Screen footer={<Button label="완료" onPress={() => router.back()} />}>
       <ScreenHeader
         eyebrow="ITEM"
-        title="옷 사진 수정"
+        title="옷 수정"
         description={`${getClothingName(clothing)} · ${toTitle(clothing.subCategory)}`}
+      />
+
+      <Button
+        label="옷 정보 수정 (카테고리·색·핏·소재·스타일)"
+        onPress={() =>
+          router.push({
+            pathname: "/edit-item",
+            params: { clothingId: String(clothing.id) },
+          })
+        }
+        style={styles.editInfoButton}
       />
 
       <ClothingImage
@@ -251,6 +262,10 @@ function ImageOption({
 }
 
 const styles = StyleSheet.create({
+  editInfoButton: {
+    marginBottom: 16,
+  },
+
   preview: {
     width: "100%",
     height: 300,

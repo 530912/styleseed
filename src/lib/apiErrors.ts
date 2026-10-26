@@ -14,6 +14,7 @@ export type ApiErrorCode =
   | "GUEST_RATE_LIMITED"
   | "AI_BUSY"
   | "NETWORK"
+  | "INVALID_IMAGE"
   | "UNKNOWN";
 
 type ErrorBody = {
@@ -35,6 +36,7 @@ const KNOWN_CODES: readonly ApiErrorCode[] = [
   "GUEST_RATE_LIMITED",
   "AI_BUSY",
   "NETWORK",
+  "INVALID_IMAGE",
 ];
 
 export class ApiError extends Error {
@@ -163,6 +165,10 @@ export const getApiErrorMessage = (error: unknown, fallback: string) => {
 
     case "PAYLOAD_TOO_LARGE":
       return "사진 용량이 너무 커요. 다른 사진을 선택해주세요.";
+
+    // 서버가 이미지 형식을 확인하지 못함(Gemini 호출 전 검사, Claude B R-8)
+    case "INVALID_IMAGE":
+      return "이 사진은 분석할 수 없어요. 다른 사진으로 다시 시도해주세요.";
 
     case "NETWORK":
       return "서버에 연결할 수 없어요. 네트워크 상태를 확인해주세요.";

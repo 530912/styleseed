@@ -128,3 +128,10 @@ test("TS-17 회원가입 경로도 같은 안내, Supabase 오류는 기본 문�
   assert.equal(alert.title, "회원가입은 완료됐어요");
   assert.match(alert.message, /잠시 후 다시 시도해주세요/);
 });
+
+test("서버의 이미지 사전 검사 실패(400 INVALID_IMAGE)는 다른 사진을 고르라고 안내한다", () => {
+  const error = toApiError(400, { code: "INVALID_IMAGE", message: "이미지 형식을 확인하지 못했어요." });
+
+  assert.equal(error.code, "INVALID_IMAGE");
+  assert.match(getApiErrorMessage(error, "fallback"), /다른 사진으로 다시 시도/);
+});
