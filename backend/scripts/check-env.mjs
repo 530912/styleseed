@@ -6,6 +6,7 @@
 //   node backend/scripts/check-env.mjs --target qa
 //   node backend/scripts/check-env.mjs --target production
 //   node backend/scripts/check-env.mjs --target research     # 2026-11 사용자 조사 전용 프로젝트(운영·QA가 아니어야 함)
+//   node backend/scripts/check-env.mjs --app --target research   # 앱 빌드(EAS) 변수 EXPO_PUBLIC_* 점검(R-13)
 //   railway run node scripts/check-env.mjs --target production     # (승인 후) 서비스 변수로 실행
 //
 // 종료 코드: 오류(error)가 하나라도 있으면 1. 경고(warn)만 있으면 0.
@@ -122,6 +123,79 @@ export const checkEnv = (env, { target } = {}) => {
   return results;
 };
 
+// 앱 빌드 변수(EXPO_PUBLIC_*) 점검 (R-13). 빌드 전에 EAS 환경 값으로 실행한다.
+// API 주소가 비면 앱이 localhost로 가서 실기기 분석이 모두 실패한다(BUG-32)
+export const checkAppEnv = (env, { target } = {}) => {
+  const results = [];
+
+  const value = (name) => String(env[name] ?? "").trim();
+
+  const push = (name, status, note) => results.push({ name, status, note });
+
+  const apiUrl = value("EXPO_PUBLIC_API_URL");
+
+  if (!apiUrl) {
+    push("EXPO_PUBLIC_API_URL", "error", "설정 안 됨 — 앱이 localhost로 요청함");
+  } else if (!/^https:\/\/[^/\s]+\/?$/.test(apiUrl) || /localhost|127\.0\.0\.1/.test(apiUrl)) {
+    push("EXPO_PUBLIC_API_URL", "error", "배포 서버의 https 주소가 아님(경로 없이 https://<호스트>)");
+  } else {
+    push("EXPO_PUBLIC_API_URL", "ok", "형식 확인");
+  }
+
+  const supabaseUrl = value("EXPO_PUBLIC_SUPABASE_URL");
+
+  const ref = SUPABASE_URL_PATTERN.exec(supabaseUrl)?.[1];
+
+  push("EXPO_PUBLIC_SUPABASE_URL", ref ? "ok" : "error", ref ? "형식 확인" : "https://<ref>.supabase.co 형식이 아님");
+
+  const publishable = value("EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
+
+  push(
+    "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+    publishable.startsWith("sb_publishable_") ? "ok" : "error",
+    publishable.startsWith("sb_publishable_") ? "형식 확인" : "sb_publishable_ 로 시작하지 않음",
+  );
+
+  if (target && ref) {
+    const isProduction = ref === PRODUCTION_PROJECT_REF;
+
+    const isQa = ref === QA_PROJECT_REF;
+
+    const mismatch =
+      target === "research" ? isProduction || isQa : (target === "production") !== isProduction;
+
+    push("(앱 대상 프로젝트)", mismatch ? "error" : "ok", mismatch ? `--target ${target}와 다른 프로젝트` : `${target} 프로젝트와 일치`);
+  }
+
+  const researchMode = value("EXPO_PUBLIC_RESEARCH_MODE");
+
+  if (target === "research") {
+    push("EXPO_PUBLIC_RESEARCH_MODE", researchMode === "true" ? "ok" : "error", researchMode === "true" ? "연구 빌드" : "조사 빌드는 true여야 함(이벤트 기록·진행자 화면)");
+  } else if (researchMode) {
+    push("EXPO_PUBLIC_RESEARCH_MODE", "warn", "조사 빌드가 아니면 비워 둠");
+  }
+
+  if (value("EXPO_PUBLIC_SHOW_PROTOTYPES")) {
+    push("EXPO_PUBLIC_SHOW_PROTOTYPES", "error", "연구·배포 빌드에는 넣지 않음(프로토타입 화면 노출)");
+  }
+
+  if (value("EXPO_PUBLIC_GEMINI_PAID_TIER") !== "true") {
+    push("EXPO_PUBLIC_GEMINI_PAID_TIER", "warn", "유료 등급 전환 후 true(무료 등급 고지 문구가 표시됨)");
+  }
+
+  for (const name of Object.keys(env)) {
+    if (name.startsWith("EXPO_PUBLIC_") && /SECRET|SERVICE_ROLE|GEMINI_API_KEY|BRIA|FAL/.test(name)) {
+      push(name, "error", "비밀값처럼 보이는 EXPO_PUBLIC_ 변수(앱 번들에 노출됨)");
+    }
+  }
+
+  if (publishable && publishable.startsWith("sb_secret_")) {
+    push("(키 종류)", "error", "앱에 관리자 키를 넣음");
+  }
+
+  return results;
+};
+
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 
 if (isMain) {
@@ -134,7 +208,9 @@ if (isMain) {
     process.exit(2);
   }
 
-  const results = checkEnv(process.env, { target });
+  const results = process.argv.includes("--app")
+    ? checkAppEnv(process.env, { target })
+    : checkEnv(process.env, { target });
 
   const mark = { ok: "OK  ", warn: "WARN", error: "ERR " };
 

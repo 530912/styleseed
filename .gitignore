@@ -50,3 +50,6 @@ google-services.json
 GoogleService-Info.plist
 *service-account*.json
 credentials.json
+
+# 국내 가상서버 배포 비밀값(서버에만 둔다)
+deploy/vm/api.env

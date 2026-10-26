@@ -8,9 +8,11 @@ import {
 } from "../accountDeletionPolicy.ts";
 
 import {
+  consentOwnerFromSession,
   createAiConsentRecord,
   isAiConsentValid,
   parseAiConsent,
+  resolveAiConsent,
 } from "../aiConsentPolicy.ts";
 
 test("AC-01 200 deleted=true만 삭제 완료로 본다", () => {
@@ -54,9 +56,9 @@ test("AC-05 앱과 서버의 확인 문구가 같다", async () => {
 });
 
 test("CS-01 현재 버전으로 저장한 동의만 유효", () => {
-  const record = createAiConsentRecord("v2", new Date("2026-10-19T00:00:00Z"));
+  const record = createAiConsentRecord("v2", { now: new Date("2026-10-19T00:00:00Z") });
 
-  assert.deepEqual(record, { version: "v2", acceptedAt: "2026-10-19T00:00:00.000Z" });
+  assert.deepEqual(record, { version: "v2", acceptedAt: "2026-10-19T00:00:00.000Z", ownerId: null });
   assert.equal(isAiConsentValid(record, "v2"), true);
   assert.equal(isAiConsentValid(record, "v3"), false, "문구가 바뀌면 다시 동의");
 });
@@ -66,6 +68,9 @@ test("CS-02 기록이 없거나 깨졌으면 동의하지 않은 것으로 본�
   assert.equal(isAiConsentValid({ version: "v2" }, "v2"), false);
   assert.equal(isAiConsentValid({ version: "v2", acceptedAt: "not-a-date" }, "v2"), false);
   assert.equal(isAiConsentValid("v2", "v2"), false);
+  // ownerId가 없는 예전(기기 단위) 기록은 다시 동의(BUG-31)
+  assert.equal(isAiConsentValid({ version: "v2", acceptedAt: "2026-10-19T00:00:00.000Z" }, "v2"), false);
+  assert.equal(isAiConsentValid({ version: "v2", acceptedAt: "2026-10-19T00:00:00.000Z", ownerId: "" }, "v2"), false);
 });
 
 test("CS-03 저장소 문자열 파싱", () => {
@@ -76,4 +81,41 @@ test("CS-03 저장소 문자열 파싱", () => {
     version: "v2",
     acceptedAt: "2026-10-19T00:00:00.000Z",
   });
+});
+
+// BUG-31: 동의는 동의한 사용자에게 묶인다
+const USER_A = "00000000-0000-4000-8000-00000000000a";
+const USER_B = "00000000-0000-4000-8000-00000000000b";
+
+test("CS-05 동의 주인: 정식 사용자만 ID, 세션 없음·익명은 null", () => {
+  assert.equal(consentOwnerFromSession(null), null);
+  assert.equal(consentOwnerFromSession({ user: null }), null);
+  assert.equal(consentOwnerFromSession({ user: { id: USER_A, is_anonymous: true } }), null);
+  assert.equal(consentOwnerFromSession({ user: { id: USER_A, is_anonymous: false } }), USER_A);
+  assert.equal(consentOwnerFromSession({ user: { id: USER_A } }), USER_A);
+});
+
+test("CS-06 같은 사용자 동의는 유효, 다른 사용자 동의는 무효", () => {
+  const byA = createAiConsentRecord("v2", { ownerId: USER_A });
+
+  assert.equal(resolveAiConsent(byA, "v2", USER_A), "valid");
+  assert.equal(resolveAiConsent(byA, "v2", USER_B), "invalid", "참가자 B는 다시 동의");
+  assert.equal(resolveAiConsent(byA, "v2", null), "invalid", "로그아웃 상태에서 A의 동의를 쓰지 않음");
+  assert.equal(resolveAiConsent(byA, "v3", USER_A), "invalid", "문구 버전이 바뀌면 다시 동의");
+});
+
+test("CS-07 로그인 전 동의는 로그인 전에는 유효, 로그인하면 그 사용자에게 귀속", () => {
+  const beforeLogin = createAiConsentRecord("v2", { ownerId: null });
+
+  assert.equal(resolveAiConsent(beforeLogin, "v2", null), "valid");
+  assert.equal(resolveAiConsent(beforeLogin, "v2", USER_A), "adopt");
+
+  const adopted = createAiConsentRecord("v2", { ownerId: USER_A });
+
+  assert.equal(resolveAiConsent(adopted, "v2", USER_B), "invalid");
+});
+
+test("CS-08 기록 없음·예전 형식은 다시 동의", () => {
+  assert.equal(resolveAiConsent(null, "v2", USER_A), "invalid");
+  assert.equal(resolveAiConsent({ version: "v2", acceptedAt: "2026-10-19T00:00:00.000Z" }, "v2", null), "invalid");
 });

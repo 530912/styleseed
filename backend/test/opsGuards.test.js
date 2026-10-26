@@ -48,11 +48,20 @@ let modelVersion = "gemini-3.6-flash";
 
 let geminiHangs = false;
 
+let geminiStatus = 200;
+
 globalThis.fetch = async (url, options) => {
   if (String(url).includes("generativelanguage.googleapis.com")) {
     geminiCalls += 1;
 
     lastGeminiBody = JSON.parse(options.body);
+
+    if (geminiStatus !== 200) {
+      return new Response(JSON.stringify({ error: { code: geminiStatus } }), {
+        status: geminiStatus,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     if (geminiHangs) {
       return new Promise((_, reject) => {
@@ -135,6 +144,7 @@ test.beforeEach(() => {
   geminiCalls = 0;
   modelVersion = "gemini-3.6-flash";
   geminiHangs = false;
+  geminiStatus = 200;
   app.locals.resetQuotaCounters();
   app.locals.geminiDailyCap.reset();
   app.locals.geminiDailyLimit = defaultDailyLimit;
@@ -354,4 +364,20 @@ test("OG-12 Gemini 시간 초과도 gemini_call 한 줄(status: timeout)로 집�
   assert.ok(call);
   assert.equal(call.status, "timeout");
   assert.equal(call.model, "gemini-3.6-flash");
+});
+
+test("OG-13 Gemini 402(선불 크레딧 소진)는 503 AI_CREDIT_EXHAUSTED + 로그 한 줄, 재시도 없음", async (t) => {
+  const lines = captureLogs(t);
+
+  geminiStatus = 402;
+
+  const response = await post(baseUrl, "/analyze-clothing", { body: { imageBase64: JPEG } });
+
+  const body = await response.json();
+
+  assert.equal(response.status, 503);
+  assert.equal(body.code, "AI_CREDIT_EXHAUSTED");
+  assert.equal(geminiCalls, 1);
+  assert.ok(lines.some((line) => line.evt === "gemini_credit_exhausted"));
+  assert.ok(lines.some((line) => line.evt === "gemini_call" && line.status === 402));
 });

@@ -862,6 +862,17 @@ ${GEMINI_MASK_INSTRUCTIONS}  Return the result using only the allowed values def
           });
         }
 
+        // 402: Gemini 선불 크레딧 소진(모든 키가 멈춤). 운영자가 로그에서 바로 구분하도록 별도 코드.
+        // 앱은 503을 "AI 혼잡"으로 안내한다(앱 변경 없음)
+        if (response.status === 402) {
+          logEvent("gemini_credit_exhausted", { model: GEMINI_MODEL });
+
+          return res.status(503).json({
+            code: "AI_CREDIT_EXHAUSTED",
+            message: "AI 분석을 잠시 사용할 수 없어요. 잠시 후 다시 시도해주세요.",
+          });
+        }
+
         if (RETRYABLE_GEMINI_STATUSES.includes(response.status)) {
           return res.status(503).json({
             code: "AI_BUSY",
