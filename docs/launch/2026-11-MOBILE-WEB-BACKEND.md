@@ -95,7 +95,7 @@ npx expo export --platform web --output-dir dist
 
 | # | 문제 | 해결 |
 |---|---|---|
-| 1 | 카페24 서버 **설치 중(IP 미발급)** | 개통 대기 |
+| 1 | 카페24 서버 **개통 완료(10/27): IP `172.104.120.148`, 서버 ON, 자동연장 미사용, 기간 2026-10-27 ~ 2026-11-26** | 다음: `bash deploy/vm/bootstrap.sh 172.104.120.148`(PO). `styleseed.mycafe24.com`이 이 IP를 가리키는지 확인 필요 |
 | 2 | 이 세션에서 서버로 **SSH 불가**(샌드박스, 네트워크 22번 차단 가능성) | PO가 `bootstrap.sh` 실행(다른 네트워크 필요할 수 있음), 이후 SSH 허용 또는 PO가 `deploy*.sh` 실행 |
 | 3 | **조사용 Supabase**·**Gemini 키** 미준비 | PO(`supabase/research/README.md`, `GO-LIVE-STEPS` 2장) |
 | 4 | `mycafe24.com` 주소는 Railway로 가져갈 수 없음 | 12월 이전 시 웹·API 주소가 바뀌어 **웹 재배포 필요**(모바일 웹은 재배포가 쉬워 큰 문제 아님). 자체 도메인을 쓰면 DNS만 변경 |
