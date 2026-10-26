@@ -7,6 +7,8 @@ import type {
 
 import { joinTitles } from "./format";
 
+import { getEngineCategory, getOutfitRole } from "./taxonomyCompat";
+
 export type CompatibilityResult = {
   total: number;
 
@@ -70,8 +72,8 @@ const getColorScore = (
 };
 
 const getCategoryScore = (
-  firstCategory: ClothingCategory,
-  secondCategory: ClothingCategory,
+  firstCategory: ClothingCategory | null,
+  secondCategory: ClothingCategory | null,
 ) => {
   if (firstCategory === secondCategory) {
     return 0;
@@ -147,9 +149,10 @@ export const getCompatibilityScore = (
     reasons.push("색상 조합이 안정적이에요.");
   }
 
+  // Lab 연구 분류(예: 대분류 jumpsuit)도 앱 대분류로 바꿔 비교한다(taxonomyCompat)
   const categoryScore = getCategoryScore(
-    firstClothing.category,
-    secondClothing.category,
+    getEngineCategory(firstClothing),
+    getEngineCategory(secondClothing),
   );
 
   const total =
@@ -201,15 +204,13 @@ const OUTFIT_CATEGORY_PLAN: Partial<
   accessory: ["top", "bottom", "shoes"],
 };
 
-export const findBestMatch = (
+const findBestMatchWhere = (
   selectedClothing: Clothing,
   clothes: Clothing[],
-  targetCategory: ClothingCategory,
+  isCandidate: (clothing: Clothing) => boolean,
 ): OutfitMatch | null => {
   const candidates = clothes.filter(
-    (clothing) =>
-      clothing.id !== selectedClothing.id &&
-      clothing.category === targetCategory,
+    (clothing) => clothing.id !== selectedClothing.id && isCandidate(clothing),
   );
 
   if (candidates.length === 0) {
@@ -229,12 +230,64 @@ export const findBestMatch = (
   return scoredCandidates[0];
 };
 
+export const findBestMatch = (
+  selectedClothing: Clothing,
+  clothes: Clothing[],
+  targetCategory: ClothingCategory,
+): OutfitMatch | null =>
+  findBestMatchWhere(
+    selectedClothing,
+    clothes,
+    (clothing) => getEngineCategory(clothing) === targetCategory,
+  );
+
+/**
+ * 니트·테일러드 베스트(상의 겸 레이어)만 상의로 들어간 코디에 안에 입을 상의를 찾는다.
+ * 일반 상의가 이미 있거나 베스트가 없으면 null. (앱 41개 값만 쓰는 옷장에서는 항상 null)
+ */
+export const findInnerTopForLayer = (
+  items: Clothing[],
+  clothes: Clothing[],
+): OutfitMatch | null => {
+  const layer = items.find((item) => getOutfitRole(item) === "topLayer");
+
+  if (!layer || items.some((item) => getOutfitRole(item) === "top")) {
+    return null;
+  }
+
+  return findBestMatchWhere(
+    layer,
+    clothes.filter((clothing) => !items.some((item) => item.id === clothing.id)),
+    (clothing) => getOutfitRole(clothing) === "top",
+  );
+};
+
+/** 일반 상의 하나만 있는 코디에 겹쳐 입을 베스트(상의 겸 레이어)를 찾는다. 없으면 null */
+export const findTopLayerFor = (
+  items: Clothing[],
+  clothes: Clothing[],
+): OutfitMatch | null => {
+  const tops = items.filter((item) => getOutfitRole(item) === "top");
+
+  if (tops.length !== 1 || items.some((item) => getOutfitRole(item) === "topLayer")) {
+    return null;
+  }
+
+  return findBestMatchWhere(
+    tops[0],
+    clothes.filter((clothing) => !items.some((item) => item.id === clothing.id)),
+    (clothing) => getOutfitRole(clothing) === "topLayer",
+  );
+};
+
 export const getRecommendedOutfit = (
   selectedClothing: Clothing,
   clothes: Clothing[],
 ): OutfitRecommendation => {
+  const engineCategory = getEngineCategory(selectedClothing);
+
   const targetCategories =
-    OUTFIT_CATEGORY_PLAN[selectedClothing.category] ?? [];
+    (engineCategory && OUTFIT_CATEGORY_PLAN[engineCategory]) ?? [];
 
   const recommendedItems: Clothing[] = [selectedClothing];
 
@@ -260,6 +313,19 @@ export const getRecommendedOutfit = (
       reasons.add(reason);
     });
   });
+
+  // 베스트(상의 겸 레이어)만 상의로 들어가면 안에 입을 상의를 더한다
+  const innerTop = findInnerTopForLayer(recommendedItems, clothes);
+
+  if (innerTop) {
+    recommendedItems.push(innerTop.clothing);
+
+    matches.push(innerTop);
+
+    innerTop.compatibility.reasons.forEach((reason) => {
+      reasons.add(reason);
+    });
+  }
 
   const scores = matches.map((match) => match.compatibility.total);
 

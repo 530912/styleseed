@@ -7,8 +7,23 @@ Express 서버. Gemini 의류 분석과 이미지 처리(로컬 SlimSAM, BRIA �
 ```bash
 npm run backend        # http://localhost:3001
 npm run test:backend   # 백엔드 테스트 (Node 내장 테스트 러너, 외부 서비스에 연결하지 않음)
-npm run test:client    # 앱 오류 처리 단위 테스트
+npm run test:client    # 앱 오류 처리·이미지 크기 단위 테스트
+npm run test:engine    # 추천엔진 기준 스냅샷(Styling / Looks / Today's Look)
+npm run test:quality   # SlimSAM 실제 모델 분리 품질(평가 이미지 7장 + 품질 미달 422)
 ```
+
+- `test:quality`는 로컬 SlimSAM 모델 캐시를 쓰고 외부 네트워크는 쓰지 않는다. `CUTOUT_OUT_DIR=<폴더>`로 결과 PNG를 저장해 눈으로 확인할 수 있다.
+- 추천엔진 점수를 의도적으로 바꾼 경우에만 `UPDATE_ENGINE_BASELINE=1 npm run test:engine`으로 기준을 다시 만든다.
+- Gemini `mask` 출력 A/B 비교(수동, 무료 한도 사진 수 x 2회 사용): `node backend/test/quality/gemini-mask-ab.js 5`
+
+## 로컬 SlimSAM 의류 분리 (Sprint 1A-3)
+
+`/segment-garment-local`은 Gemini 상자 안의 양성 점 5개로 SlimSAM을 실행한다(이 ONNX 모델은 `input_boxes`를 무시한다).
+후보 마스크 중 상자 밖 비율 15% 이하이면서 상자를 가장 많이 채운 것을 고르고, 상자 채움 25% 미만 또는 상자 밖 20% 초과면 중심 점으로 한 번 더 시도한다.
+그래도 미달이면 저장하지 않고 **422 `LOW_QUALITY_CUTOUT`**(`reason`, `metrics`)을 돌려준다. 앱은 이때 BRIA로 대체한다.
+성공 응답에는 `X-Cutout-Strategy`, `X-Cutout-Box-Fill`, `X-Cutout-Outside`, `X-Cutout-Holes-Filled` 헤더가 붙는다. 기준값은 `backend/cutout.js`의 `QUALITY`.
+
+Gemini 분석은 기본으로 `mask`(윤곽 좌표)를 요청하지 않는다. 응답의 `mask`는 형식 유지를 위해 빈 배열이다. `GEMINI_REQUEST_MASK=true`로 이전 방식에 돌아갈 수 있다.
 
 ### 실연동 E2E (QA Supabase 프로젝트 전용)
 
@@ -71,6 +86,7 @@ npm run test:e2e
 | 403 | `ANONYMOUS_NOT_ALLOWED` / `IMAGE_PATH_FORBIDDEN` | 익명 세션으로 이미지 처리 / 다른 사용자 폴더 |
 | 404 | `IMAGE_NOT_FOUND` | 이미지 없음(또는 Storage 권한 없음) |
 | 413 | `PAYLOAD_TOO_LARGE` | 본문 크기 초과 |
+| 422 | `LOW_QUALITY_CUTOUT` | SlimSAM 분리 결과가 품질 기준 미달(`reason`: `too_small` / `background`) → 앱은 BRIA로 대체 |
 | 429 | `GUEST_RATE_LIMITED` / `USER_RATE_LIMITED` / `AI_RATE_LIMITED` | 익명·guest 한도 / 정식 사용자 한도 / Gemini 한도 |
 | 502 | `UPSTREAM_FAILED` | BRIA 실패 |
 | 503 | `AI_BUSY` / `AUTH_UNAVAILABLE` | Gemini 혼잡 / Auth 서버 연결 실패 |

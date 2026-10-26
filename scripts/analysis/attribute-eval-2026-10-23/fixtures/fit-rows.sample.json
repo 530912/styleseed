@@ -1,0 +1,117 @@
+{
+ "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다",
+ "active": [
+  {
+   "attribute_key": "fit",
+   "value_key": "slim",
+   "value_ko": "slim",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "slim 자리표시 정의",
+   "guide": "포함: slim 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "fit",
+   "value_key": "fitted",
+   "value_ko": "fitted",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "fitted 자리표시 정의",
+   "guide": "포함: fitted 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "fit",
+   "value_key": "regular",
+   "value_ko": "regular",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "regular 자리표시 정의",
+   "guide": "포함: regular 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "fit",
+   "value_key": "relaxed",
+   "value_ko": "relaxed",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "relaxed 자리표시 정의",
+   "guide": "포함: relaxed 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "fit",
+   "value_key": "oversized",
+   "value_ko": "oversized",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "oversized 자리표시 정의",
+   "guide": "포함: oversized 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "fit",
+   "value_key": "semi-fitted",
+   "value_ko": "semi-fitted",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "semi-fitted 자리표시 정의",
+   "guide": "포함: semi-fitted 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "fit",
+   "value_key": "compression",
+   "value_ko": "compression",
+   "status": "proposed",
+   "data_origin": "human",
+   "definition": "compression 자리표시 정의",
+   "guide": "포함: compression 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "fit",
+   "value_key": "example",
+   "value_ko": "example",
+   "status": "proposed",
+   "data_origin": "example",
+   "definition": "example 자리표시 정의",
+   "guide": "포함: example 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  }
+ ],
+ "retired": [
+  {
+   "attribute_key": "fit",
+   "value_key": "straight",
+   "value_ko": "straight",
+   "status": "retired",
+   "data_origin": "human",
+   "definition": "straight 자리표시 정의",
+   "guide": "포함: straight 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  },
+  {
+   "attribute_key": "fit",
+   "value_key": "wide",
+   "value_ko": "wide",
+   "status": "retired",
+   "data_origin": "human",
+   "definition": "wide 자리표시 정의",
+   "guide": "포함: wide 자리표시.\n제외: 자리표시.\n판단 원칙: 자리표시.",
+   "example": "",
+   "note": "테스트용 자리표시 행(Lab 원문 아님). 실제 실행은 인계 JSON을 쓴다"
+  }
+ ]
+}

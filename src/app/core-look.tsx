@@ -1,5 +1,7 @@
 import { router } from "expo-router";
 
+import { PrototypeGate } from "../components/styleseed/prototype-gate";
+
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { CoreAlignment } from "../components/styleseed/core-alignment";
@@ -30,7 +32,7 @@ import {
 } from "../utils/prototypeCore";
 
 // CORE ENGINE — BETA: 영상용 prototype 화면 (점수는 저장하지 않음)
-export default function CoreLookScreen() {
+function CoreLookScreen() {
   const clothes = useClosetStore((state) => state.clothes);
 
   const { status } = useClosetLoader();
@@ -236,3 +238,12 @@ const styles = StyleSheet.create({
     color: palette.muted,
   },
 });
+
+// 사용자 조사·배포 빌드에서는 숨김(src/lib/featureFlags.ts)
+export default function CoreLookScreenRoute() {
+  return (
+    <PrototypeGate>
+      <CoreLookScreen />
+    </PrototypeGate>
+  );
+}

@@ -1,0 +1,12 @@
+{
+  "_note": "SlimSAM 품질 회귀 세트(Sprint 1A-3). box2d는 Gemini 응답(source=gemini) 또는 이미지를 보고 수동 추정(source=manual). minBoxFill은 개선 후 실측값에서 0.05 낮춘 회귀 하한. visual은 Claude가 결과 이미지를 직접 확인한 결과.",
+  "cases": [
+    { "file": "white-shirts.jpg", "box2d": [19, 67, 965, 941], "source": "gemini", "before": { "boxFill": 0.0003, "note": "단추만 분리(KI-1)" }, "minBoxFill": 0.65, "visual": "셔츠 전체, 단추·칼라·소매 보존" },
+    { "file": "white-sneakers.jpg", "box2d": [382, 192, 683, 873], "source": "gemini", "before": { "boxFill": 0.786 }, "minBoxFill": 0.73, "visual": "정상(변화 없음)" },
+    { "file": "brown-loafer.jpg", "box2d": [269, 58, 856, 942], "source": "gemini", "before": { "boxFill": 0.68 }, "minBoxFill": 0.63, "visual": "정상(변화 없음)" },
+    { "file": "poet-core-denim.jpg", "box2d": [54, 208, 944, 815], "source": "gemini", "before": { "boxFill": 0.751 }, "minBoxFill": 0.7, "visual": "정상" },
+    { "file": "poet-core-skirt.jpg", "box2d": [110, 51, 948, 953], "source": "gemini", "before": { "boxFill": 0.059, "note": "일부 조각만 분리" }, "minBoxFill": 0.56, "visual": "스커트 전체" },
+    { "file": "white-sneakers2.jpg", "box2d": [100, 140, 880, 840], "source": "manual", "before": { "boxFill": 0.248, "outside": 0.764, "note": "흰 배경을 분리" }, "minBoxFill": 0.68, "visual": "신발 두 짝" },
+    { "file": "white-sneakers3.jpg", "box2d": [220, 40, 830, 960], "source": "manual", "before": { "boxFill": 0.575, "note": "잡티 구멍 68개" }, "minBoxFill": 0.58, "visual": "신발 두 짝, 잡티 제거" }
+  ]
+}

@@ -1,0 +1,5 @@
+outfit_id,set,split,context_label,context_tpo,context_season,context_weather,garment_ids,image_url,status,data_origin,note
+P01,pilot,dev,가을 · 출근,office,fall,,G001|G003|G007,,active,human,예시 데이터 — 실제 패션 판단 아님
+P02,pilot,dev,봄 · 주말,casual,spring,,G001|G004|G008,,active,human,예시 데이터 — 실제 패션 판단 아님
+P03,pilot,holdout,가을 · 데이트,date,fall,,G006|G002|G004|G007,,active,human,예시 데이터 — 실제 패션 판단 아님
+P04,pilot,holdout,겨울 · 눈 오는 날 출근,office,winter,snow,G006|G001|G005|G007,,active,claude_draft,코디 구성은 Claude 초안이어도 평가는 사람이 함

@@ -98,7 +98,7 @@ export default function MissingItemScreen() {
     <Screen
       footer={
         <Button
-          label="이 아이템 찾기"
+          label="예시 상품 보기"
           onPress={() =>
             router.push({
               pathname: "/shop",

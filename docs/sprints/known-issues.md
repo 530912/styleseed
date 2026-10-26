@@ -8,7 +8,7 @@ Sprint를 넘어 이어지는 결함(Known Issue)과 아직 확인하지 못한 
 | **PQ** | Pending QA. 구현은 됐으나 해당 수준(화면·실기기 등)에서 아직 확인하지 못함 |
 | **KI** | Known Issue. 확인된 결함 또는 요구사항과의 차이 |
 
-최종 갱신: 2026-10-19 (Sprint 1A-2 최종 QA)
+최종 갱신: 2026-10-19 (Sprint 1A-3)
 
 ---
 
@@ -19,19 +19,23 @@ Sprint를 넘어 이어지는 결함(Known Issue)과 아직 확인하지 못한 
 | PQ-1 | 앱 화면 기준 "로그인 후 배경 제거 + 옷장 저장" | Pending QA | High | Sprint 1A-1 | **서비스 단계 Confirmed**(가입·로그인·저장·조회·교체·삭제, 1A-2 QA E2E). 앱 화면 부분은 **출시 전 실기기 QA(B10)로 이관** |
 | PQ-2 | iOS 시뮬레이터에서 Styling / Looks / Today 점수 화면 | Pending QA | Medium | Sprint 1A-1 | **iOS 로그아웃 상태 렌더링 Confirmed**(2026-10-19, 런타임 오류 0). 로그인 상태 화면은 B10으로 이관 |
 | PQ-3 | 잘못된 비밀번호 입력 시 오류 안내 | Pending QA | Low | Sprint 1A-1 | **서비스 응답·안내 문구 Confirmed**, 영어 노출 결함 수정(KI-8). 알림 화면 표시는 B10으로 이관 |
-| KI-1 | 배경 제거 "성공" 응답인데 결과가 잘못됨(흰 셔츠 → 단추만 남음) | Known Issue | **High** | Sprint 1A-1 E2E | **Sprint 1A-3 첫 작업**(1A-2 계획 D6) |
+| KI-1 | 배경 제거 "성공" 응답인데 결과가 잘못됨(흰 셔츠 → 단추만 남음) | Known Issue | **High** | Sprint 1A-1 E2E | **해결(Sprint 1A-3)**: 다중 점 프롬프트 + 상자 채움 기준 선택 + 작은 구멍 메우기 + 품질 게이트(422 → BRIA). 평가 세트 7장 통과, E2E-09 일반 테스트 통과. 잔여: 흰 옷+흰 배경 가장자리 거칠음(Low) |
 | KI-2 | PRD SEC-01 응답 코드와 구현 차이 | Known Issue(요구사항 차이) | Medium | Sprint 1A-1 | **부분 해소(Sprint 1A-2)**: 익명 토큰 403 충족. 토큰 없는 분석은 KI-3로 분리 |
 | KI-3 | 토큰 없는 분석 임시 호환 모드 켜짐(PRD SEC-01 ① 미충족) | Known Issue(요구사항 차이) | Medium | Sprint 1A-2 | 운영 익명 로그인 안정 확인 후 `ALLOW_TOKENLESS_GUEST=false` 결정 |
 | KI-4 | 익명 Auth 사용자 누적(분석마다 생성, 관리자 키 없어 정리 불가) | Known Issue | Low | Sprint 1A-2 | 1A-11(서버 관리자 권한)과 함께 정리 설계 |
 | KI-5 | 익명 로그인 CAPTCHA 미적용(Supabase 권장) | Known Issue(보안 강화) | Medium | Sprint 1A-2 | Beta 전 결정 |
-| KI-6 | Gemini 무료 등급 일일 한도: 하루 테스트로 소진됨(2026-10-17, 10-19 두 번 재현) | Known Issue(운영 위험) | **High(Beta 기준)** | Sprint 1A-2 | Phase 2 진입 전 유료 등급·호출량 결정(PRD AC-G7, 별도 승인) |
+| KI-6 | Gemini 무료 등급 일일 한도: 하루 테스트로 소진됨(2026-10-17, 10-19 세 번 재현, 1A-3 중에도 소진 상태) | Known Issue(운영 위험) | **High(Beta 기준)** | Sprint 1A-2 | Phase 2 진입 전 유료 등급·호출량 결정(PRD AC-G7, 별도 승인) |
 | KI-7 | 운영·QA 마이그레이션 이력 미등록(SQL Editor로 적용) | Known Issue(운영 관리) | Low | Sprint 1A-2 | CLI 도입 시 `supabase migration repair` |
 | PQ-7 | 운영 DB 변경 후 정식 로그인 사용자의 저장·사진 교체·삭제 | Pending QA | High | Sprint 1A-2 | QA에서 같은 정책으로 Confirmed(Q-03~06). 운영 확인은 B10(실기기·실계정)으로 이관 |
 | KI-8 | 로그인·가입 오류가 Supabase 영어 원문으로 표시 | Known Issue | Medium | Sprint 1A-2 최종 QA | **해결(2026-10-19)**: `src/lib/authErrors.ts` 한국어 안내 + 단위 테스트 |
-| KI-9 | 분석 가능한 사진 크기가 실질 약 7.4MB(base64 때문에 요청 10MB 제한에 먼저 걸림) | Known Issue | Medium | Sprint 1A-2 최종 QA | 업로드 전 리사이즈(DEPLOYMENT_PLAN R2) |
+| KI-9 | 분석 가능한 사진 크기가 실질 약 7.4MB(base64 때문에 요청 10MB 제한에 먼저 걸림) | Known Issue | Medium | Sprint 1A-2 최종 QA | **해결(Sprint 1A-3, 웹 확인)**: 선택 직후 긴 변 1600px JPEG 0.8로 재저장(`src/lib/imagePrep.ts`). 10.79MB·EXIF 회전 6 사진 → 254KB, 분석 본문 0.33MB. 실기기 확인은 PQ-8 |
+| KI-10 | 백엔드에 libvips 두 벌 로드(sharp 8.18.6 + transformers 내장 8.17.3) — "mysterious crashes" 경고 | Known Issue(운영 위험) | Medium | Sprint 1A-3 | 배포 이미지에서 의존성 정리(Claude B, `docs/handoff/sprint-1a-3-handoff.md`). 로컬 테스트에서는 충돌 0회 |
+| KI-11 | Gemini `mask` 출력 제거의 실제 토큰 절감·정확도 동일성 미측정 | Pending QA | Medium | Sprint 1A-3 C | 무료 한도 초기화 후 `node backend/test/quality/gemini-mask-ab.js 5` 실행. 차이가 크면 `GEMINI_REQUEST_MASK=true`로 되돌림 |
+| KI-12 | `expo lint` 오류 10건·경고 6건(1A-3 이전부터 있음: analyze.tsx effect 내 setState, SplashIntro ref, 미사용 함수) | Known Issue(코드 품질) | Low | Sprint 1A-3 회귀 | Phase 1B 화면 작업 때 정리. `eslint.config.js`는 저장소에 없음(lint 실행 시 자동 생성되므로 지움) |
+| PQ-8 | 실기기(iOS/Android) 사진 준비: HEIC 변환·EXIF 회전·처리 시간 | Pending QA | Medium | Sprint 1A-3 B | 출시 전 실기기 QA(B10). 개발 빌드 콘솔의 `[perf] image.prepare` 확인 |
 | PQ-4 | 앱 30초 타임아웃의 실제 중단 동작 | Pending QA | Low | Sprint 1A-1 TS-11 | 화면 테스트 도구 도입 시(1B-01) |
 | PQ-5 | 저장 실패 안내 화면의 버튼 동작([다시 시도] / [나중에]) | Pending QA | Medium | Sprint 1A-1 TS-15·16 | 화면 테스트 도구 도입 시(1B-01) |
-| PQ-6 | 실제 휴대폰 사진의 base64 크기(10MB 제한 적정성) | Pending QA | Medium | Sprint 1A-1, 1A-10 | PQ-1 확인 때 함께 측정(백엔드 로그) |
+| PQ-6 | 실제 휴대폰 사진의 base64 크기(10MB 제한 적정성) | Pending QA | Medium | Sprint 1A-1, 1A-10 | **KI-9 해결로 대체**: 앱이 1600px로 줄여 보내므로 10MB 제한과 무관. 실기기 수치는 PQ-8 |
 
 ---
 
@@ -76,6 +80,8 @@ Sprint를 넘어 이어지는 결함(Known Issue)과 아직 확인하지 못한 
 | 영향 | 일부 사용자 옷이 단추·로고 조각 이미지로 저장됨. 옷장 신뢰도 하락. PRD FR-UPL-03, NFR-08 |
 | 처리 계획 | Sprint 1A-3 첫 작업(인증·보안 주제인 1A-2와 분리. 품질 평가 세트·BRIA 비용 판단 필요) |
 | 닫는 조건 | E2E-09가 일반 테스트로 통과(흰 셔츠가 셔츠로 분리되거나, 저품질로 판정되어 BRIA로 대체), 품질 지표 기록 |
+| **해결(2026-10-19, Sprint 1A-3)** | 진짜 원인: SlimSAM ONNX 모델이 `input_boxes`를 **무시**한다(transformers 경고 "input_boxes ignored"). 이전 방식은 사실상 중심 점 하나였다. 상자 안 5개 양성 점 → 후보 3개 중 상자 밖 15% 이하 + 상자 채움 최대 선택 → 상자 채움 25% 미만·상자 밖 20% 초과면 중심 점 재시도 → 그래도 미달이면 **422 `LOW_QUALITY_CUTOUT`**(앱은 BRIA로 대체) → 이미지 면적 0.3% 이하 구멍 메우기(단추·칼라). 흰 셔츠 14×16 → 640×692(상자 대비 98.9%, 단추·칼라·소매 보존 육안 확인). 평가 세트 7장 중 이전 3장 실패 → 0장 실패. 근거: `npm run test:quality`, E2E-09, `docs/sprints/sprint-1a-3-result.md` |
+| 잔여 | 흰 셔츠 오른쪽 소매 가장자리가 약간 거칠다(흰 옷+흰 배경). 착용샷·패턴·액세서리 평가 이미지는 아직 없음 → Phase 1B 이후 평가 세트 확대 |
 
 ## KI-2 PRD SEC-01 응답 코드와 구현 차이
 

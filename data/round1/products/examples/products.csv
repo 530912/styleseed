@@ -1,0 +1,8 @@
+상품 ID [product_id],브랜드 ID [brand_id],상품명 [product_name],판매가(원) [price_krw],판매 상태 [sale_status],공식몰 상품 URL [product_url],상품 이미지 URL [image_url],카테고리 [category],세부 품목 [sub_category],색 [color],색 톤 [color_tone],핏 [fit],소재 [material],계절 [season],TPO [tpo],스타일 [style],속성 출처 [attribute_source],속성 검수자 [reviewed_by],정보 갱신일 [updated_at],메모 [notes]
+BRA-001,BRA,싱글 울 코트,189000,on_sale,https://bra.example/p/BRA-001,https://bra.example/i/BRA-001.jpg,outer,coat,beige,muted,regular,wool,fall|winter,casual|office,classic|minimal,brand,E1,2026-10-24,
+BRA-002,BRA,스트레이트 슬랙스,89000,on_sale,https://bra.example/p/BRA-002,https://bra.example/i/BRA-002.jpg,bottom,slacks,black,muted,straight,polyester,spring|fall,casual|office,minimal,brand,E1,2026-10-24,
+BRA-003,BRA,레더 로퍼,89000,on_sale,https://bra.example/p/BRA-003,https://bra.example/i/BRA-003.jpg,shoes,loafer,brown,muted,regular,leather,spring|fall,casual|office,classic,brand,E1,2026-10-24,
+BRA-004,BRA,코튼 셔츠(품절),89000,sold_out,https://bra.example/p/BRA-004,https://bra.example/i/BRA-004.jpg,top,shirt,white,muted,regular,cotton,spring|fall,casual|office,minimal,brand,E1,2026-10-24,
+BRB-001,BRB,니트 카디건,89000,on_sale,https://brb.example/p/BRB-001,https://brb.example/i/BRB-001.jpg,outer,cardigan,gray,muted,regular,knit,spring|fall,casual|office,minimal,ai,,2026-10-24,
+BRB-002,BRB,미디 스커트,89000,on_sale,https://brb.example/p/BRB-002,https://brb.example/i/BRB-002.jpg,bottom,skirt,navy,muted,regular,polyester,spring|fall,casual|office,feminine|classic,brand,E1,2026-10-24,
+JWL-001,JWL,실버 체인 목걸이,59000,on_sale,https://jwl.example/p/JWL-001,https://jwl.example/i/JWL-001.jpg,accessory,necklace,gray,muted,,other,spring|fall,casual|office,minimal,brand,E1,2026-10-24,

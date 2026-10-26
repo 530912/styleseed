@@ -1,0 +1,1096 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://styleseed.local/fkd/bundle-0.2.0.schema.json",
+ "title": "STYLESEED Fashion Knowledge bundle (contract 0.2.0)",
+ "description": "필드 단위 형식만 표현한다. 교차 검증(참조·승인 조건·독립 평가)은 계약 문서 8장과 validate.mjs가 기준. x-taxonomy 값은 같은 묶음의 attribute_values에서 허용값을 찾는다.",
+ "type": "object",
+ "required": [
+  "manifest",
+  "evaluators",
+  "attribute_values",
+  "garments",
+  "outfits",
+  "styling_rules"
+ ],
+ "properties": {
+  "manifest": {
+   "type": "object",
+   "required": [
+    "contract_version",
+    "source",
+    "purpose",
+    "format"
+   ],
+   "properties": {
+    "contract_version": {
+     "type": "string",
+     "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "source": {
+     "type": "string",
+     "enum": [
+      "knowledge-lab",
+      "sheets"
+     ]
+    },
+    "purpose": {
+     "type": "string",
+     "enum": [
+      "production",
+      "example"
+     ]
+    },
+    "format": {
+     "type": "string",
+     "const": "json"
+    },
+    "exported_at": {
+     "type": "string"
+    },
+    "exported_by": {
+     "type": "string"
+    },
+    "counts": {
+     "type": "object",
+     "additionalProperties": {
+      "type": "integer"
+     }
+    }
+   }
+  },
+  "evaluators": {
+   "type": "array",
+   "description": "평가자·승인자 · 기본 키 evaluator_id",
+   "items": {
+    "type": "object",
+    "required": [
+     "evaluator_id",
+     "role",
+     "can_approve",
+     "active"
+    ],
+    "properties": {
+     "evaluator_id": {
+      "description": "평가자 ID — 이름 대신 쓰는 ID. 개인정보(이름·이메일)는 넣지 않는다",
+      "type": "string",
+      "pattern": "^E[0-9]{1,2}$"
+     },
+     "role": {
+      "description": "역할",
+      "type": "string",
+      "enum": [
+       "cofounder",
+       "external"
+      ]
+     },
+     "can_approve": {
+      "description": "승인 권한 — 규칙 승인·속성 확정 권한. V0.1은 공동창업자만 yes",
+      "type": "string",
+      "enum": [
+       "yes",
+       "no"
+      ]
+     },
+     "active": {
+      "description": "활성",
+      "type": "string",
+      "enum": [
+       "yes",
+       "no"
+      ]
+     },
+     "note": {
+      "description": "메모",
+      "type": "string"
+     }
+    }
+   }
+  },
+  "attribute_values": {
+   "type": "array",
+   "description": "의류 속성 사전(허용값) · 기본 키 attribute_key + value_key",
+   "items": {
+    "type": "object",
+    "required": [
+     "attribute_key",
+     "attribute_ko",
+     "value_key",
+     "value_ko",
+     "app_field",
+     "app_supported",
+     "status",
+     "data_origin",
+     "version"
+    ],
+    "properties": {
+     "attribute_key": {
+      "description": "속성 키",
+      "type": "string",
+      "enum": [
+       "category",
+       "subcategory",
+       "main_color",
+       "value",
+       "saturation",
+       "fit",
+       "silhouette",
+       "material",
+       "material_feel",
+       "thickness",
+       "season",
+       "tpo",
+       "mood"
+      ]
+     },
+     "attribute_ko": {
+      "description": "속성 이름",
+      "type": "string"
+     },
+     "value_key": {
+      "description": "값 키 — 규칙·의류에서 쓰는 값. 확정 후 바꾸지 않는다(바꾸려면 폐기 후 새 값)",
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9-]*$"
+     },
+     "value_ko": {
+      "description": "값 이름",
+      "type": "string"
+     },
+     "parent_value": {
+      "description": "상위 값 — 세부분류가 속한 대분류 값 키",
+      "x-required-when": "attribute_key=subcategory",
+      "type": "string"
+     },
+     "definition": {
+      "description": "정의",
+      "type": "string"
+     },
+     "guide": {
+      "description": "판단 기준",
+      "type": "string"
+     },
+     "example": {
+      "description": "예시",
+      "type": "string"
+     },
+     "app_field": {
+      "description": "앱 필드 — 현재 앱 Clothing 타입의 필드. 대응 없음은 none. 속성별로 쓸 수 있는 앱 필드는 app_compat.attribute_app_fields",
+      "type": "string",
+      "enum": [
+       "category",
+       "subCategory",
+       "color",
+       "colorTone",
+       "fit",
+       "material",
+       "season",
+       "tpo",
+       "style",
+       "none"
+      ]
+     },
+     "app_value": {
+      "description": "현재 앱 값 — converted일 때 바꿀 앱 값(app_compat.app_values의 값, 목록 필드는 | 로 여러 개). yes면 비우거나 value_key와 같게, no면 비움",
+      "type": "string"
+     },
+     "app_supported": {
+      "description": "앱 지원 — yes=앱이 그대로 저장 / converted=앱 값으로 변환(app_value 또는 계약의 규칙형 변환) / no=앱이 모름. 지원 표시는 앱 지원이 검증된 값(app_compat.app_values)만",
+      "type": "string",
+      "enum": [
+       "yes",
+       "converted",
+       "no"
+      ]
+     },
+     "status": {
+      "description": "상태",
+      "type": "string",
+      "enum": [
+       "proposed",
+       "in_review",
+       "confirmed",
+       "retired"
+      ]
+     },
+     "decided_by": {
+      "description": "결정자",
+      "x-required-when": "status=confirmed",
+      "x-ref": "evaluators",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "decided_at": {
+      "description": "결정일",
+      "x-required-when": "status=confirmed",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+     },
+     "data_origin": {
+      "description": "데이터 출처",
+      "type": "string",
+      "enum": [
+       "human",
+       "example",
+       "claude_draft"
+      ]
+     },
+     "version": {
+      "description": "버전",
+      "type": "integer",
+      "minimum": 1
+     },
+     "note": {
+      "description": "메모",
+      "type": "string"
+     }
+    }
+   }
+  },
+  "garments": {
+   "type": "array",
+   "description": "평가용 의류 · 기본 키 garment_id",
+   "items": {
+    "type": "object",
+    "required": [
+     "garment_id",
+     "name_ko",
+     "source",
+     "category",
+     "subcategory",
+     "main_color",
+     "color_tone",
+     "fit",
+     "material",
+     "season",
+     "tpo",
+     "mood",
+     "attribute_status",
+     "data_origin"
+    ],
+    "properties": {
+     "garment_id": {
+      "description": "의류 ID",
+      "type": "string",
+      "pattern": "^(G[0-9]{3,5}|EX-G[0-9]{2,3})$"
+     },
+     "name_ko": {
+      "description": "이름",
+      "type": "string"
+     },
+     "image_url": {
+      "description": "이미지 링크 — 팀이 접근 가능한 https 링크",
+      "type": "string",
+      "pattern": "^https://\\S+$"
+     },
+     "source": {
+      "description": "출처",
+      "type": "string",
+      "enum": [
+       "fixture",
+       "product_image",
+       "qa_upload",
+       "other"
+      ]
+     },
+     "source_ref": {
+      "description": "출처 참조 — 엔진 기준선 측정용 원본 참조",
+      "type": "string"
+     },
+     "category": {
+      "description": "대분류",
+      "x-taxonomy": "category",
+      "type": "string"
+     },
+     "subcategory": {
+      "description": "세부분류",
+      "x-taxonomy": "subcategory",
+      "type": "string"
+     },
+     "main_color": {
+      "description": "주색상",
+      "x-taxonomy": "main_color",
+      "type": "string"
+     },
+     "color_tone": {
+      "description": "색 톤(앱) — 현재 앱 colorTone. 명도·채도가 없을 때 변환에 쓴다",
+      "type": "string",
+      "enum": [
+       "bright",
+       "light",
+       "muted",
+       "dark",
+       "vivid"
+      ]
+     },
+     "value": {
+      "description": "명도",
+      "x-taxonomy": "value",
+      "type": "string"
+     },
+     "saturation": {
+      "description": "채도",
+      "x-taxonomy": "saturation",
+      "type": "string"
+     },
+     "fit": {
+      "description": "핏",
+      "x-taxonomy": "fit",
+      "type": "string"
+     },
+     "silhouette": {
+      "description": "실루엣",
+      "x-taxonomy": "silhouette",
+      "type": "string"
+     },
+     "material": {
+      "description": "소재(섬유)",
+      "x-taxonomy": "material",
+      "type": "string"
+     },
+     "material_feel": {
+      "description": "소재감",
+      "x-taxonomy": "material_feel",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "thickness": {
+      "description": "두께감",
+      "x-taxonomy": "thickness",
+      "type": "string"
+     },
+     "season": {
+      "description": "계절",
+      "x-taxonomy": "season",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "tpo": {
+      "description": "TPO",
+      "x-taxonomy": "tpo",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "mood": {
+      "description": "무드",
+      "x-taxonomy": "mood",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "attribute_status": {
+      "description": "속성 확인 상태 — 속성 태깅을 사람이 확인했는지",
+      "type": "string",
+      "enum": [
+       "proposed",
+       "in_review",
+       "confirmed",
+       "retired"
+      ]
+     },
+     "labeled_by": {
+      "description": "태깅한 사람",
+      "x-required-when": "attribute_status=confirmed",
+      "x-ref": "evaluators",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "data_origin": {
+      "description": "데이터 출처",
+      "type": "string",
+      "enum": [
+       "human",
+       "example",
+       "claude_draft"
+      ]
+     },
+     "note": {
+      "description": "메모",
+      "type": "string"
+     }
+    }
+   }
+  },
+  "outfits": {
+   "type": "array",
+   "description": "평가용 코디 · 기본 키 outfit_id",
+   "items": {
+    "type": "object",
+    "required": [
+     "outfit_id",
+     "set",
+     "split",
+     "context_label",
+     "context_tpo",
+     "context_season",
+     "garment_ids",
+     "status",
+     "data_origin"
+    ],
+    "properties": {
+     "outfit_id": {
+      "description": "코디 ID — P=Pilot, M=본 평가, EX-=예시",
+      "type": "string",
+      "pattern": "^(P[0-9]{2,3}|M[0-9]{3,4}|EX-[0-9]{2})$"
+     },
+     "set": {
+      "description": "세트",
+      "type": "string",
+      "enum": [
+       "pilot",
+       "main"
+      ]
+     },
+     "split": {
+      "description": "용도 — 가중치 조정용(dev) / 최종 확인용(holdout). 확정 후 바꾸지 않는다",
+      "type": "string",
+      "enum": [
+       "unassigned",
+       "dev",
+       "holdout"
+      ]
+     },
+     "context_label": {
+      "description": "평가 상황",
+      "type": "string"
+     },
+     "context_tpo": {
+      "description": "상황 TPO",
+      "x-taxonomy": "tpo",
+      "type": "string"
+     },
+     "context_season": {
+      "description": "상황 계절",
+      "x-taxonomy": "season",
+      "type": "string"
+     },
+     "context_weather": {
+      "description": "상황 날씨",
+      "type": "string",
+      "enum": [
+       "cold",
+       "cool",
+       "mild",
+       "warm",
+       "hot",
+       "rain",
+       "snow"
+      ]
+     },
+     "garment_ids": {
+      "description": "의류 ID 목록",
+      "x-ref": "garments",
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "minItems": 2,
+      "maxItems": 6
+     },
+     "image_url": {
+      "description": "코디 이미지 링크",
+      "type": "string",
+      "pattern": "^https://\\S+$"
+     },
+     "status": {
+      "description": "상태",
+      "type": "string",
+      "enum": [
+       "active",
+       "retired"
+      ]
+     },
+     "data_origin": {
+      "description": "데이터 출처 — 코디 구성을 누가 만들었는지(평가 점수의 출처와 별개)",
+      "type": "string",
+      "enum": [
+       "human",
+       "example",
+       "claude_draft"
+      ]
+     },
+     "note": {
+      "description": "메모",
+      "type": "string"
+     }
+    }
+   }
+  },
+  "outfit_evaluations": {
+   "type": "array",
+   "description": "코디 평가(평가자별 독립) · 기본 키 outfit_id + evaluator_id + round",
+   "items": {
+    "type": "object",
+    "required": [
+     "outfit_id",
+     "round",
+     "submission_status",
+     "data_origin"
+    ],
+    "properties": {
+     "outfit_id": {
+      "description": "코디 ID",
+      "x-ref": "outfits",
+      "type": "string"
+     },
+     "evaluator_id": {
+      "description": "평가자 ID",
+      "x-required-when": "submission_status=submitted",
+      "x-ref": "evaluators",
+      "type": "string"
+     },
+     "round": {
+      "description": "평가 회차 — 같은 코디를 다시 평가할 때 2, 3 …(이전 회차는 고치지 않음)",
+      "type": "integer",
+      "minimum": 1
+     },
+     "outfit_summary": {
+      "description": "코디 내용(표시용) — 시트에서 보기 편하게 둔 열. 가져올 때 무시",
+      "x-display-only": true,
+      "type": "string"
+     },
+     "score_color": {
+      "description": "색 1~5",
+      "x-required-when": "submission_status=submitted",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "score_silhouette_fit": {
+      "description": "핏·실루엣 1~5",
+      "x-required-when": "submission_status=submitted",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "score_material_season": {
+      "description": "소재·계절 1~5",
+      "x-required-when": "submission_status=submitted",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "score_tpo": {
+      "description": "TPO 1~5",
+      "x-required-when": "submission_status=submitted",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "score_mood": {
+      "description": "무드 1~5",
+      "x-required-when": "submission_status=submitted",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "score_overall": {
+      "description": "종합 1~5 — 다른 점수의 평균이 아니라 직접 판단",
+      "x-required-when": "submission_status=submitted",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "label": {
+      "description": "판정",
+      "x-required-when": "submission_status=submitted",
+      "type": "string",
+      "enum": [
+       "suitable",
+       "conditional",
+       "unsuitable"
+      ]
+     },
+     "recommendable": {
+      "description": "추천해도 되나",
+      "x-required-when": "submission_status=submitted",
+      "type": "string",
+      "enum": [
+       "yes",
+       "no",
+       "unsure"
+      ]
+     },
+     "reason": {
+      "description": "핵심 이유",
+      "x-required-when": "submission_status=submitted",
+      "type": "string",
+      "minLength": 10
+     },
+     "improvement": {
+      "description": "바꾸면 좋을 아이템",
+      "type": "string"
+     },
+     "confidence": {
+      "description": "확신도",
+      "x-required-when": "submission_status=submitted",
+      "type": "string",
+      "enum": [
+       "high",
+       "medium",
+       "low"
+      ]
+     },
+     "rated_at": {
+      "description": "평가일",
+      "x-required-when": "submission_status=submitted",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+     },
+     "submission_status": {
+      "description": "제출 상태 — 제출한 평가만 비교·집계에 쓴다",
+      "type": "string",
+      "enum": [
+       "in_progress",
+       "submitted"
+      ]
+     },
+     "data_origin": {
+      "description": "데이터 출처",
+      "type": "string",
+      "enum": [
+       "human",
+       "example",
+       "claude_draft"
+      ]
+     },
+     "note": {
+      "description": "메모",
+      "type": "string"
+     }
+    }
+   }
+  },
+  "styling_rules": {
+   "type": "array",
+   "description": "스타일링 규칙 · 기본 키 rule_id + rule_version",
+   "items": {
+    "type": "object",
+    "required": [
+     "rule_id",
+     "rule_version",
+     "rule_type",
+     "dimension",
+     "a_category",
+     "a_attribute",
+     "a_values",
+     "judgement",
+     "strength",
+     "reason",
+     "confidence",
+     "approval_status",
+     "data_origin"
+    ],
+    "properties": {
+     "rule_id": {
+      "description": "규칙 ID — 평가 차원 약자 + 세 자리. EX-는 예시",
+      "type": "string",
+      "pattern": "^(EX-)?(COL|FIT|MAT|TPO|MOOD)-[0-9]{3}$"
+     },
+     "rule_version": {
+      "description": "버전 — 승인된 규칙을 바꿀 때는 새 행 + 버전 증가(기존 행 수정 금지)",
+      "type": "integer",
+      "minimum": 1
+     },
+     "rule_type": {
+      "description": "규칙 종류",
+      "type": "string",
+      "enum": [
+       "base",
+       "exception"
+      ]
+     },
+     "exception_of": {
+      "description": "대상 기본 규칙",
+      "x-required-when": "rule_type=exception",
+      "type": "string"
+     },
+     "dimension": {
+      "description": "평가 차원",
+      "type": "string",
+      "enum": [
+       "color",
+       "silhouette_fit",
+       "material_season",
+       "tpo",
+       "mood"
+      ]
+     },
+     "a_category": {
+      "description": "조건 A 대분류",
+      "x-taxonomy": "category",
+      "type": "string",
+      "x-also-allowed": [
+       "any"
+      ]
+     },
+     "a_attribute": {
+      "description": "조건 A 속성",
+      "type": "string",
+      "enum": [
+       "category",
+       "subcategory",
+       "main_color",
+       "value",
+       "saturation",
+       "fit",
+       "silhouette",
+       "material",
+       "material_feel",
+       "thickness",
+       "season",
+       "tpo",
+       "mood"
+      ]
+     },
+     "a_values": {
+      "description": "조건 A 값",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "b_category": {
+      "description": "조건 B 대분류",
+      "x-taxonomy": "category",
+      "type": "string",
+      "x-also-allowed": [
+       "any"
+      ]
+     },
+     "b_attribute": {
+      "description": "조건 B 속성",
+      "type": "string",
+      "enum": [
+       "category",
+       "subcategory",
+       "main_color",
+       "value",
+       "saturation",
+       "fit",
+       "silhouette",
+       "material",
+       "material_feel",
+       "thickness",
+       "season",
+       "tpo",
+       "mood"
+      ]
+     },
+     "b_values": {
+      "description": "조건 B 값",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "context_tpo": {
+      "description": "적용 TPO",
+      "x-taxonomy": "tpo",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "context_mood": {
+      "description": "적용 무드",
+      "x-taxonomy": "mood",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "context_season": {
+      "description": "적용 계절",
+      "x-taxonomy": "season",
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "context_weather": {
+      "description": "적용 날씨",
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "cold",
+        "cool",
+        "mild",
+        "warm",
+        "hot",
+        "rain",
+        "snow"
+       ]
+      }
+     },
+     "judgement": {
+      "description": "판정",
+      "type": "string",
+      "enum": [
+       "recommended",
+       "conditional",
+       "caution",
+       "not_recommended"
+      ]
+     },
+     "strength": {
+      "description": "강도 1~5",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "reason": {
+      "description": "판단 이유",
+      "type": "string",
+      "minLength": 10
+     },
+     "display_text": {
+      "description": "사용자 안내 문장",
+      "type": "string",
+      "maxLength": 80
+     },
+     "exception_note": {
+      "description": "예외·주의 사항",
+      "type": "string"
+     },
+     "confidence": {
+      "description": "확신도",
+      "type": "string",
+      "enum": [
+       "high",
+       "medium",
+       "low"
+      ]
+     },
+     "author": {
+      "description": "작성자",
+      "x-required-when": "approval_status!=draft",
+      "x-ref": "evaluators",
+      "type": "string"
+     },
+     "reviewer": {
+      "description": "검토·승인자",
+      "x-required-when": "approval_status=approved",
+      "x-ref": "evaluators",
+      "type": "string"
+     },
+     "approval_status": {
+      "description": "승인 상태",
+      "type": "string",
+      "enum": [
+       "draft",
+       "in_review",
+       "approved",
+       "on_hold",
+       "retired"
+      ]
+     },
+     "approved_at": {
+      "description": "승인일",
+      "x-required-when": "approval_status=approved",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+     },
+     "data_origin": {
+      "description": "데이터 출처",
+      "type": "string",
+      "enum": [
+       "human",
+       "example",
+       "claude_draft"
+      ]
+     },
+     "note": {
+      "description": "메모",
+      "type": "string"
+     }
+    }
+   }
+  },
+  "disagreement_reviews": {
+   "type": "array",
+   "description": "불일치 검토 · 기본 키 outfit_id + dimension + round",
+   "items": {
+    "type": "object",
+    "required": [
+     "outfit_id",
+     "dimension",
+     "round",
+     "evaluator_1",
+     "score_1",
+     "evaluator_2",
+     "score_2",
+     "gap",
+     "status",
+     "data_origin"
+    ],
+    "properties": {
+     "outfit_id": {
+      "description": "코디 ID",
+      "x-ref": "outfits",
+      "type": "string"
+     },
+     "dimension": {
+      "description": "평가 차원",
+      "type": "string",
+      "enum": [
+       "color",
+       "silhouette_fit",
+       "material_season",
+       "tpo",
+       "mood",
+       "overall"
+      ]
+     },
+     "round": {
+      "description": "평가 회차",
+      "type": "integer",
+      "minimum": 1
+     },
+     "evaluator_1": {
+      "description": "평가자1 ID",
+      "x-ref": "evaluators",
+      "type": "string"
+     },
+     "score_1": {
+      "description": "평가자1 점수",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "evaluator_2": {
+      "description": "평가자2 ID",
+      "x-ref": "evaluators",
+      "type": "string"
+     },
+     "score_2": {
+      "description": "평가자2 점수",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "gap": {
+      "description": "차이",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4
+     },
+     "label_1": {
+      "description": "평가자1 판정",
+      "type": "string",
+      "enum": [
+       "suitable",
+       "conditional",
+       "unsuitable"
+      ]
+     },
+     "label_2": {
+      "description": "평가자2 판정",
+      "type": "string",
+      "enum": [
+       "suitable",
+       "conditional",
+       "unsuitable"
+      ]
+     },
+     "reason_1": {
+      "description": "평가자1 이유",
+      "type": "string"
+     },
+     "reason_2": {
+      "description": "평가자2 이유",
+      "type": "string"
+     },
+     "cause": {
+      "description": "원인 분류",
+      "x-required-when": "status=agreed",
+      "type": "string",
+      "enum": [
+       "criteria",
+       "missing_info",
+       "taste",
+       "input_error",
+       "needs_rule"
+      ]
+     },
+     "agreed_score": {
+      "description": "합의 점수",
+      "x-required-when": "status=agreed",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+     },
+     "agreed_label": {
+      "description": "합의 판정",
+      "type": "string",
+      "enum": [
+       "suitable",
+       "conditional",
+       "unsuitable"
+      ]
+     },
+     "agreed_reason": {
+      "description": "합의 이유",
+      "x-required-when": "status=agreed",
+      "type": "string"
+     },
+     "action": {
+      "description": "후속 조치",
+      "x-required-when": "status=agreed",
+      "type": "string",
+      "enum": [
+       "add_rule",
+       "edit_rule",
+       "edit_rubric",
+       "add_exception",
+       "none"
+      ]
+     },
+     "rule_id": {
+      "description": "관련 규칙 ID",
+      "type": "string"
+     },
+     "status": {
+      "description": "검토 상태",
+      "type": "string",
+      "enum": [
+       "open",
+       "discussing",
+       "agreed",
+       "on_hold"
+      ]
+     },
+     "reviewed_at": {
+      "description": "검토일",
+      "x-required-when": "status=agreed",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+     },
+     "data_origin": {
+      "description": "데이터 출처",
+      "type": "string",
+      "enum": [
+       "human",
+       "example",
+       "claude_draft"
+      ]
+     },
+     "note": {
+      "description": "메모",
+      "type": "string"
+     }
+    }
+   }
+  }
+ }
+}

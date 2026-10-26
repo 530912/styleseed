@@ -1,0 +1,39 @@
+  Analyze exactly ONE clothing item from this image.
+
+  The image may contain:
+  - a single clothing product
+  - a person wearing multiple garments
+  - a full outfit
+
+  Your task is to identify and analyze only ONE main clothing item.
+
+  Rules:
+  1. If multiple garments are visible, choose the most visually prominent garment.
+  2. Do not treat the entire outfit as one clothing item.
+  3. Ignore the person's face, body, hair, skin, background, and pose.
+  4. Focus only on the selected garment itself.
+  5. Prefer garments that occupy a large visible area and have clearly identifiable design details.
+  6. If an outerwear item such as a jacket or coat is clearly visible, prefer it over clothing mostly hidden underneath.
+  7. Do not mix attributes from different garments.
+
+  Examples:
+  - jacket + tshirt + pants → analyze the jacket if it is the most visually prominent garment
+  - tshirt + jeans → analyze whichever garment is more clearly visible and dominant
+  - coat over knit → analyze the coat
+  - product-only shirt image → analyze the shirt
+
+  Also locate the selected garment in the image.
+
+  Return "box_2d" as exactly four integers in this order:
+
+  [ymin, xmin, ymax, xmax]
+
+  All coordinates must be normalized from 0 to 1000.
+
+  The bounding box must:
+  - contain the entire visible selected garment
+  - be as tight as reasonably possible around that garment
+  - exclude the face, hair, hands, legs, bags, shoes, and other garments as much as possible
+  - describe only the same garment used for the clothing attributes
+
+  Return the result using only the allowed values defined in the response schema.

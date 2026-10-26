@@ -1,0 +1,128 @@
+속성 키 [attribute_key],속성 이름 [attribute_ko],값 키 [value_key],값 이름 [value_ko],상위 값 [parent_value],정의 [definition],판단 기준 [guide],예시 [example],앱 필드 [app_field],현재 앱 값 [app_value],앱 지원 [app_supported],상태 [status],결정자 [decided_by],결정일 [decided_at],데이터 출처 [data_origin],버전 [version],메모 [note]
+category,대분류,top,상의,,의복의 기본 용도 분류,제품의 주된 착용 위치와 용도 기준,셔츠 → top,category,top,예,제안,,,사람,1,
+category,대분류,bottom,하의,,의복의 기본 용도 분류,제품의 주된 착용 위치와 용도 기준,셔츠 → top,category,bottom,예,제안,,,사람,1,
+category,대분류,dress,원피스,,의복의 기본 용도 분류,제품의 주된 착용 위치와 용도 기준,셔츠 → top,category,dress,예,제안,,,사람,1,
+category,대분류,outer,아우터,,의복의 기본 용도 분류,제품의 주된 착용 위치와 용도 기준,셔츠 → top,category,outer,예,제안,,,사람,1,
+category,대분류,shoes,신발,,의복의 기본 용도 분류,제품의 주된 착용 위치와 용도 기준,셔츠 → top,category,shoes,예,제안,,,사람,1,
+category,대분류,bag,가방,,의복의 기본 용도 분류,제품의 주된 착용 위치와 용도 기준,셔츠 → top,category,bag,예,제안,,,사람,1,
+category,대분류,accessory,액세서리,,의복의 기본 용도 분류,제품의 주된 착용 위치와 용도 기준,셔츠 → top,category,accessory,예,제안,,,사람,1,
+subcategory,세부분류,tshirt,티셔츠,top,top 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,tshirt,예,제안,,,사람,1,Numbers의 tee
+subcategory,세부분류,shirt,셔츠,top,top 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,shirt,예,제안,,,사람,1,
+subcategory,세부분류,blouse,블라우스,top,top 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,blouse,예,제안,,,사람,1,
+subcategory,세부분류,knit,니트,top,top 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,knit,예,제안,,,사람,1,
+subcategory,세부분류,sweatshirt,맨투맨,top,top 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,sweatshirt,예,제안,,,사람,1,
+subcategory,세부분류,hoodie,후드티,top,top 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,hoodie,예,제안,,,사람,1,
+subcategory,세부분류,sleeveless,민소매,top,top 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,sleeveless,예,제안,,,사람,1,
+subcategory,세부분류,jeans,청바지,bottom,bottom 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,jeans,예,제안,,,사람,1,Numbers의 denim
+subcategory,세부분류,slacks,슬랙스,bottom,bottom 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,slacks,예,제안,,,사람,1,
+subcategory,세부분류,trousers,면바지·트라우저,bottom,bottom 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,trousers,예,제안,,,사람,1,
+subcategory,세부분류,shorts,반바지,bottom,bottom 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,shorts,예,제안,,,사람,1,
+subcategory,세부분류,skirt,스커트,bottom,bottom 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,skirt,예,제안,,,사람,1,
+subcategory,세부분류,leggings,레깅스,bottom,bottom 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,leggings,예,제안,,,사람,1,
+subcategory,세부분류,jacket,재킷,outer,outer 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,jacket,예,제안,,,사람,1,
+subcategory,세부분류,coat,코트,outer,outer 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,coat,예,제안,,,사람,1,
+subcategory,세부분류,cardigan,가디건,outer,outer 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,cardigan,예,제안,,,사람,1,
+subcategory,세부분류,blazer,블레이저,outer,outer 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,blazer,예,제안,,,사람,1,
+subcategory,세부분류,padding,패딩,outer,outer 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,padding,예,제안,,,사람,1,
+subcategory,세부분류,vest,조끼,outer,outer 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,vest,예,제안,,,사람,1,
+subcategory,세부분류,mini-dress,미니 원피스,dress,dress 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,mini-dress,예,제안,,,사람,1,
+subcategory,세부분류,midi-dress,미디 원피스,dress,dress 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,midi-dress,예,제안,,,사람,1,
+subcategory,세부분류,maxi-dress,맥시 원피스,dress,dress 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,maxi-dress,예,제안,,,사람,1,
+subcategory,세부분류,jumpsuit,점프수트,dress,dress 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,jumpsuit,예,제안,,,사람,1,
+subcategory,세부분류,sneakers,스니커즈,shoes,shoes 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,sneakers,예,제안,,,사람,1,
+subcategory,세부분류,loafer,로퍼,shoes,shoes 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,loafer,예,제안,,,사람,1,
+subcategory,세부분류,boots,부츠,shoes,shoes 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,boots,예,제안,,,사람,1,
+subcategory,세부분류,heels,힐,shoes,shoes 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,heels,예,제안,,,사람,1,
+subcategory,세부분류,sandals,샌들,shoes,shoes 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,sandals,예,제안,,,사람,1,
+subcategory,세부분류,flats,플랫,shoes,shoes 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,flats,예,제안,,,사람,1,
+subcategory,세부분류,shoulder-bag,숄더백,bag,bag 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,shoulder-bag,예,제안,,,사람,1,
+subcategory,세부분류,crossbody-bag,크로스백,bag,bag 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,crossbody-bag,예,제안,,,사람,1,
+subcategory,세부분류,tote-bag,토트백,bag,bag 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,tote-bag,예,제안,,,사람,1,
+subcategory,세부분류,backpack,백팩,bag,bag 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,backpack,예,제안,,,사람,1,
+subcategory,세부분류,clutch,클러치,bag,bag 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,clutch,예,제안,,,사람,1,
+subcategory,세부분류,hat,모자,accessory,accessory 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,hat,예,제안,,,사람,1,
+subcategory,세부분류,belt,벨트,accessory,accessory 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,belt,예,제안,,,사람,1,
+subcategory,세부분류,scarf,스카프,accessory,accessory 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,scarf,예,제안,,,사람,1,
+subcategory,세부분류,necklace,목걸이,accessory,accessory 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,necklace,예,제안,,,사람,1,
+subcategory,세부분류,bracelet,팔찌,accessory,accessory 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,bracelet,예,제안,,,사람,1,
+subcategory,세부분류,earrings,귀걸이,accessory,accessory 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,earrings,예,제안,,,사람,1,
+subcategory,세부분류,glasses,안경,accessory,accessory 안의 구체적인 아이템 유형,상품명이 아닌 실제 형태 기준,,subCategory,glasses,예,제안,,,사람,1,
+main_color,주색상,black,블랙,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,black,예,제안,,,사람,1,
+main_color,주색상,white,화이트,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,white,예,제안,,,사람,1,
+main_color,주색상,gray,그레이,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,gray,예,제안,,,사람,1,
+main_color,주색상,beige,베이지,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,beige,예,제안,,,사람,1,
+main_color,주색상,brown,브라운,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,brown,예,제안,,,사람,1,
+main_color,주색상,navy,네이비,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,navy,예,제안,,,사람,1,
+main_color,주색상,blue,블루,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,blue,예,제안,,,사람,1,
+main_color,주색상,red,레드,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,red,예,제안,,,사람,1,
+main_color,주색상,pink,핑크,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,pink,예,제안,,,사람,1,
+main_color,주색상,orange,오렌지,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,orange,예,제안,,,사람,1,
+main_color,주색상,yellow,옐로,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,yellow,예,제안,,,사람,1,
+main_color,주색상,green,그린,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,green,예,제안,,,사람,1,
+main_color,주색상,purple,퍼플,,면적 기준 가장 지배적인 색,패턴이 있어도 가장 넓은 면적의 색을 1순위로 기록,네이비 재킷 → navy,color,purple,예,제안,,,사람,1,
+main_color,주색상,multi,여러 색,,주색을 하나로 정하기 어려운 배색·패턴,가장 넓은 색이 전체의 50% 미만일 때,,color,multi,예,제안,,,Claude 초안,1,앱에만 있는 값. 사용 여부 결정 필요
+value,명도,light,밝음,,색의 밝고 어두운 정도,"흰색에 가까울수록 light, 검정에 가까울수록 dark",아이보리 → light,colorTone,,변환,제안,,,사람,1,앱은 colorTone 하나로 저장(bright/light/muted/dark/vivid). 변환표는 MATCH_SCORE_V0.1 문서 참고
+value,명도,medium,중간,,색의 밝고 어두운 정도,"흰색에 가까울수록 light, 검정에 가까울수록 dark",,colorTone,,변환,제안,,,사람,1,앱은 colorTone 하나로 저장(bright/light/muted/dark/vivid). 변환표는 MATCH_SCORE_V0.1 문서 참고
+value,명도,dark,어두움,,색의 밝고 어두운 정도,"흰색에 가까울수록 light, 검정에 가까울수록 dark",,colorTone,,변환,제안,,,사람,1,앱은 colorTone 하나로 저장(bright/light/muted/dark/vivid). 변환표는 MATCH_SCORE_V0.1 문서 참고
+saturation,채도,low,낮음,,색의 선명도,"회색기가 많으면 low, 원색에 가까우면 high",더스티핑크 → low,colorTone,,변환,제안,,,사람,1,
+saturation,채도,medium,중간,,색의 선명도,"회색기가 많으면 low, 원색에 가까우면 high",,colorTone,,변환,제안,,,사람,1,
+saturation,채도,high,높음,,색의 선명도,"회색기가 많으면 low, 원색에 가까우면 high",,colorTone,,변환,제안,,,사람,1,
+fit,핏,slim,슬림,,신체와 의복 사이 여유량,실측치보다 시각적으로 몸을 얼마나 따라가는지 판단,,fit,slim,예,제안,,,사람,1,
+fit,핏,fitted,피티드,,신체와 의복 사이 여유량,실측치보다 시각적으로 몸을 얼마나 따라가는지 판단,몸에 붙는 니트 → fitted,없음,,아니오,제안,,,사람,1,앱에 없음. slim과 합칠지 결정
+fit,핏,regular,레귤러,,신체와 의복 사이 여유량,실측치보다 시각적으로 몸을 얼마나 따라가는지 판단,,fit,regular,예,제안,,,사람,1,
+fit,핏,relaxed,릴랙스드,,신체와 의복 사이 여유량,실측치보다 시각적으로 몸을 얼마나 따라가는지 판단,,fit,relaxed,예,제안,,,사람,1,
+fit,핏,oversized,오버사이즈,,신체와 의복 사이 여유량,실측치보다 시각적으로 몸을 얼마나 따라가는지 판단,,fit,oversized,예,제안,,,사람,1,
+fit,핏,straight,스트레이트,,(앱에만 있는 핏 값),,,fit,straight,예,제안,,,Claude 초안,1,앱 하의 핏 값. 실루엣으로 옮길지 결정 필요(제안: 핏=regular/relaxed + 실루엣=straight/wide)
+fit,핏,wide,와이드,,(앱에만 있는 핏 값),,,fit,wide,예,제안,,,Claude 초안,1,앱 하의 핏 값. 실루엣으로 옮길지 결정 필요(제안: 핏=regular/relaxed + 실루엣=straight/wide)
+silhouette,실루엣,I,I라인,,의복의 전체 외곽선·볼륨 구조,정면 착용 시 외곽선과 허리선·밑단 형태 기준,,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음. 추가 여부 결정 필요
+silhouette,실루엣,H,H라인,,의복의 전체 외곽선·볼륨 구조,정면 착용 시 외곽선과 허리선·밑단 형태 기준,,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음. 추가 여부 결정 필요
+silhouette,실루엣,A,A라인,,의복의 전체 외곽선·볼륨 구조,정면 착용 시 외곽선과 허리선·밑단 형태 기준,플레어 스커트 → A,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음. 추가 여부 결정 필요
+silhouette,실루엣,X,X라인,,의복의 전체 외곽선·볼륨 구조,정면 착용 시 외곽선과 허리선·밑단 형태 기준,,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음. 추가 여부 결정 필요
+silhouette,실루엣,volume,볼륨,,의복의 전체 외곽선·볼륨 구조,정면 착용 시 외곽선과 허리선·밑단 형태 기준,,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음. 추가 여부 결정 필요
+silhouette,실루엣,straight,스트레이트,,의복의 전체 외곽선·볼륨 구조,정면 착용 시 외곽선과 허리선·밑단 형태 기준,,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음. 추가 여부 결정 필요
+silhouette,실루엣,flared,플레어,,의복의 전체 외곽선·볼륨 구조,정면 착용 시 외곽선과 허리선·밑단 형태 기준,플레어 스커트 → flared,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음. 추가 여부 결정 필요
+silhouette,실루엣,wide,와이드,,통이 넓게 떨어지는 하의 외곽선,밑단까지 폭이 넓게 유지되는지,와이드 슬랙스 → wide,없음,,아니오,제안,,,Claude 초안,1,Numbers 목록에 없음. 앱 핏 wide를 옮길 자리로 제안
+material,소재(섬유),cotton,면,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,cotton,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material,소재(섬유),denim,데님,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,denim,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material,소재(섬유),leather,가죽,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,leather,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material,소재(섬유),wool,울,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,wool,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material,소재(섬유),linen,리넨,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,linen,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material,소재(섬유),polyester,폴리에스터,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,polyester,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material,소재(섬유),nylon,나일론,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,nylon,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material,소재(섬유),silk,실크,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,silk,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material,소재(섬유),knit,니트,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,knit,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material,소재(섬유),other,기타,,주 소재의 섬유·원단 종류,라벨이나 외관상 가장 주된 소재,,material,other,예,제안,,,Claude 초안,1,앱이 현재 저장하는 값. 소재감·두께와 함께 쓸지 결정
+material_feel,소재감,crisp,빳빳함,,시각·촉각적으로 느껴지는 재질 특성,섬유명보다 코디에 영향을 주는 물성 중심(여러 개 선택 가능),,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+material_feel,소재감,soft,부드러움,,시각·촉각적으로 느껴지는 재질 특성,섬유명보다 코디에 영향을 주는 물성 중심(여러 개 선택 가능),,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+material_feel,소재감,fluid,흐르는 듯함,,시각·촉각적으로 느껴지는 재질 특성,섬유명보다 코디에 영향을 주는 물성 중심(여러 개 선택 가능),새틴 → fluid,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+material_feel,소재감,sheer,비침,,시각·촉각적으로 느껴지는 재질 특성,섬유명보다 코디에 영향을 주는 물성 중심(여러 개 선택 가능),,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+material_feel,소재감,glossy,광택,,시각·촉각적으로 느껴지는 재질 특성,섬유명보다 코디에 영향을 주는 물성 중심(여러 개 선택 가능),새틴 → glossy,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+material_feel,소재감,matte,무광,,시각·촉각적으로 느껴지는 재질 특성,섬유명보다 코디에 영향을 주는 물성 중심(여러 개 선택 가능),,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+material_feel,소재감,fuzzy,보송함·기모,,시각·촉각적으로 느껴지는 재질 특성,섬유명보다 코디에 영향을 주는 물성 중심(여러 개 선택 가능),,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+material_feel,소재감,heavy,묵직함,,시각·촉각적으로 느껴지는 재질 특성,섬유명보다 코디에 영향을 주는 물성 중심(여러 개 선택 가능),,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+thickness,두께감,thin,얇음,,시각적으로 판단되는 의복 두께,계절성과 레이어링 가능성 기준,,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+thickness,두께감,medium,보통,,시각적으로 판단되는 의복 두께,계절성과 레이어링 가능성 기준,,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+thickness,두께감,thick,두꺼움,,시각적으로 판단되는 의복 두께,계절성과 레이어링 가능성 기준,울 코트 → thick,없음,,아니오,제안,,,사람,1,앱·AI 분석에 없음
+season,계절,spring,봄,,일반적인 착용 적합 계절,소재·두께·노출 정도를 함께 고려,린넨 셔츠 → summer,season,spring,예,제안,,,사람,1,
+season,계절,summer,여름,,일반적인 착용 적합 계절,소재·두께·노출 정도를 함께 고려,린넨 셔츠 → summer,season,summer,예,제안,,,사람,1,
+season,계절,fall,가을,,일반적인 착용 적합 계절,소재·두께·노출 정도를 함께 고려,린넨 셔츠 → summer,season,fall,예,제안,,,사람,1,Numbers의 autumn은 fall로 통일
+season,계절,winter,겨울,,일반적인 착용 적합 계절,소재·두께·노출 정도를 함께 고려,린넨 셔츠 → summer,season,winter,예,제안,,,사람,1,
+season,계절,all-season,사계절,,계절 구분 없이 입는 옷,,,season,,변환,제안,,,사람,1,앱은 4계절을 모두 선택하는 방식으로 저장
+tpo,TPO,casual,캐주얼,,적합한 착용 상황,복수 선택 가능. 복장 격식과 활동성을 고려,블레이저 → office / date,tpo,casual,예,제안,,,사람,1,
+tpo,TPO,school,학교,,적합한 착용 상황,복수 선택 가능. 복장 격식과 활동성을 고려,블레이저 → office / date,없음,,아니오,제안,,,사람,1,앱에 없음. 추가 여부 결정
+tpo,TPO,office,출근·오피스,,적합한 착용 상황,복수 선택 가능. 복장 격식과 활동성을 고려,블레이저 → office / date,tpo,office,예,제안,,,사람,1,
+tpo,TPO,date,데이트,,적합한 착용 상황,복수 선택 가능. 복장 격식과 활동성을 고려,블레이저 → office / date,tpo,date,예,제안,,,사람,1,
+tpo,TPO,formal,격식,,적합한 착용 상황,복수 선택 가능. 복장 격식과 활동성을 고려,블레이저 → office / date,tpo,formal,예,제안,,,사람,1,
+tpo,TPO,party,파티,,적합한 착용 상황,복수 선택 가능. 복장 격식과 활동성을 고려,블레이저 → office / date,tpo,party,예,제안,,,사람,1,
+tpo,TPO,travel,여행,,적합한 착용 상황,복수 선택 가능. 복장 격식과 활동성을 고려,블레이저 → office / date,tpo,travel,예,제안,,,사람,1,
+tpo,TPO,active,활동·운동,,적합한 착용 상황,복수 선택 가능. 복장 격식과 활동성을 고려,블레이저 → office / date,없음,,아니오,제안,,,사람,1,앱에 없음. 추가 여부 결정
+mood,무드,minimal,미니멀,,전체 스타일 인상,디테일·색·실루엣이 만드는 종합 인상,블랙 레더 재킷 → edgy,style,minimal,예,제안,,,사람,1,앱에서는 style 항목
+mood,무드,classic,클래식,,전체 스타일 인상,디테일·색·실루엣이 만드는 종합 인상,블랙 레더 재킷 → edgy,style,classic,예,제안,,,사람,1,앱에서는 style 항목
+mood,무드,feminine,페미닌,,전체 스타일 인상,디테일·색·실루엣이 만드는 종합 인상,블랙 레더 재킷 → edgy,style,feminine,예,제안,,,사람,1,앱에서는 style 항목
+mood,무드,street,스트릿,,전체 스타일 인상,디테일·색·실루엣이 만드는 종합 인상,블랙 레더 재킷 → edgy,style,street,예,제안,,,사람,1,앱에서는 style 항목
+mood,무드,sporty,스포티,,전체 스타일 인상,디테일·색·실루엣이 만드는 종합 인상,블랙 레더 재킷 → edgy,style,sporty,예,제안,,,사람,1,앱에서는 style 항목
+mood,무드,romantic,로맨틱,,전체 스타일 인상,디테일·색·실루엣이 만드는 종합 인상,블랙 레더 재킷 → edgy,없음,,아니오,제안,,,사람,1,앱에 없음
+mood,무드,edgy,엣지,,전체 스타일 인상,디테일·색·실루엣이 만드는 종합 인상,블랙 레더 재킷 → edgy,없음,,아니오,제안,,,사람,1,앱에 없음
+mood,무드,casual,캐주얼,,전체 스타일 인상,디테일·색·실루엣이 만드는 종합 인상,블랙 레더 재킷 → edgy,style,casual,예,제안,,,사람,1,앱에서는 style 항목
+mood,무드,vintage,빈티지,,전체 스타일 인상,디테일·색·실루엣이 만드는 종합 인상,블랙 레더 재킷 → edgy,style,vintage,예,제안,,,Claude 초안,1,앱 style에만 있음
+fit,(예시) 핏,example,(예시) 값,,,,,없음,,아니오,확정,E1|E2,2026-10-19,예시,1,형식 설명용 예시 행(검증·집계 제외)

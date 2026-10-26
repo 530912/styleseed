@@ -1,0 +1,11 @@
+rule_id,rule_version,rule_type,exception_of,dimension,a_category,a_attribute,a_values,b_category,b_attribute,b_values,context_tpo,context_mood,context_season,context_weather,judgement,strength,reason,display_text,exception_note,confidence,author,reviewer,approval_status,approved_at,data_origin,note
+FIT-001,1,base,,silhouette_fit,top,fit,oversized,bottom,silhouette,wide,,,,,caution,3,상·하의 볼륨이 동시에 커져 허리선과 비율이 흐려질 수 있음,상의와 하의가 모두 넉넉해 허리선이 흐려질 수 있어요,street 무드는 FIT-002,high,E1,E2,approved,2026-10-22,human,예시 데이터 — 실제 패션 판단 아님
+FIT-002,1,exception,FIT-001,silhouette_fit,top,fit,oversized,bottom,silhouette,wide,,street,,,conditional,3,street 무드에서는 상하 볼륨이 의도된 루즈 실루엣으로 성립함,스트릿 무드에서는 넉넉한 상하의가 의도된 실루엣으로 보여요,,medium,E2,E1,approved,2026-10-22,human,예시 데이터 — 실제 패션 판단 아님
+COL-001,1,base,,color,any,main_color,navy,any,main_color,white,,,,,recommended,4,명도 대비가 분명하면서 색 충돌이 적어 안정적임,네이비와 화이트는 밝기 대비가 분명하면서 차분하게 어울려요,,high,E1,E2,approved,2026-10-22,human,예시 데이터 — 실제 패션 판단 아님
+COL-002,1,base,,color,any,saturation,high,any,saturation,high,,,,,caution,3,두 색이 동시에 선명하면 시선이 나뉘어 산만해 보일 수 있음,,,medium,E2,E1,approved,2026-10-22,human,예시 데이터 — 실제 패션 판단 아님
+COL-002,2,base,,color,any,saturation,high,any,saturation,high,,,,,caution,2,두 색이 동시에 선명하면 시선이 나뉘지만 면적 비율이 다르면 부담이 줄어듦,,컬러블로킹 의도는 예외 규칙으로 분리 예정,medium,E2,E1,approved,2026-10-24,human,버전 2 예시: 빌드는 승인된 최고 버전(2)만 사용
+MAT-001,1,base,,material_season,any,material,silk|linen,,,,,,,cold|snow,not_recommended,5,얇고 통기성이 큰 소재는 영하·눈 오는 날 보온이 부족함,오늘처럼 추운 날엔 실크·리넨이 너무 얇아요,,high,E1,E2,approved,2026-10-22,human,예시 데이터 — 실제 패션 판단 아님
+TPO-001,1,base,,tpo,outer,subcategory,blazer,bottom,subcategory,jeans,office|date,,,,recommended,4,격식 있는 구조감과 캐주얼 소재가 균형을 만들어 활용도가 높음,,,high,E1,,in_review,,human,검토중 예시(빌드 제외)
+MOOD-001,1,base,,mood,any,mood,minimal,any,mood,street,,,,,caution,2,미니멀과 스트릿이 섞이면 무드 방향이 흐려질 수 있음,,,low,,,draft,,human,초안 예시(작성자 미지정 허용)
+FIT-003,1,base,,silhouette_fit,bottom,silhouette,A,top,fit,slim,,,,,recommended,3,A라인 하의와 슬림 상의는 허리선을 강조해 비율이 좋아 보임,,,medium,E2,E1,retired,2026-10-22,human,폐기 예시(빌드 제외)
+COL-003,1,base,,color,any,main_color,beige,any,main_color,black,,,,,recommended,3,베이지와 블랙은 대비가 부드러워 차분한 인상을 줌,,,low,,,draft,,claude_draft,Claude 초안 예시(사람이 human으로 바꾸고 승인해야 사용)

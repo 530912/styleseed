@@ -1,5 +1,7 @@
 import { router } from "expo-router";
 
+import { PrototypeGate } from "../components/styleseed/prototype-gate";
+
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Badge, Screen, ScreenHeader } from "../components/styleseed/ui";
@@ -69,7 +71,7 @@ type DemoScene = {
   onPress: () => void;
 };
 
-export default function DemoScreen() {
+function DemoScreen() {
   const clothes = useClosetStore((state) => state.clothes);
 
   const imageUri = useAnalysisStore((state) => state.imageUri);
@@ -294,3 +296,12 @@ const styles = StyleSheet.create({
     color: palette.ink,
   },
 });
+
+// 사용자 조사·배포 빌드에서는 숨김(src/lib/featureFlags.ts)
+export default function DemoScreenRoute() {
+  return (
+    <PrototypeGate>
+      <DemoScreen />
+    </PrototypeGate>
+  );
+}

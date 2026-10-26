@@ -24,9 +24,13 @@ let geminiBehavior = null;
 
 let geminiCalls = 0;
 
+let lastGeminiBody = null;
+
 globalThis.fetch = async (url, options) => {
   if (String(url).includes("generativelanguage.googleapis.com")) {
     geminiCalls += 1;
+
+    lastGeminiBody = JSON.parse(options.body);
 
     return geminiBehavior(options);
   }
@@ -207,4 +211,41 @@ test("회귀: 정상 분석 응답은 기존 형식(box2d 보정, mask 필터)�
     [1000, 30],
   ]);
   assert.equal(body.box_2d, undefined);
+});
+
+test("Sprint 1A-3: 기본 설정에서는 Gemini에 mask를 요청하지 않고, 응답 형식은 mask: [] 유지", async () => {
+  geminiBehavior = () =>
+    jsonResponse(200, {
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                text: JSON.stringify({
+                  category: "top", subCategory: "shirt", color: "white", colorTone: "neutral",
+                  fit: "regular", material: "cotton", season: ["spring"], tpo: ["daily"], style: ["minimal"],
+                  box_2d: [100, 200, 900, 800],
+                }),
+              },
+            ],
+          },
+        },
+      ],
+    });
+
+  const response = await post(baseUrl, "/analyze-clothing", { body: { imageBase64: "abc" } });
+
+  const body = await response.json();
+
+  const schema = lastGeminiBody.generationConfig.responseSchema;
+
+  const promptText = lastGeminiBody.contents[0].parts.find((part) => part.text).text;
+
+  assert.equal(response.status, 200);
+  assert.equal("mask" in schema.properties, false);
+  assert.equal(schema.required.includes("mask"), false);
+  assert.ok(schema.required.includes("box_2d"), "box_2d는 계속 요청");
+  assert.doesNotMatch(promptText, /Return "mask"/);
+  assert.deepEqual(body.mask, []);
+  assert.deepEqual(body.box2d, [100, 200, 900, 800]);
 });

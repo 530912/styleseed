@@ -16,11 +16,24 @@ const {
 
 const { createFixedWindowCounter } = require("./guestLimiter");
 
+const { createConcurrencyLimiter } = require("./concurrencyLimiter");
+
 const { createAnalyzeQuota, createSupabaseQuotaStore } = require("./quota");
 
 const { createResolveImagePath } = require("./storagePaths");
 
 const { createUserSupabaseFactory } = require("./userSupabase");
+
+const {
+  QUALITY,
+  toPixelBox,
+  buildPromptPoints,
+  buildCenterPoint,
+  maskStats,
+  selectBestMask,
+  assessQuality,
+  fillSmallHoles,
+} = require("./cutout");
 
 const app = express();
 
@@ -159,13 +172,81 @@ const resolveImagePath = createResolveImagePath({
   getSupabaseUrl: () => SUPABASE_URL,
 });
 
-// 이미지 처리 경로: 정식 로그인 사용자만 → 본문 파싱 → 경로 검사·서명
+// 이미지 처리 한도 (Claude B 점검 S-2): 사용자별 시간당 횟수. 이미지 처리 4경로를 합쳐 센다.
+// 옷 1벌 저장은 보통 1~2회(SlimSAM, 실패 시 BRIA)라 일반 사용에는 닿지 않는다.
+app.locals.imageTaskLimit = readPositiveInt(
+  process.env.IMAGE_TASK_LIMIT_PER_HOUR,
+  60,
+);
+
+const imageTaskCounter = createFixedWindowCounter();
+
+app.locals.resetImageTaskCounter = () => imageTaskCounter.reset();
+
+const limitImageTasks = (req, res, next) => {
+  const result = imageTaskCounter.hit(
+    req.auth.userId,
+    app.locals.imageTaskLimit,
+  );
+
+  if (!result.allowed) {
+    res.set("Retry-After", String(result.retryAfterSeconds));
+
+    return res.status(429).json({
+      code: "IMAGE_TASK_RATE_LIMITED",
+      message: "이미지 처리 요청이 너무 많아요. 잠시 후 다시 시도해주세요.",
+      retryAfterSeconds: result.retryAfterSeconds,
+    });
+  }
+
+  return next();
+};
+
+// 이미지 처리 경로: 정식 로그인 사용자만 → 사용자별 한도 → 본문 파싱 → 경로 검사·서명
 const imageTaskGuards = [
   authenticate,
   requireUser,
+  limitImageTasks,
   parseImageTaskBody,
   resolveImagePath,
 ];
+
+// SlimSAM 동시 처리 1건 + 대기열 (R1-02-01 H-1). 앱 제한 시간(90초) 안에 끝나도록 대기는 45초까지
+app.locals.slimSamLimiter = createConcurrencyLimiter({
+  concurrency: readPositiveInt(process.env.SLIMSAM_CONCURRENCY, 1),
+  maxQueue: readPositiveInt(process.env.SLIMSAM_MAX_QUEUE, 4),
+  maxWaitMs: readPositiveInt(process.env.SLIMSAM_QUEUE_WAIT_MS, 45_000),
+});
+
+const holdSlimSamSlot = async (req, res, next) => {
+  let release;
+
+  try {
+    release = await app.locals.slimSamLimiter.acquire();
+  } catch (error) {
+    // 앱은 이 실패를 받으면 BRIA 대체 경로로 넘어간다
+    console.warn("SlimSAM 대기열 거절:", error.reason ?? error.message);
+
+    res.set("Retry-After", "10");
+
+    return res.status(503).json({
+      code: "CUTOUT_BUSY",
+      message: "지금 이미지 처리 요청이 많아요. 잠시 후 다시 시도해주세요.",
+    });
+  }
+
+  // 기다리는 동안 앱이 연결을 끊었으면 처리하지 않는다
+  if (res.writableEnded || req.socket.destroyed) {
+    release();
+
+    return;
+  }
+
+  res.on("finish", release);
+  res.on("close", release);
+
+  return next();
+};
 
 const buildFalImageInput = ({
   imageUrl,
@@ -258,6 +339,40 @@ const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 const GEMINI_THINKING_LEVEL = process.env.GEMINI_THINKING_LEVEL || "minimal";
 
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+// Gemini 다각형 mask 요청 여부 (Sprint 1A-3)
+// 앱은 이 값을 쓰지 않는다(배경 제거는 SlimSAM/BRIA). 출력 토큰의 큰 부분을 차지하므로 기본으로 요청하지 않는다.
+// 필요하면 GEMINI_REQUEST_MASK=true로 되돌린다. 응답에는 형식 유지를 위해 항상 mask 필드(빈 배열 가능)를 둔다.
+const GEMINI_REQUEST_MASK = ["true", "1", "on", "yes"].includes(
+  String(process.env.GEMINI_REQUEST_MASK ?? "").toLowerCase(),
+);
+
+const GEMINI_MASK_INSTRUCTIONS = GEMINI_REQUEST_MASK
+  ? `  Also segment the exact selected garment.
+
+  Return "mask" as a polygon made of [x, y] coordinate points.
+
+  Mask rules:
+  - Each x and y value must be normalized from 0 to 1000.
+  - The mask coordinates are relative to the selected garment's box_2d.
+  - Trace only the visible fabric and shape of the selected garment.
+  - Exclude the person's face, hair, neck, skin, hands, legs and feet.
+  - Exclude bags, jewelry, hats and other accessories.
+  - Exclude inner garments that are visible underneath the selected garment.
+  - Do not include other clothing such as pants or shoes.
+  - The polygon should follow the garment silhouette as closely as possible.
+
+`
+  : "";
+
+const GEMINI_MASK_SCHEMA = GEMINI_REQUEST_MASK
+  ? {
+      mask: {
+        type: "array",
+        items: { type: "array", items: { type: "integer" } },
+      },
+    }
+  : {};
 
 console.log(
   `Gemini model: ${GEMINI_MODEL} (thinkingLevel: ${GEMINI_THINKING_LEVEL})`,
@@ -441,21 +556,7 @@ app.post(
   - exclude the face, hair, hands, legs, bags, shoes, and other garments as much as possible
   - describe only the same garment used for the clothing attributes
 
-  Also segment the exact selected garment.
-
-  Return "mask" as a polygon made of [x, y] coordinate points.
-
-  Mask rules:
-  - Each x and y value must be normalized from 0 to 1000.
-  - The mask coordinates are relative to the selected garment's box_2d.
-  - Trace only the visible fabric and shape of the selected garment.
-  - Exclude the person's face, hair, neck, skin, hands, legs and feet.
-  - Exclude bags, jewelry, hats and other accessories.
-  - Exclude inner garments that are visible underneath the selected garment.
-  - Do not include other clothing such as pants or shoes.
-  - The polygon should follow the garment silhouette as closely as possible.
-
-  Return the result using only the allowed values defined in the response schema.
+${GEMINI_MASK_INSTRUCTIONS}  Return the result using only the allowed values defined in the response schema.
   `,
                   },
 
@@ -501,15 +602,7 @@ app.post(
                     },
                   },
 
-                  mask: {
-                    type: "array",
-                    items: {
-                      type: "array",
-                      items: {
-                        type: "integer",
-                      },
-                    },
-                  },
+                  ...GEMINI_MASK_SCHEMA,
 
                   subCategory: {
                     type: "string",
@@ -668,7 +761,7 @@ app.post(
                   "tpo",
                   "style",
                   "box_2d",
-                  "mask",
+                  ...(GEMINI_REQUEST_MASK ? ["mask"] : []),
                 ],
               },
             },
@@ -698,6 +791,21 @@ app.post(
           message: "Gemini 분석 요청에 실패했습니다.",
         });
       }
+
+      // 토큰 사용량 기록(비용 추정·mask 제거 효과 측정용, Sprint 1A-3)
+      const usage = data?.usageMetadata ?? {};
+
+      console.log(
+        "Gemini 사용량:",
+        JSON.stringify({
+          model: data?.modelVersion,
+          mask: GEMINI_REQUEST_MASK,
+          prompt: usage.promptTokenCount,
+          output: usage.candidatesTokenCount,
+          thoughts: usage.thoughtsTokenCount ?? 0,
+          total: usage.totalTokenCount,
+        }),
+      );
 
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
@@ -791,15 +899,17 @@ app.post("/segment-garment", ...imageTaskGuards, async (req, res) => {
   } catch (error) {
     console.error("segment-garment error:", error);
 
+    // 내부 오류 문구는 로그에만 남긴다 (Claude B 점검 S-7)
     return res.status(500).json({
       success: false,
-      message:
-        error instanceof Error ? error.message : "의류 분리에 실패했습니다.",
+      message: "의류 분리에 실패했습니다.",
     });
   }
 });
 
-app.post("/segment-garment-local", ...imageTaskGuards, async (req, res) => {
+const slimSamGuards = [...imageTaskGuards, holdSlimSamSlot];
+
+app.post("/segment-garment-local", ...slimSamGuards, async (req, res) => {
   try {
     // 이미지는 서버가 만든 서명 URL만 쓴다(resolveImagePath)
     const imageUrl = req.imageUrl;
@@ -814,71 +924,8 @@ app.post("/segment-garment-local", ...imageTaskGuards, async (req, res) => {
 
     const { model, processor, RawImage } = await getLocalSam();
 
-    const image = await RawImage.read(imageUrl);
-
-    const imageWidth = image.width;
-
-    const imageHeight = image.height;
-
-    // Gemini:
-    // [ymin, xmin, ymax, xmax]
-    // 0 ~ 1000
-    const [yMinNormalized, xMinNormalized, yMaxNormalized, xMaxNormalized] =
-      box2d.map(Number);
-
-    const x1 = Math.round((xMinNormalized / 1000) * imageWidth);
-
-    const y1 = Math.round((yMinNormalized / 1000) * imageHeight);
-
-    const x2 = Math.round((xMaxNormalized / 1000) * imageWidth);
-
-    const y2 = Math.round((yMaxNormalized / 1000) * imageHeight);
-
-    // 옷 중심부 한 점도 같이 제공
-    const centerX = Math.round((x1 + x2) / 2);
-
-    const centerY = Math.round(y1 + (y2 - y1) * 0.55);
-
-    const inputs = await processor(image, {
-      input_boxes: [[[x1, y1, x2, y2]]],
-
-      input_points: [[[centerX, centerY]]],
-
-      input_labels: [[[1]]],
-    });
-
-    const outputs = await model(inputs);
-
-    const masks = await processor.post_process_masks(
-      outputs.pred_masks,
-      inputs.original_sizes,
-      inputs.reshaped_input_sizes,
-    );
-
-    const scores = outputs.iou_scores;
-
-    const scoreValues = Array.from(scores.data);
-
-    let bestIndex = 0;
-
-    for (let i = 1; i < scoreValues.length; i += 1) {
-      if (scoreValues[i] > scoreValues[bestIndex]) {
-        bestIndex = i;
-      }
-    }
-
-    const maskTensor = masks[0];
-
-    const dims = maskTensor.dims;
-
-    const maskHeight = dims[dims.length - 2];
-
-    const maskWidth = dims[dims.length - 1];
-
-    const pixelsPerMask = maskWidth * maskHeight;
-
-    const offset = bestIndex * pixelsPerMask;
-
+    // 이미지를 한 번만 내려받고(타임아웃 적용), EXIF 방향을 반영한 픽셀로 분리한다.
+    // Gemini 상자는 화면에 보이는 방향 기준이므로 회전 전 픽셀을 쓰면 위치가 어긋난다.
     const imageResponse = await fetchWithTimeout(
       imageUrl,
       {},
@@ -892,24 +939,112 @@ app.post("/segment-garment-local", ...imageTaskGuards, async (req, res) => {
 
     const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
 
-    const { data: rgbaBuffer, info } = await sharp(imageBuffer)
-      .resize(maskWidth, maskHeight)
-      .ensureAlpha()
+    const { data: rgb, info: rgbInfo } = await sharp(imageBuffer)
+      .rotate()
+      .removeAlpha()
       .raw()
-      .toBuffer({
-        resolveWithObject: true,
+      .toBuffer({ resolveWithObject: true });
+
+    const imageWidth = rgbInfo.width;
+
+    const imageHeight = rgbInfo.height;
+
+    const image = new RawImage(
+      new Uint8ClampedArray(rgb.buffer, rgb.byteOffset, rgb.length),
+      imageWidth,
+      imageHeight,
+      3,
+    );
+
+    const box = toPixelBox(box2d, imageWidth, imageHeight);
+
+    // 후보 마스크 3개를 만들고 상자 기준 통계를 붙인다
+    const segment = async ({ points, labels }) => {
+      const inputs = await processor(image, {
+        input_points: [[points]],
+        input_labels: [[labels]],
       });
 
-    for (let i = 0; i < pixelsPerMask; i += 1) {
-      const isGarment = maskTensor.data[offset + i];
+      const outputs = await model(inputs);
 
-      rgbaBuffer[i * 4 + 3] = isGarment ? 255 : 0;
+      const masks = await processor.post_process_masks(
+        outputs.pred_masks,
+        inputs.original_sizes,
+        inputs.reshaped_input_sizes,
+      );
+
+      const maskTensor = masks[0];
+
+      const maskHeight = maskTensor.dims[maskTensor.dims.length - 2];
+
+      const maskWidth = maskTensor.dims[maskTensor.dims.length - 1];
+
+      const perMask = maskWidth * maskHeight;
+
+      return Array.from(outputs.iou_scores.data).map((iou, index) => {
+        const data = maskTensor.data.subarray(index * perMask, (index + 1) * perMask);
+
+        return { iou, data, maskWidth, maskHeight, ...maskStats(data, maskWidth, maskHeight, box) };
+      });
+    };
+
+    // 1차: 상자 안 양성 점 5개, 2차(기준 미달 시): 예전 중심점 1개
+    let strategy = "multi_point";
+
+    let best = selectBestMask(await segment(buildPromptPoints(box)));
+
+    if (!assessQuality(best).ok) {
+      const retry = selectBestMask(await segment(buildCenterPoint(box)));
+
+      if (assessQuality(retry).ok) {
+        best = retry;
+        strategy = "center_point";
+      }
     }
 
-    const cutoutBuffer = await sharp(rgbaBuffer, {
+    const quality = assessQuality(best);
+
+    const metrics = {
+      strategy,
+      boxFill: Number(best.boxFill.toFixed(3)),
+      outside: Number(best.outside.toFixed(3)),
+    };
+
+    if (!quality.ok) {
+      // 분리 결과가 옷 일부·배경이면 저장하지 않고 앱이 BRIA 대체 경로로 넘어가게 한다
+      console.warn("SlimSAM 결과 품질 미달:", quality.reason, JSON.stringify(metrics));
+
+      return res.status(422).json({
+        code: "LOW_QUALITY_CUTOUT",
+        message: "의류 분리 결과가 기준에 미달했습니다.",
+        reason: quality.reason,
+        metrics,
+      });
+    }
+
+    // 단추·자수 사이 같은 작은 구멍을 메운다(큰 틈은 유지)
+    const { mask, filledHoles } = fillSmallHoles(
+      best.data,
+      best.maskWidth,
+      best.maskHeight,
+      Math.round(best.maskWidth * best.maskHeight * QUALITY.maxHoleFraction),
+    );
+
+    const pixels = best.maskWidth * best.maskHeight;
+
+    const rgba = Buffer.alloc(pixels * 4);
+
+    for (let i = 0; i < pixels; i += 1) {
+      rgba[i * 4] = rgb[i * 3];
+      rgba[i * 4 + 1] = rgb[i * 3 + 1];
+      rgba[i * 4 + 2] = rgb[i * 3 + 2];
+      rgba[i * 4 + 3] = mask[i] ? 255 : 0;
+    }
+
+    const cutoutBuffer = await sharp(rgba, {
       raw: {
-        width: info.width,
-        height: info.height,
+        width: best.maskWidth,
+        height: best.maskHeight,
         channels: 4,
       },
     })
@@ -917,7 +1052,13 @@ app.post("/segment-garment-local", ...imageTaskGuards, async (req, res) => {
       .png()
       .toBuffer();
 
+    console.log("SlimSAM 분리:", JSON.stringify({ ...metrics, filledHoles }));
+
     res.set("Content-Type", "image/png");
+    res.set("X-Cutout-Strategy", strategy);
+    res.set("X-Cutout-Box-Fill", String(metrics.boxFill));
+    res.set("X-Cutout-Outside", String(metrics.outside));
+    res.set("X-Cutout-Holes-Filled", String(filledHoles));
 
     return res.send(cutoutBuffer);
   } catch (error) {
@@ -927,11 +1068,9 @@ app.post("/segment-garment-local", ...imageTaskGuards, async (req, res) => {
 
     console.error("Local SAM Error:", error);
 
+    // 내부 오류 문구는 로그에만 남긴다 (Claude B 점검 S-7)
     return res.status(500).json({
-      message:
-        error instanceof Error
-          ? error.message
-          : "로컬 의류 분리에 실패했습니다.",
+      message: "로컬 의류 분리에 실패했습니다.",
     });
   }
 });

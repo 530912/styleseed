@@ -1,0 +1,2 @@
+상품 ID [product_id],브랜드 ID [brand_id],상품명 [product_name],판매가(원) [price_krw],판매 상태 [sale_status],공식몰 상품 URL [product_url],상품 이미지 URL [image_url],카테고리 [category],세부 품목 [sub_category],색 [color],색 톤 [color_tone],핏 [fit],소재 [material],계절 [season],TPO [tpo],스타일 [style],속성 출처 [attribute_source],속성 검수자 [reviewed_by],정보 갱신일 [updated_at],메모 [notes]
+EXW-001,EXW,(예시) 울 블렌드 싱글 코트,189000,on_sale,https://brand.example/products/001,https://brand.example/images/001.jpg,outer,coat,beige,muted,regular,wool,fall|winter,office|casual,classic|minimal,brand,,2026-10-24,예시 행 — 지우고 작성

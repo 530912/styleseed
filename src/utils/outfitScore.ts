@@ -8,7 +8,13 @@ import type {
 
 import { joinTitles, toTitle } from "./format";
 
-import { findBestMatch } from "./recommendation";
+import {
+  findBestMatch,
+  findInnerTopForLayer,
+  findTopLayerFor,
+} from "./recommendation";
+
+import { getEngineCategory, getOutfitRole, isUpperRole } from "./taxonomyCompat";
 
 /**
  * OUTFIT EVALUATION
@@ -191,13 +197,16 @@ const scoreColor = (items: Clothing[]) => {
 
 const scoreFit = (items: Clothing[]) => {
   // 상·하의(또는 아우터) 사이의 실루엣 균형을 본다.
-  const upper = items.filter(
-    (item) => item.category === "top" || item.category === "outer",
-  );
+  // 역할 기준(taxonomyCompat): 베스트(상의 겸 레이어)는 상체, 원피스·점프수트·롬퍼는 하체 쪽으로 본다
+  const upper = items.filter((item) => {
+    const role = getOutfitRole(item);
+    return isUpperRole(role) || role === "outer";
+  });
 
-  const lower = items.filter(
-    (item) => item.category === "bottom" || item.category === "dress",
-  );
+  const lower = items.filter((item) => {
+    const role = getOutfitRole(item);
+    return role === "bottom" || role === "onePiece";
+  });
 
   const differences: number[] = [];
 
@@ -368,13 +377,15 @@ const scorePreference = (items: Clothing[], closet: Clothing[]) => {
 
 // 상의(또는 원피스) · 하의 · 신발이 갖춰졌는지
 const getCompleteness = (items: Clothing[]) => {
-  const hasDress = items.some((item) => item.category === "dress");
+  const roles = items.map(getOutfitRole);
 
-  const hasTop = items.some((item) => item.category === "top");
+  const hasDress = roles.includes("onePiece");
 
-  const hasBottom = items.some((item) => item.category === "bottom");
+  const hasTop = roles.some(isUpperRole);
 
-  const hasShoes = items.some((item) => item.category === "shoes");
+  const hasBottom = roles.includes("bottom");
+
+  const hasShoes = roles.includes("shoes");
 
   const upperOk = hasDress || hasTop;
 
@@ -511,9 +522,18 @@ export const getRankedLooksForItem = (
 ): RankedLook[] => {
   const others = clothes.filter((clothing) => clothing.id !== item.id);
 
+  const itemCategory = getEngineCategory(item);
+
+  const itemRole = getOutfitRole(item);
+
   const seen = new Set<string>();
 
   const looks: RankedLook[] = [];
+
+  // 대분류를 정할 수 없는 옷(알 수 없는 값)은 코디를 만들지 않는다
+  if (itemRole === "unknown") {
+    return looks;
+  }
 
   const addLook = (items: Clothing[]) => {
     if (items.length < 2) {
@@ -534,8 +554,26 @@ export const getRankedLooksForItem = (
     looks.push({ base: item, ...evaluateOutfit(items, clothes) });
   };
 
+  // 베스트(상의 겸 레이어)가 있으면 안에 입을 상의를 더한 코디, 일반 상의만 있으면 베스트를 겹친 코디도 후보로 본다
+  // (앱 41개 값만 쓰는 옷장에서는 추가 후보가 생기지 않는다)
+  const addLayered = (items: Clothing[]) => {
+    addLook(items);
+
+    const innerTop = findInnerTopForLayer(items, clothes);
+
+    if (innerTop) {
+      addLook([...items, innerTop.clothing]);
+    }
+
+    const topLayer = findTopLayerFor(items, clothes);
+
+    if (topLayer) {
+      addLook([...items, topLayer.clothing]);
+    }
+  };
+
   const partnersOf = (category: ClothingCategory) =>
-    others.filter((clothing) => clothing.category === category);
+    others.filter((clothing) => getEngineCategory(clothing) === category);
 
   // 선택한 옷 + 짝이 되는 옷 + 신발, 그리고 아우터를 더한 버전까지 후보로 만든다.
   const buildWith = (partner: Clothing | null) => {
@@ -547,26 +585,27 @@ export const getRankedLooksForItem = (
 
     const shoes = findBestMatch(item, others, "shoes");
 
-    if (shoes && item.category !== "shoes") {
+    if (shoes && itemCategory !== "shoes") {
       items.push(shoes.clothing);
     }
 
-    addLook(items);
+    addLayered(items);
 
-    if (item.category !== "outer") {
+    if (itemCategory !== "outer") {
       const outer = findBestMatch(item, others, "outer");
 
       if (outer) {
-        addLook([...items, outer.clothing]);
+        addLayered([...items, outer.clothing]);
       }
     }
   };
 
-  if (item.category === "top") {
+  if (itemRole === "top" || itemRole === "topLayer") {
     partnersOf("bottom").forEach((bottom) => buildWith(bottom));
-  } else if (item.category === "bottom") {
+  } else if (itemRole === "bottom") {
     partnersOf("top").forEach((top) => buildWith(top));
-  } else if (item.category === "dress") {
+  } else if (itemRole === "onePiece") {
+    // 원피스·점프수트·롬퍼는 상의·하의를 대신한다(신발·아우터만 더함)
     buildWith(null);
   } else {
     // 아우터·신발·가방 등은 상의 + 하의 조합에 더한다.
@@ -579,7 +618,7 @@ export const getRankedLooksForItem = (
         items.push(bottom.clothing);
       }
 
-      addLook(items);
+      addLayered(items);
     });
   }
 
@@ -600,10 +639,14 @@ export const getRankedLooks = (
   pool: Clothing[] = clothes,
 ): RankedLook[] => {
   const bases = pool.filter((clothing) =>
-    ["top", "bottom", "dress"].includes(clothing.category),
+    ["top", "bottom", "dress"].includes(getEngineCategory(clothing) ?? ""),
   );
 
-  const candidates = bases.length > 0 ? bases : pool;
+  // 알 수 없는 값(대분류를 정할 수 없는 옷)은 기준 옷으로 쓰지 않는다
+  const candidates =
+    bases.length > 0
+      ? bases
+      : pool.filter((clothing) => getOutfitRole(clothing) !== "unknown");
 
   const seen = new Set<string>();
 
@@ -628,8 +671,30 @@ export const getRankedLooks = (
     looks.push({ base, ...evaluateOutfit(items, clothes) });
   };
 
+  const addLayered = (base: Clothing, items: Clothing[]) => {
+    addLook(base, items);
+
+    const innerTop = findInnerTopForLayer(items, pool);
+
+    if (innerTop) {
+      addLook(base, [...items, innerTop.clothing]);
+    }
+
+    const topLayer = findTopLayerFor(items, pool);
+
+    if (topLayer) {
+      addLook(base, [...items, topLayer.clothing]);
+    }
+  };
+
   candidates.forEach((base) => {
-    const targets = OUTFIT_PLAN[base.category] ?? ["top", "bottom", "shoes"];
+    const baseCategory = getEngineCategory(base);
+
+    const targets = (baseCategory && OUTFIT_PLAN[baseCategory]) ?? [
+      "top",
+      "bottom",
+      "shoes",
+    ];
 
     const items = [base];
 
@@ -642,13 +707,13 @@ export const getRankedLooks = (
     });
 
     // 아우터 없는 조합과 있는 조합을 각각 후보로 본다.
-    addLook(base, items);
+    addLayered(base, items);
 
-    if (base.category !== "outer") {
+    if (baseCategory !== "outer") {
       const outerMatch = findBestMatch(base, pool, "outer");
 
       if (outerMatch) {
-        addLook(base, [...items, outerMatch.clothing]);
+        addLayered(base, [...items, outerMatch.clothing]);
       }
     }
   });

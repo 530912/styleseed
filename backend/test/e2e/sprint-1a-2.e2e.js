@@ -261,10 +261,9 @@ test("T2-06/T2-07 익명 세션은 clothes·Storage에 접근할 수 없다(rest
 
 test("T2-08/T2-19 정식 사용자: 경로 방식 저장 + 배경 제거(품질 기준) + 재조회", async () => {
   const user = await createUser("main");
-  const analysis = await analyzeLoafer(user.session.access_token);
-  assert.equal(analysis.status, 200, JSON.stringify(analysis.body).slice(0, 200));
+  const analysis = await analyzeOrFixture(user.session.access_token, "user");
 
-  const saved = await saveWithCutout(user, analysis.body);
+  const saved = await saveWithCutout(user, analysis);
   record("user_save", { quality: saved.quality });
 
   const { data } = await user.client.from("clothes").select("id, cutout_image_path");

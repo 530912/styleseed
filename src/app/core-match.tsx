@@ -1,5 +1,7 @@
 import { router } from "expo-router";
 
+import { PrototypeGate } from "../components/styleseed/prototype-gate";
+
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { ClothingImage } from "../components/styleseed/clothing-image";
@@ -27,7 +29,7 @@ import { rankClosetByPrototypeCore } from "../utils/prototypeCore";
 const VISIBLE_MATCHES = 4;
 
 // CORE ENGINE — BETA: 영상용 prototype 화면 (점수는 저장하지 않음)
-export default function CoreMatchScreen() {
+function CoreMatchScreen() {
   const clothes = useClosetStore((state) => state.clothes);
 
   const { status } = useClosetLoader();
@@ -207,3 +209,12 @@ const styles = StyleSheet.create({
     color: palette.muted,
   },
 });
+
+// 사용자 조사·배포 빌드에서는 숨김(src/lib/featureFlags.ts)
+export default function CoreMatchScreenRoute() {
+  return (
+    <PrototypeGate>
+      <CoreMatchScreen />
+    </PrototypeGate>
+  );
+}

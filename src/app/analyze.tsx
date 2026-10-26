@@ -39,7 +39,11 @@ import { isSignedIn } from "../lib/sessionPolicy";
 
 import { saveClothingToSupabase } from "../lib/clothes";
 
+import { now, perfLog } from "../lib/perf";
+
 import { supabase } from "../lib/supabase";
+
+import { getUserErrorMessage } from "../lib/userErrors";
 
 import { useAnalysisStore } from "../store/useAnalysisStore";
 
@@ -50,6 +54,11 @@ import { usePendingClothingStore } from "../store/usePendingClothingStore";
 import type { ClothingAnalysis } from "../types";
 
 import { getClothingName, joinTitles, toTitle } from "../utils/format";
+
+import {
+  getSubcategoryOptions,
+  normalizeAnalysisTaxonomy,
+} from "../utils/taxonomyCompat";
 
 // 분석을 기다리는 동안 순서대로 보여줄 항목
 // (Gemini 분석 결과에 실제로 포함되는 속성만 사용)
@@ -65,7 +74,8 @@ const ANALYZE_TIMEOUT_MS = 30_000;
 // 백엔드 실패를 사용자가 이해할 수 있는 원인별 문구로 바꾼다.
 const getAnalysisErrorMessage = (error: unknown) => {
   if (isApiError(error) && error.code === "NETWORK") {
-    return "분석 서버에 연결하지 못했어요. 백엔드 실행 상태를 확인해주세요.";
+    // 사용자에게 보이는 문구라 개발 용어(백엔드)를 쓰지 않는다
+    return "분석 서버에 연결하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해주세요.";
   }
 
   return getApiErrorMessage(error, "옷 분석 중 오류가 발생했습니다.");
@@ -137,7 +147,9 @@ export default function AnalyzeScreen() {
       setLoading(true);
       setError(null);
 
-      const data = (await apiPost(
+      const analyzeStartedAt = now();
+
+      const response = (await apiPost(
         "/analyze-clothing",
         {
           imageBase64,
@@ -147,6 +159,13 @@ export default function AnalyzeScreen() {
           timeoutMs: ANALYZE_TIMEOUT_MS,
         },
       )) as ClothingAnalysis;
+
+      perfLog("analyze.request", analyzeStartedAt, {
+        base64Bytes: imageBase64.length,
+      });
+
+      // 분류를 앱 값으로 정리(대분류 jumpsuit → dress, 어긋난 쌍 보정). 바뀌면 원래 값은 taxonomySource에 남는다
+      const { analysis: data } = normalizeAnalysisTaxonomy(response);
 
       setAnalysisResult(data);
 
@@ -279,9 +298,10 @@ export default function AnalyzeScreen() {
 
       Alert.alert(
         "저장 실패",
-        error instanceof Error && error.message
-          ? error.message
-          : "옷을 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+        getUserErrorMessage(
+          error,
+          "옷을 저장하지 못했어요. 잠시 후 다시 시도해주세요.",
+        ),
       );
     } finally {
       setSaving(false);
@@ -467,7 +487,7 @@ export default function AnalyzeScreen() {
           <Label style={styles.optionLabel}>SUB CATEGORY</Label>
 
           <View style={styles.optionRow}>
-            {CLOTHING_SUBCATEGORIES[category].map((item) => (
+            {getSubcategoryOptions(category, subCategory).map((item) => (
               <OptionChip
                 key={item}
                 label={toTitle(item)}
