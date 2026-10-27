@@ -33,7 +33,11 @@ import { palette } from "../constants/ui";
 
 import { apiPost } from "../lib/api";
 
-import { getApiErrorMessage, isApiError } from "../lib/apiErrors";
+import {
+  getApiErrorMessage,
+  isAiUnavailableError,
+  isApiError,
+} from "../lib/apiErrors";
 
 import { isSignedIn } from "../lib/sessionPolicy";
 
@@ -135,6 +139,9 @@ export default function AnalyzeScreen() {
 
   const [error, setError] = useState<string | null>(null);
 
+  // AI 분석을 쓸 수 없는 상태(Gemini 미연결 등)면 [다시 시도]를 숨긴다(눌러도 같은 오류만 반복)
+  const [aiUnavailable, setAiUnavailable] = useState(false);
+
   const [saving, setSaving] = useState(false);
 
   const [revealedSteps, setRevealedSteps] = useState(0);
@@ -156,6 +163,7 @@ export default function AnalyzeScreen() {
     try {
       setLoading(true);
       setError(null);
+      setAiUnavailable(false);
 
       const analyzeStartedAt = now();
 
@@ -201,6 +209,8 @@ export default function AnalyzeScreen() {
         duration_ms: Date.now() - researchStartedAt,
         error_code: toAnalysisErrorCode(isApiError(error) ? error.code : undefined),
       });
+
+      setAiUnavailable(isAiUnavailableError(error));
 
       setError(getAnalysisErrorMessage(error));
     } finally {
@@ -361,7 +371,10 @@ export default function AnalyzeScreen() {
     if (error && !loading) {
       return (
         <Screen>
-          <ScreenHeader eyebrow="AI ANALYSIS" title="분석에 실패했어요" />
+          <ScreenHeader
+            eyebrow="AI ANALYSIS"
+            title={aiUnavailable ? "AI 분석을 쓸 수 없어요" : "분석에 실패했어요"}
+          />
 
           <View style={styles.loadingImageBox}>
             <Image
@@ -374,13 +387,19 @@ export default function AnalyzeScreen() {
           <Text style={styles.errorText}>{error}</Text>
 
           <View style={styles.errorActions}>
-            <Button label="다시 시도" onPress={analyzeClothing} />
+            {aiUnavailable ? (
+              <Button label="홈으로" onPress={() => router.replace("/")} />
+            ) : (
+              <>
+                <Button label="다시 시도" onPress={analyzeClothing} />
 
-            <Button
-              label="다른 사진 선택"
-              variant="secondary"
-              onPress={() => router.replace("/upload")}
-            />
+                <Button
+                  label="다른 사진 선택"
+                  variant="secondary"
+                  onPress={() => router.replace("/upload")}
+                />
+              </>
+            )}
           </View>
         </Screen>
       );

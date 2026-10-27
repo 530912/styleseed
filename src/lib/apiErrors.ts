@@ -15,6 +15,8 @@ export type ApiErrorCode =
   | "AI_BUSY"
   | "NETWORK"
   | "INVALID_IMAGE"
+  | "AI_UNAVAILABLE"
+  | "AI_CREDIT_EXHAUSTED"
   | "UNKNOWN";
 
 type ErrorBody = {
@@ -37,7 +39,14 @@ const KNOWN_CODES: readonly ApiErrorCode[] = [
   "AI_BUSY",
   "NETWORK",
   "INVALID_IMAGE",
+  "AI_UNAVAILABLE",
+  "AI_CREDIT_EXHAUSTED",
 ];
+
+// AI 분석 자체를 쓸 수 없는 상태(서버에 Gemini 키 없음·선불 잔액 소진). 다시 시도해도 같으므로 재시도를 권하지 않는다
+export const isAiUnavailableError = (error: unknown) =>
+  error instanceof ApiError &&
+  (error.code === "AI_UNAVAILABLE" || error.code === "AI_CREDIT_EXHAUSTED");
 
 export class ApiError extends Error {
   code: ApiErrorCode;
@@ -169,6 +178,11 @@ export const getApiErrorMessage = (error: unknown, fallback: string) => {
     // 서버가 이미지 형식을 확인하지 못함(Gemini 호출 전 검사, Claude B R-8)
     case "INVALID_IMAGE":
       return "이 사진은 분석할 수 없어요. 다른 사진으로 다시 시도해주세요.";
+
+    // 서버 503 AI_UNAVAILABLE(Gemini 미연결)·AI_CREDIT_EXHAUSTED(잔액 소진): "혼잡"이 아니다
+    case "AI_UNAVAILABLE":
+    case "AI_CREDIT_EXHAUSTED":
+      return "지금은 AI 분석을 사용할 수 없어요. 준비가 끝나면 다시 이용할 수 있어요.";
 
     case "NETWORK":
       return "서버에 연결할 수 없어요. 네트워크 상태를 확인해주세요.";

@@ -249,6 +249,9 @@ export const toAnalysisErrorCode = (code: string | undefined) => {
     case "PAYLOAD_TOO_LARGE":
     case "INVALID_IMAGE":
       return code;
+    case "AI_UNAVAILABLE":
+    case "AI_CREDIT_EXHAUSTED":
+      return "AI_UNAVAILABLE";
     case "USER_RATE_LIMITED":
     case "GUEST_RATE_LIMITED":
       return "RATE_LIMITED";

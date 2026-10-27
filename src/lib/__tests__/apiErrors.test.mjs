@@ -135,3 +135,19 @@ test("서버의 이미지 사전 검사 실패(400 INVALID_IMAGE)는 다른 사�
   assert.equal(error.code, "INVALID_IMAGE");
   assert.match(getApiErrorMessage(error, "fallback"), /다른 사진으로 다시 시도/);
 });
+
+test("서버 Gemini 미연결(503 AI_UNAVAILABLE)·잔액 소진은 '혼잡'이 아니라 사용 불가로 안내하고 재시도를 권하지 않는다", async () => {
+  const { isAiUnavailableError } = await import("../apiErrors.ts");
+
+  for (const code of ["AI_UNAVAILABLE", "AI_CREDIT_EXHAUSTED"]) {
+    const error = toApiError(503, { code, message: "AI 분석을 준비 중이에요." });
+    assert.equal(error.code, code);
+    assert.equal(isAiUnavailableError(error), true);
+    assert.match(getApiErrorMessage(error, "fallback"), /지금은 AI 분석을 사용할 수 없어요/);
+  }
+
+  // 코드 없는 503은 지금처럼 혼잡(재시도 가능)
+  const busy = toApiError(503, {});
+  assert.equal(busy.code, "AI_BUSY");
+  assert.equal(isAiUnavailableError(busy), false);
+});

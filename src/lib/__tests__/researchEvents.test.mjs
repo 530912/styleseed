@@ -230,3 +230,9 @@ test("세션별 내보내기: 지금 세션 기록만, 파일 이름에 코드·
   assert.equal(buildExportFileName(b, new Date()), "styleseed-events-R1-T02-rehearsal-20261109T1000Z.jsonl");
   assert.match(buildExportFileName(null, new Date("2026-11-09T12:34:00Z")), /^styleseed-events-all-20261109T1234Z\.jsonl$/);
 });
+
+test("AI 사용 불가 응답은 연구 기록에 AI_UNAVAILABLE로 남는다", () => {
+  assert.equal(toAnalysisErrorCode("AI_UNAVAILABLE"), "AI_UNAVAILABLE");
+  assert.equal(toAnalysisErrorCode("AI_CREDIT_EXHAUSTED"), "AI_UNAVAILABLE");
+  assert.ok(contract.enums.analysis_error.includes("AI_UNAVAILABLE"));
+});

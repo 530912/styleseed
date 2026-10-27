@@ -265,6 +265,7 @@
    "PAYLOAD_TOO_LARGE",
    "NO_IMAGE",
    "INVALID_IMAGE",
+   "AI_UNAVAILABLE",
    "OTHER"
   ],
   "cutout_via": [
