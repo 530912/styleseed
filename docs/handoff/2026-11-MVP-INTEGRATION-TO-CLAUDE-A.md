@@ -75,3 +75,20 @@
 - **API 주소: `EXPO_PUBLIC_API_URL=https://styleseed.mycafe24.com/api`** — 웹 화면(`/`)과 API(`/api`)를 같은 도메인에 둔다(CORS 설정 불필요).
 - **A 파일 변경 1건**: `src/app/_layout.tsx`에 `installWebAlert()` 호출 추가. react-native-web의 `Alert.alert`는 빈 함수라 **웹에서 옷 삭제·계정 삭제 확인 창이 안 떠서 삭제가 안 되고, 로그인·저장 실패 안내도 보이지 않았다.** 웹에서만 브라우저 `alert`/`confirm`으로 연결(`src/lib/webAlert.ts`). 기존 `Alert.alert` 호출은 그대로 둬도 된다.
 - 웹 빌드는 `npx expo export --platform web --output-dir dist` → B가 `deploy/vm/deploy-web.sh dist`로 서버에 올림.
+
+---
+
+## 5차 (2026-10-27) — 조사용 Supabase·API 확정값
+
+| 변수 | 값 |
+|---|---|
+| `EXPO_PUBLIC_API_URL` | `https://styleseed.mycafe24.com/api` (가동 중, `/api/healthz` 200) |
+| `EXPO_PUBLIC_SUPABASE_URL` | `https://jvqgjshwvsovdmkzhaqd.supabase.co` (조사 전용, 서울) |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_qiwuMCu-Odd9p42o9dk8QA_z0yQ8J2i` (공개 키) |
+| `EXPO_PUBLIC_RESEARCH_MODE` | `true` |
+| `EXPO_PUBLIC_GEMINI_PAID_TIER` | Gemini 유료 전환 후 `true`(그 전엔 비움 → 무료 등급 고지 표시) |
+
+- 인증: Supabase 이메일·비밀번호 + 익명 세션(이메일 인증 없음). API 호출은 `Authorization: Bearer`. 같은 도메인이라 CORS 설정 불필요.
+- 빌드 전: `node backend/scripts/check-env.mjs --app --target research` 오류 0.
+- **로컬 개발 `.env`는 아직 운영 DB** — 위 값으로 웹 빌드할 때만 셸 변수로 넣고, 개발 `.env`는 건드리지 말 것(운영 데이터 분리 유지).
+- 서버는 아직 조사 DB 미연결(PO가 `api.env` 입력 → B 배포 예정). 그 전에는 로그인은 되지만 분석·이미지 처리 API는 동작하지 않음.

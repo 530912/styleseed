@@ -131,3 +131,30 @@ T3의 Gemini 1회와 SlimSAM 몇 회가 이번 검증의 비용 전부(약 2원)
 3. `! bash deploy/vm/verify-research.sh full` — 테스트 계정 1개 생성 → 저장소 상품 사진(1600px JPEG)을 **조사 DB Storage에 업로드** → **Gemini 분석 1회** → SlimSAM 배경 제거 3회 + 동시 2건(대기열) → 다른 사용자 사진 403 → **계정 삭제로 계정·옷·사진 정리**(실패 시 Secret key로 정리) → 보고서 JSON
 4. 조사 DB SQL Editor: `verify-research-db.sql` 9/9(사용자·사진 0)
 5. B: 운영 스냅샷 재조회 → 3장 기준(사용자 6·옷 9·사진 18·AI 8)과 비교. 단 A의 로컬 개발이 운영을 쓰는 동안은 사용자 수가 늘 수 있음 → 비교는 "조사 작업 시간대에 새 행이 없는지"(생성 시각)로 판정
+
+---
+
+## 9. 조사용 DB 구축 결과 (2026-10-27)
+
+| 항목 | 결과 |
+|---|---|
+| 계정·권한 | 계정 2 = PO 본인 계정(Owner, 구성원 1명). 동업자 계정 관여 없음 |
+| 조직 | **STYLESEED Research (Free)** — Lab 조직과 별도 |
+| 프로젝트 | **`styleseed-research`**, ref **`jvqgjshwvsovdmkzhaqd`**, **Northeast Asia (Seoul) ap-northeast-2**, NANO, Healthy |
+| 분리 확인 | ref ≠ 운영 `zkgsxa…` ≠ QA `xcwlga…`. `check-env --target research` 통과(운영 주소면 오류 확인) |
+| 마이그레이션 | 5개를 SQL Editor에서 **2회 실행 → 모두 Success**(재실행 안전) |
+| 확인 SQL | **9/9 true**(RLS·정책 5+5·버킷 10MB/5종·anon 권한 없음·ai_usage 차단·함수 권한·사용자 0·사진 0) |
+| Auth | 가입 켬, **익명 로그인 켬**, **이메일 인증 끔**, Site URL `https://styleseed.mycafe24.com`, Redirect `https://styleseed.mycafe24.com/**` — 새로고침 후 유지 확인, `/auth/v1/settings`로도 확인 |
+| 비로그인 차단(공개 키로 직접 호출) | clothes 조회·쓰기, ai_usage 조회, 사용량 함수 → 모두 401(42501). Storage 목록 빈 배열, 공개 URL 불가(비공개 버킷) |
+| 운영 DB(읽기 전용 재조회 01:54 UTC) | 사용자 6(익명 3)·옷 9·사진 18·AI 8·정책 10, 마지막 사용자 생성 시각 동일 → **변화 없음** |
+| 남은 검증 | 로그인 사용자 E2E(사진 저장·조회·삭제, 사용자 간 차단)는 서버에 조사 DB 값을 넣은 뒤 `verify-research.sh storage`(Gemini 없이) |
+
+### 공개 설정값 (비밀 아님 — 웹 번들에 들어가는 값)
+
+```
+EXPO_PUBLIC_SUPABASE_URL=https://jvqgjshwvsovdmkzhaqd.supabase.co
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_qiwuMCu-Odd9p42o9dk8QA_z0yQ8J2i
+EXPO_PUBLIC_API_URL=https://styleseed.mycafe24.com/api
+EXPO_PUBLIC_RESEARCH_MODE=true
+```
+서버 `api.env`의 `SUPABASE_URL`·`SUPABASE_PUBLISHABLE_KEY`도 같은 값. `SUPABASE_SECRET_KEY`는 대시보드 API Keys → Secret keys(`default` 또는 새 키)에서 PO가 직접 복사.
