@@ -28,7 +28,10 @@ import { useClosetStore } from "../store/useClosetStore";
 
 import { getClothingName } from "../utils/format";
 
-import { getTodaysLooks } from "../utils/weatherRecommendation";
+import {
+  getTodaysLooks,
+  getTodaysWeatherNotes,
+} from "../utils/weatherRecommendation";
 
 export default function TodayLookScreen() {
   const clothes = useClosetStore((state) => state.clothes);
@@ -43,6 +46,15 @@ export default function TodayLookScreen() {
   const looks = useMemo(
     () =>
       getTodaysLooks(
+        clothes,
+        weather.status === "ready" ? weather.weather : null,
+      ),
+    [clothes, weather],
+  );
+
+  const weatherNotes = useMemo(
+    () =>
+      getTodaysWeatherNotes(
         clothes,
         weather.status === "ready" ? weather.weather : null,
       ),
@@ -171,6 +183,19 @@ export default function TodayLookScreen() {
       {look.weatherLabel ? (
         <Text style={styles.weatherNote}>· {look.weatherLabel}</Text>
       ) : null}
+
+      {/* 실제 기온·날씨를 반영한 추천 이유 (규칙 기반). 첫 줄(기온·날씨)은 위 label과 같아 아이템별 이유만 */}
+      {look.weatherReasons.slice(1).map((reason) => (
+        <Text key={reason} style={styles.reasonLine}>
+          · {reason}
+        </Text>
+      ))}
+
+      {weatherNotes.map((note) => (
+        <Text key={note.category} style={styles.shortageNote}>
+          {note.message}
+        </Text>
+      ))}
     </Screen>
   );
 }
@@ -234,6 +259,20 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 12,
     color: palette.subtle,
+  },
+
+  reasonLine: {
+    marginTop: 4,
+    fontSize: 12,
+    lineHeight: 17,
+    color: palette.body,
+  },
+
+  shortageNote: {
+    marginTop: 8,
+    fontSize: 12,
+    lineHeight: 17,
+    color: palette.danger,
   },
 
   footerRow: {

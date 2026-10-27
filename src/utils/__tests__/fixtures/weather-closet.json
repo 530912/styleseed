@@ -1,0 +1,340 @@
+{
+ "_note": "날씨 추천 회귀용 테스트 옷장(가짜 데이터, 실제 DB 아님). id: 1 반팔 2 민소매 3 긴팔 셔츠 4 울 니트 5 후드 6 가디건 7 데님 재킷 8 울 코트 9 패딩 10 청바지 11 반바지 12 슬랙스 13 울 바지 14 운동화 15 부츠 16 샌들 17 로퍼",
+ "closet": [
+  {
+   "id": 1,
+   "category": "top",
+   "subCategory": "tshirt",
+   "color": "white",
+   "colorTone": "bright",
+   "fit": "regular",
+   "material": "cotton",
+   "season": [
+    "summer"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "casual",
+    "minimal"
+   ]
+  },
+  {
+   "id": 2,
+   "category": "top",
+   "subCategory": "sleeveless",
+   "color": "black",
+   "colorTone": "dark",
+   "fit": "slim",
+   "material": "cotton",
+   "season": [
+    "summer"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "casual"
+   ]
+  },
+  {
+   "id": 3,
+   "category": "top",
+   "subCategory": "shirt",
+   "color": "blue",
+   "colorTone": "light",
+   "fit": "regular",
+   "material": "cotton",
+   "season": [
+    "spring",
+    "fall"
+   ],
+   "tpo": [
+    "office",
+    "casual"
+   ],
+   "style": [
+    "classic",
+    "minimal"
+   ]
+  },
+  {
+   "id": 4,
+   "category": "top",
+   "subCategory": "knit",
+   "color": "gray",
+   "colorTone": "muted",
+   "fit": "regular",
+   "material": "wool",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "casual",
+    "office"
+   ],
+   "style": [
+    "minimal",
+    "classic"
+   ]
+  },
+  {
+   "id": 5,
+   "category": "top",
+   "subCategory": "hoodie",
+   "color": "navy",
+   "colorTone": "dark",
+   "fit": "oversized",
+   "material": "cotton",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "street",
+    "casual"
+   ]
+  },
+  {
+   "id": 6,
+   "category": "outer",
+   "subCategory": "cardigan",
+   "color": "beige",
+   "colorTone": "light",
+   "fit": "regular",
+   "material": "knit",
+   "season": [
+    "spring",
+    "fall"
+   ],
+   "tpo": [
+    "casual",
+    "office"
+   ],
+   "style": [
+    "minimal",
+    "feminine"
+   ]
+  },
+  {
+   "id": 7,
+   "category": "outer",
+   "subCategory": "jacket",
+   "color": "blue",
+   "colorTone": "muted",
+   "fit": "regular",
+   "material": "denim",
+   "season": [
+    "spring",
+    "fall"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "casual",
+    "street"
+   ]
+  },
+  {
+   "id": 8,
+   "category": "outer",
+   "subCategory": "coat",
+   "color": "black",
+   "colorTone": "dark",
+   "fit": "regular",
+   "material": "wool",
+   "season": [
+    "winter"
+   ],
+   "tpo": [
+    "office",
+    "casual"
+   ],
+   "style": [
+    "classic",
+    "minimal"
+   ]
+  },
+  {
+   "id": 9,
+   "category": "outer",
+   "subCategory": "padding",
+   "color": "black",
+   "colorTone": "dark",
+   "fit": "oversized",
+   "material": "nylon",
+   "season": [
+    "winter"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "casual",
+    "street"
+   ]
+  },
+  {
+   "id": 10,
+   "category": "bottom",
+   "subCategory": "jeans",
+   "color": "blue",
+   "colorTone": "light",
+   "fit": "wide",
+   "material": "denim",
+   "season": [
+    "spring",
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "casual"
+   ]
+  },
+  {
+   "id": 11,
+   "category": "bottom",
+   "subCategory": "shorts",
+   "color": "beige",
+   "colorTone": "light",
+   "fit": "regular",
+   "material": "cotton",
+   "season": [
+    "summer"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "casual"
+   ]
+  },
+  {
+   "id": 12,
+   "category": "bottom",
+   "subCategory": "slacks",
+   "color": "black",
+   "colorTone": "dark",
+   "fit": "straight",
+   "material": "polyester",
+   "season": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "tpo": [
+    "office"
+   ],
+   "style": [
+    "classic",
+    "minimal"
+   ]
+  },
+  {
+   "id": 13,
+   "category": "bottom",
+   "subCategory": "trousers",
+   "color": "gray",
+   "colorTone": "muted",
+   "fit": "straight",
+   "material": "wool",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "office"
+   ],
+   "style": [
+    "classic"
+   ]
+  },
+  {
+   "id": 14,
+   "category": "shoes",
+   "subCategory": "sneakers",
+   "color": "white",
+   "colorTone": "bright",
+   "fit": "regular",
+   "material": "leather",
+   "season": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "casual",
+    "minimal"
+   ]
+  },
+  {
+   "id": 15,
+   "category": "shoes",
+   "subCategory": "boots",
+   "color": "brown",
+   "colorTone": "dark",
+   "fit": "regular",
+   "material": "leather",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "classic"
+   ]
+  },
+  {
+   "id": 16,
+   "category": "shoes",
+   "subCategory": "sandals",
+   "color": "black",
+   "colorTone": "dark",
+   "fit": "regular",
+   "material": "leather",
+   "season": [
+    "summer"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "style": [
+    "casual"
+   ]
+  },
+  {
+   "id": 17,
+   "category": "shoes",
+   "subCategory": "loafer",
+   "color": "black",
+   "colorTone": "dark",
+   "fit": "regular",
+   "material": "leather",
+   "season": [
+    "spring",
+    "fall"
+   ],
+   "tpo": [
+    "office",
+    "casual"
+   ],
+   "style": [
+    "classic"
+   ]
+  }
+ ]
+}

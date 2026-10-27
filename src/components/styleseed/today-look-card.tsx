@@ -8,7 +8,10 @@ import type { WeatherState } from "../../lib/weather";
 
 import { getClothingName } from "../../utils/format";
 
-import type { TodayLook } from "../../utils/weatherRecommendation";
+import type {
+  TodayLook,
+  WeatherClosetNote,
+} from "../../utils/weatherRecommendation";
 
 import { CoreAlignment, type CoreAlignmentData } from "./core-alignment";
 
@@ -21,6 +24,9 @@ import { Button, Label, ScoreDisplay } from "./ui";
 type TodayLookCardProps = {
   weather: WeatherState;
   look: TodayLook | null;
+
+  // 오늘 날씨에 맞는 옷이 부족한 카테고리 안내
+  weatherNotes?: WeatherClosetNote[];
   closetStatus: ClosetLoadStatus;
   onViewLook: () => void;
   onAddItem: () => void;
@@ -35,6 +41,7 @@ type TodayLookCardProps = {
 export function TodayLookCard({
   weather,
   look,
+  weatherNotes = [],
   closetStatus,
   onViewLook,
   onAddItem,
@@ -67,6 +74,17 @@ export function TodayLookCard({
           <Text style={styles.itemNames} numberOfLines={2}>
             {look.recommendation.items.map(getClothingName).join("  ·  ")}
           </Text>
+
+          {/* 첫 줄(오늘 기온·날씨)은 위 날씨 요약과 겹치므로 아이템별 이유 하나만 */}
+          {look.weatherReasons[1] ? (
+            <Text style={styles.weatherReason}>· {look.weatherReasons[1]}</Text>
+          ) : null}
+
+          {weatherNotes.slice(0, 2).map((note) => (
+            <Text key={note.category} style={styles.weatherNote}>
+              {note.message}
+            </Text>
+          ))}
 
           <View style={styles.scoreRow}>
             <ScoreDisplay value={look.score} caption="MATCH" size="medium" />
@@ -178,6 +196,18 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: "600",
     color: palette.ink,
+  },
+
+  weatherReason: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: palette.body,
+  },
+
+  weatherNote: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: palette.danger,
   },
 
   scoreRow: {

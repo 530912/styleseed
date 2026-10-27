@@ -28,7 +28,10 @@ import { supabase } from "../lib/supabase";
 
 import { useClosetStore } from "../store/useClosetStore";
 
-import { getTodaysLooks } from "../utils/weatherRecommendation";
+import {
+  getTodaysLooks,
+  getTodaysWeatherNotes,
+} from "../utils/weatherRecommendation";
 
 // 앱 실행 후 한 번만 인트로를 보여준다.
 // (로그아웃 등으로 HOME이 다시 마운트될 때는 재생하지 않음)
@@ -97,6 +100,15 @@ function HomeScreen() {
     [clothes, weather],
   );
 
+  const weatherNotes = useMemo(
+    () =>
+      getTodaysWeatherNotes(
+        clothes,
+        weather.status === "ready" ? weather.weather : null,
+      ),
+    [clothes, weather],
+  );
+
   const handleOpenCloset = async () => {
     const {
       data: { session },
@@ -140,6 +152,7 @@ function HomeScreen() {
       <TodayLookCard
         weather={weather}
         look={todaysLooks[0] ?? null}
+        weatherNotes={weatherNotes}
         closetStatus={closetStatus}
         onViewLook={() => router.push("/today")}
         onAddItem={() => router.push("/upload")}

@@ -480,29 +480,29 @@
     "base": 3,
     "items": [
      3,
-     8,
+     5,
      14,
      9
     ],
-    "styleScore": 68,
-    "weatherScore": 98,
-    "score": 77,
-    "weatherLabel": "-3°C에 맞는 따뜻한 레이어드 · 눈 대비"
-   },
-   {
-    "base": 11,
-    "items": [
-     11,
-     13,
-     10
-    ],
-    "styleScore": 56,
-    "weatherScore": 48,
-    "score": 54,
-    "weatherLabel": "-3°C에 맞는 따뜻한 레이어드 · 눈 대비"
+    "styleScore": 64,
+    "weatherScore": 91,
+    "score": 72,
+    "weatherLabel": "-3°C · 눈 — 두꺼운 아우터와 보온 레이어드, 눈길 대비"
    }
   ],
   "mild": [
+   {
+    "base": 2,
+    "items": [
+     2,
+     6,
+     12
+    ],
+    "styleScore": 75,
+    "weatherScore": 88,
+    "score": 79,
+    "weatherLabel": "17°C · 맑음 — 가벼운 겉옷"
+   },
    {
     "base": 1,
     "items": [
@@ -511,21 +511,9 @@
      13
     ],
     "styleScore": 72,
-    "weatherScore": 93,
-    "score": 78,
-    "weatherLabel": "17°C에 맞는 가벼운 겉옷"
-   },
-   {
-    "base": 2,
-    "items": [
-     2,
-     7,
-     12
-    ],
-    "styleScore": 77,
-    "weatherScore": 73,
-    "score": 76,
-    "weatherLabel": "17°C에 맞는 가벼운 겉옷"
+    "weatherScore": 90,
+    "score": 77,
+    "weatherLabel": "17°C · 맑음 — 가벼운 겉옷"
    },
    {
     "base": 3,
@@ -535,9 +523,9 @@
      12
     ],
     "styleScore": 59,
-    "weatherScore": 87,
-    "score": 67,
-    "weatherLabel": "17°C에 맞는 가벼운 겉옷"
+    "weatherScore": 78,
+    "score": 65,
+    "weatherLabel": "17°C · 맑음 — 가벼운 겉옷"
    }
   ],
   "hot": [
@@ -549,9 +537,9 @@
      12
     ],
     "styleScore": 77,
-    "weatherScore": 97,
-    "score": 83,
-    "weatherLabel": "31°C에 맞는 가벼운 옷차림"
+    "weatherScore": 95,
+    "score": 82,
+    "weatherLabel": "31°C · 맑음 — 가벼운 옷차림"
    },
    {
     "base": 4,
@@ -561,61 +549,62 @@
      12
     ],
     "styleScore": 58,
-    "weatherScore": 97,
-    "score": 70,
-    "weatherLabel": "31°C에 맞는 가벼운 옷차림"
+    "weatherScore": 95,
+    "score": 69,
+    "weatherLabel": "31°C · 맑음 — 가벼운 옷차림"
    },
    {
-    "base": 11,
+    "base": 1,
     "items": [
-     11,
+     1,
+     7,
      12
     ],
     "styleScore": 59,
-    "weatherScore": 85,
-    "score": 67,
-    "weatherLabel": "31°C에 맞는 가벼운 옷차림"
+    "weatherScore": 78,
+    "score": 65,
+    "weatherLabel": "31°C · 맑음 — 가벼운 옷차림"
    }
   ],
   "rain": [
+   {
+    "base": 3,
+    "items": [
+     3,
+     5,
+     14,
+     9
+    ],
+    "styleScore": 64,
+    "weatherScore": 96,
+    "score": 74,
+    "weatherLabel": "14°C · 비 — 레이어링, 비 대비"
+   },
    {
     "base": 1,
     "items": [
      1,
      5,
-     13,
+     14,
      9
     ],
-    "styleScore": 68,
+    "styleScore": 59,
     "weatherScore": 93,
-    "score": 76,
-    "weatherLabel": "14°C에 맞는 레이어링 · 비 대비"
+    "score": 69,
+    "weatherLabel": "14°C · 비 — 레이어링, 비 대비"
    },
    {
     "base": 2,
     "items": [
      2,
      6,
-     12,
-     10
-    ],
-    "styleScore": 67,
-    "weatherScore": 88,
-    "score": 73,
-    "weatherLabel": "14°C에 맞는 레이어링 · 비 대비"
-   },
-   {
-    "base": 3,
-    "items": [
-     3,
-     8,
-     12,
+     14,
      9
     ],
-    "styleScore": 59,
-    "weatherScore": 93,
-    "score": 69,
-    "weatherLabel": "14°C에 맞는 레이어링 · 비 대비"
+    "styleScore": 56,
+    "weatherScore": 88,
+    "score": 66,
+    "weatherLabel": "14°C · 비 — 레이어링, 비 대비"
    }
   ]
  }

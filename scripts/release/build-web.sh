@@ -39,6 +39,16 @@ EXPO_NO_DOTENV=1 npx expo export --platform web --clear --output-dir "$OUT"
 
 BUNDLE="$(ls "$OUT"/_expo/static/js/web/*.js)"
 
+# Cloudflare Pages는 업로드할 때 이름이 node_modules인 폴더를 빼 버린다(2026-10-27 배포에서 아이콘 폰트 404 → 네모 표시).
+# expo export가 패키지 에셋(아이콘 폰트·expo-router 이미지)을 assets/node_modules/ 아래에 두므로 assets/vendor/로 옮기고
+# 번들 안의 경로도 같이 바꾼다. 경로 문자열은 번들(JS)에만 있다.
+if [ -d "$OUT/assets/node_modules" ]; then
+  mv "$OUT/assets/node_modules" "$OUT/assets/vendor"
+  for js in $BUNDLE; do
+    sed -i '' 's#assets/node_modules/#assets/vendor/#g' "$js"
+  done
+fi
+
 # 정적 호스팅 설정(Cloudflare Pages·Netlify가 읽음, 다른 곳에서는 무시됨)
 # - HTML은 매번 새로 받게(배포 직후 옛 화면이 남지 않게), 해시가 붙은 JS·이미지는 오래 캐시
 # - 없는 주소는 Expo가 만든 not-found 화면으로
@@ -61,6 +71,12 @@ check() {
 
 grep -qF "$EXPO_PUBLIC_SUPABASE_URL" $BUNDLE && check ok "Supabase 주소 = 파일 값" || check fail "Supabase 주소가 번들에 없음"
 grep -qF "$EXPO_PUBLIC_API_URL" $BUNDLE && check ok "API 주소 = 파일 값" || check fail "API 주소가 번들에 없음"
+grep -q "assets/node_modules/" $BUNDLE && check fail "번들에 assets/node_modules 경로가 남아 있음(Cloudflare에서 404)" || check ok "패키지 에셋 경로 = assets/vendor"
+find "$OUT" -type d -name node_modules | grep -q . && check fail "출력에 node_modules 폴더가 있음(Cloudflare가 빼고 올림)" || check ok "node_modules 폴더 없음"
+# 번들이 가리키는 패키지 에셋(아이콘 폰트 등)이 실제 파일로 모두 있는지
+MISSING_ASSETS="$(grep -ohE "assets/vendor/[^\"']+" $BUNDLE | sort -u | while read -r p; do [ -f "$OUT/$p" ] || echo "$p"; done)"
+[ -z "$MISSING_ASSETS" ] && check ok "패키지 에셋 파일 모두 있음(Ionicons 포함)" || check fail "없는 에셋: $(echo $MISSING_ASSETS)"
+grep -q "assets/vendor/@expo/vector-icons/.*Ionicons\.[0-9a-f]*\.ttf" $BUNDLE && check ok "Ionicons 폰트 경로 있음" || check fail "Ionicons 폰트 경로 없음"
 grep -q "localhost:3001" $BUNDLE && check fail "API 기본값(localhost:3001)이 남아 있음" || check ok "API 기본값 없음"
 
 # 번들 안의 Supabase 주소는 파일에 적은 것 하나뿐이어야 한다(테스트·운영 프로젝트가 섞이지 않게)
