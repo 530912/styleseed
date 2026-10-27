@@ -5,6 +5,7 @@
 # 비밀값: 로컬 deploy/vm/api.env(git 제외)가 있으면 먼저 check-env로 이름·형식만 점검(값은 출력하지 않음)한 뒤
 #         서버에 권한 600으로 올린다. 없으면 서버에 이미 있는 api.env를 그대로 쓴다.
 #         CHECK_TARGET(기본 research)이 운영·QA Supabase를 가리키면 업로드를 중단한다.
+#         NO_GEMINI=1: Gemini 키 없이(결제 전) 조사 DB 연결만 — 분석은 503, 저장·권한·배경 제거는 동작
 #         INFRA_ONLY=1: 조사 DB·Gemini 키 없이 인프라만 먼저 확인(Docker·HTTPS·/healthz·SlimSAM 로딩).
 #                       api.env에 비밀값 없이 ALLOW_TOKENLESS_GUEST=false 등만 두고 실행. 분석·저장은 동작하지 않음
 # SSH 키: ~/.ssh/styleseed_cafe24 (bootstrap.sh가 등록)
@@ -29,7 +30,7 @@ VM=deploy/vm
 if [ -f "$VM/api.env" ] && [ "${INFRA_ONLY:-}" != "1" ]; then
   echo "== api.env 점검(--target $CHECK_TARGET, 값 미출력)"
   # 하위 셸에서만 변수를 읽는다(현재 셸·로그에 남기지 않음)
-  ( set -a; . "$VM/api.env"; set +a; TRUST_PROXY=1 node backend/scripts/check-env.mjs --target "$CHECK_TARGET" )
+  ( set -a; . "$VM/api.env"; set +a; TRUST_PROXY=1 node backend/scripts/check-env.mjs --target "$CHECK_TARGET" ${NO_GEMINI:+--no-gemini} )
 fi
 
 ARCHIVE="$(mktemp -t styleseed-deploy).tar.gz"
