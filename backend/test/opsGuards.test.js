@@ -3,6 +3,8 @@
 process.env.SUPABASE_URL = "https://test-project.supabase.co";
 process.env.SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
 process.env.GEMINI_TIMEOUT_MS = "400";
+// 가짜 Gemini(fetch 가로채기)로 시험한다. 키가 없으면 서버가 Gemini를 부르지 않고 503을 낸다
+process.env.GEMINI_API_KEY = "test-gemini-key";
 process.env.GUEST_ANALYZE_LIMIT_PER_HOUR = "100";
 process.env.IP_ANALYZE_LIMIT_PER_HOUR = "100";
 process.env.ALLOWED_ORIGINS = "https://web.example";
@@ -433,4 +435,20 @@ test("OG-15 다른 도메인 웹: 허용 Origin의 사전 요청(Authorization �
   const other = await preflight("https://evil.example");
 
   assert.equal(other.headers.get("access-control-allow-origin"), null);
+});
+
+test("OG-16 Gemini 키 없이 배포한 단계: Google을 부르지 않고 503 AI_UNAVAILABLE", async () => {
+  const saved = process.env.GEMINI_API_KEY;
+
+  delete process.env.GEMINI_API_KEY;
+
+  try {
+    const response = await post(baseUrl, "/analyze-clothing", { body: { imageBase64: JPEG } });
+
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).code, "AI_UNAVAILABLE");
+    assert.equal(geminiCalls, 0);
+  } finally {
+    process.env.GEMINI_API_KEY = saved;
+  }
 });

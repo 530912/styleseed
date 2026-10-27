@@ -7,6 +7,7 @@
 //   node backend/scripts/check-env.mjs --target production
 //   node backend/scripts/check-env.mjs --target research     # 2026-11 사용자 조사 전용 프로젝트(운영·QA가 아니어야 함)
 //   node backend/scripts/check-env.mjs --app --target research   # 앱 빌드(EAS) 변수 EXPO_PUBLIC_* 점검(R-13)
+//   node backend/scripts/check-env.mjs --target research --no-gemini  # Gemini 키 없이(결제 전) 저장·권한만 검증할 때
 //   railway run node scripts/check-env.mjs --target production     # (승인 후) 서비스 변수로 실행
 //
 // 종료 코드: 오류(error)가 하나라도 있으면 1. 경고(warn)만 있으면 0.
@@ -53,10 +54,13 @@ export const ENV_SPEC = [
 ];
 
 // env를 받아 결과 목록을 돌려준다. 결과에는 값이 들어가지 않는다
-export const checkEnv = (env, { target } = {}) => {
+export const checkEnv = (env, { target, noGemini = false } = {}) => {
   const results = [];
 
-  for (const spec of ENV_SPEC) {
+  for (const baseSpec of ENV_SPEC) {
+    // --no-gemini: Gemini 결제 전 단계(저장·권한 검증만). 키가 없어도 경고로만 본다
+    const spec = noGemini && baseSpec.name === "GEMINI_API_KEY" ? { ...baseSpec, level: "recommended" } : baseSpec;
+
     const usedName = env[spec.name] ? spec.name : spec.alt && env[spec.alt] ? spec.alt : null;
 
     const value = usedName ? String(env[usedName]).trim() : "";
@@ -210,7 +214,7 @@ if (isMain) {
 
   const results = process.argv.includes("--app")
     ? checkAppEnv(process.env, { target })
-    : checkEnv(process.env, { target });
+    : checkEnv(process.env, { target, noGemini: process.argv.includes("--no-gemini") });
 
   const mark = { ok: "OK  ", warn: "WARN", error: "ERR " };
 

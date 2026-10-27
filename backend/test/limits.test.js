@@ -2,6 +2,8 @@
 process.env.SUPABASE_URL = "https://test-project.supabase.co";
 process.env.SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
 process.env.GEMINI_TIMEOUT_MS = "400";
+// 가짜 Gemini(fetch 가로채기)로 시험한다. 키가 없으면 서버가 Gemini를 부르지 않고 503을 낸다
+process.env.GEMINI_API_KEY = "test-gemini-key";
 process.env.GUEST_ANALYZE_LIMIT_PER_HOUR = "100";
 
 const test = require("node:test");

@@ -121,3 +121,14 @@ test("EV-06 앱 빌드 변수(R-13): API 주소 누락·localhost·http는 오�
   );
   assert.ok(errors({ ...app, EXPO_PUBLIC_GEMINI_API_KEY: "x" }).includes("EXPO_PUBLIC_GEMINI_API_KEY"));
 });
+
+test("EV-07 --no-gemini: Gemini 키가 없어도 오류가 아니라 경고(결제 전 저장 검증)", async () => {
+  const { checkEnv } = await load();
+
+  const env = { ...validEnv() };
+
+  delete env.GEMINI_API_KEY;
+
+  assert.equal(statusOf(checkEnv(env, { target: "qa" }), "GEMINI_API_KEY"), "error");
+  assert.equal(statusOf(checkEnv(env, { target: "qa", noGemini: true }), "GEMINI_API_KEY"), "warn");
+});
