@@ -131,3 +131,28 @@ TestFlight·Apple 가입은 보류(설정·코드 유지). 상세: `docs/release
 | R-34 | `deploy/vm/deploy-web.sh` 머리말의 빌드 안내를 `bash scripts/release/build-web.sh <파일> dist`로 바꿔 달라. `expo export`를 바로 쓰면 캐시·로컬 `.env`(운영 Supabase) 값이 들어갈 수 있다(BUG-40). build-web.sh가 다른 Supabase·로컬 주소·http API·비밀키를 막는다 |
 | R-35 | Caddyfile `header Cache-Control "no-cache"`가 `@static`의 1년 캐시 설정을 덮는지 확인(두 header의 적용 순서). 덮으면 `@html not path /_expo/static/* /assets/*`처럼 나눠 달라 |
 | R-28(재) | Node `keepAliveTimeout` 65초 — Caddy가 끊긴 연결을 다시 쓰면 POST 502 가능 |
+
+---
+
+## 9. 8차 (2026-10-27) — Cloudflare Pages 프론트엔드 배포 완료 → B 설정 요청
+
+**배포:** Cloudflare Pages 프로젝트 `styleseed-research`(무료, Git 연결 없음, 정적 파일 직접 업로드)
+- 공개 주소(고정): **`https://styleseed-research.pages.dev`**
+- 첫 배포 미리보기 주소: `https://1ad641f7.styleseed-research.pages.dev` — 배포마다 바뀌므로 **허용 목록에 넣지 않는다**
+- 빌드: `build-web.sh .env.research.web`(API `https://styleseed.mycafe24.com/api`, Supabase `jvqgjshwvsovdmkzhaqd`, 연구 모드) — 비밀키·운영/QA DB·로컬 주소 0. 공개 번들에서 다시 확인
+
+**B가 설정할 값(끝에 `/` 없이):**
+
+| 위치 | 값 |
+|---|---|
+| 카페24 서버 `ALLOWED_ORIGINS` | `https://styleseed-research.pages.dev` (카페24 주소를 계속 쓰면 쉼표로 함께) |
+| Research Supabase → Auth → URL Configuration → **Site URL** | `https://styleseed-research.pages.dev` |
+| 같은 화면 → **Redirect URLs** | `https://styleseed-research.pages.dev/**` |
+
+**확인 방법(설정 후):** 아래 명령이 `204` + `access-control-allow-origin: https://styleseed-research.pages.dev`를 돌려줘야 한다.
+```
+curl -s -o /dev/null -D - -X OPTIONS https://styleseed.mycafe24.com/api/analyze-clothing \
+  -H "Origin: https://styleseed-research.pages.dev" -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: authorization,content-type"
+```
+지금(10/27 12:20 KST)은 `404 NOT_FOUND`다(허용 출처가 아니면 사전 요청이 라우트까지 내려가 404). 그래서 웹에서 분석·이미지 처리 API를 부를 수 없다. POST는 정상(토큰 없이 401 `AUTH_REQUIRED`).
