@@ -557,6 +557,16 @@ app.post(
         });
       }
 
+      // Gemini 키 없이 배포한 단계(결제 전 저장·권한 검증)에서는 Google을 부르지 않고 바로 알린다
+      if (!process.env.GEMINI_API_KEY) {
+        logEvent("gemini_unconfigured", {});
+
+        return res.status(503).json({
+          code: "AI_UNAVAILABLE",
+          message: "AI 분석을 준비 중이에요. 잠시 후 다시 시도해주세요.",
+        });
+      }
+
       const dailyCap = app.locals.geminiDailyCap.take(app.locals.geminiDailyLimit);
 
       if (!dailyCap.allowed) {
