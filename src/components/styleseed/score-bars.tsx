@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { palette } from "../../constants/ui";
+import { fonts, palette } from "../../constants/ui";
 
 import type { OutfitScoreDetail } from "../../utils/outfitScore";
 
@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
 
   label: {
     width: 98,
+    fontFamily: fonts.sans,
     fontSize: 12,
     fontWeight: "600",
     color: palette.body,
@@ -81,6 +82,7 @@ const styles = StyleSheet.create({
   score: {
     width: 34,
     textAlign: "right",
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "700",
     color: palette.ink,
@@ -89,6 +91,7 @@ const styles = StyleSheet.create({
   note: {
     flex: 1,
     marginLeft: 10,
+    fontFamily: fonts.sans,
     fontSize: 11,
     color: palette.subtle,
   },

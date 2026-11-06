@@ -12,7 +12,7 @@ import {
   ScreenHeader,
 } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import {
   POETCORE_DEMO_RULE,
@@ -170,6 +170,7 @@ const styles = StyleSheet.create({
   },
 
   currentScore: {
+    fontFamily: fonts.sans,
     fontSize: 28,
     fontWeight: "700",
     letterSpacing: -0.5,
@@ -200,6 +201,7 @@ const styles = StyleSheet.create({
   },
 
   productImageText: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1,
@@ -213,6 +215,7 @@ const styles = StyleSheet.create({
   },
 
   productBrand: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1.2,
@@ -221,6 +224,7 @@ const styles = StyleSheet.create({
 
   productName: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 16,
     lineHeight: 21,
     fontWeight: "600",
@@ -229,6 +233,7 @@ const styles = StyleSheet.create({
 
   productPrice: {
     marginTop: 6,
+    fontFamily: fonts.sans,
     fontSize: 15,
     fontWeight: "700",
     color: palette.ink,
@@ -242,6 +247,7 @@ const styles = StyleSheet.create({
   },
 
   upgradeCaption: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1,
@@ -250,12 +256,14 @@ const styles = StyleSheet.create({
 
   upgradeScore: {
     marginTop: 2,
+    fontFamily: fonts.sans,
     fontSize: 22,
     fontWeight: "700",
     color: palette.ink,
   },
 
   upgradeDelta: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "700",
     color: palette.subtle,
@@ -263,12 +271,14 @@ const styles = StyleSheet.create({
 
   itemScore: {
     marginTop: 6,
+    fontFamily: fonts.sans,
     fontSize: 11,
     color: palette.subtle,
   },
 
   disclaimer: {
     marginTop: 8,
+    fontFamily: fonts.sans,
     fontSize: 11,
     lineHeight: 16,
     color: palette.muted,

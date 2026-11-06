@@ -2,6 +2,15 @@ import { Stack } from "expo-router";
 
 import { useEffect } from "react";
 
+import { View } from "react-native";
+
+import {
+  AppTabBar,
+  useTabBarVisible,
+} from "../components/styleseed/app-tab-bar";
+
+import { TabBarContext } from "../components/styleseed/tab-bar-context";
+
 import { startAiConsentSignOutSync } from "../lib/aiConsent";
 
 import { logResearchEvent } from "../lib/researchEvents";
@@ -22,11 +31,22 @@ export default function RootLayout() {
     startAiConsentSignOutSync();
   }, []);
 
+  const showTabBar = useTabBarVisible();
+
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
+    <TabBarContext.Provider value={showTabBar}>
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          />
+        </View>
+
+        {/* 앱 전체 하단 탭바. 탭 구조 확정 전 임시 적용(components/styleseed/app-tab-bar.tsx) */}
+        {showTabBar ? <AppTabBar /> : null}
+      </View>
+    </TabBarContext.Provider>
   );
 }

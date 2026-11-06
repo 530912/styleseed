@@ -16,7 +16,7 @@ import {
   ScreenHeader,
 } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { POETCORE_DEMO_RULE } from "../data/coreDemo";
 
@@ -160,6 +160,7 @@ function CheckRow({ label, passed }: CheckRowProps) {
 const styles = StyleSheet.create({
   itemNames: {
     marginTop: 10,
+    fontFamily: fonts.sans,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "600",
@@ -189,12 +190,14 @@ const styles = StyleSheet.create({
 
   checkMark: {
     width: 14,
+    fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: "700",
     color: palette.ink,
   },
 
   checkLabel: {
+    fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: "600",
     color: palette.ink,
@@ -217,6 +220,7 @@ const styles = StyleSheet.create({
   },
 
   upgradeText: {
+    fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 20,
     color: palette.body,
@@ -224,6 +228,7 @@ const styles = StyleSheet.create({
 
   closing: {
     marginTop: 28,
+    fontFamily: fonts.sans,
     fontSize: 22,
     lineHeight: 30,
     fontWeight: "700",
@@ -233,6 +238,7 @@ const styles = StyleSheet.create({
 
   disclaimer: {
     marginTop: 14,
+    fontFamily: fonts.sans,
     fontSize: 11,
     lineHeight: 16,
     color: palette.muted,

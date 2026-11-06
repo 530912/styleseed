@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { palette } from "../../constants/ui";
+import { fonts, palette } from "../../constants/ui";
 
 import { logResearchEvent } from "../../lib/researchEvents";
 
@@ -66,7 +66,8 @@ const styles = StyleSheet.create({
   },
 
   saved: {
-    backgroundColor: palette.ink,
+    backgroundColor: palette.primary,
+    borderColor: palette.primary,
   },
 
   pressed: {
@@ -74,6 +75,7 @@ const styles = StyleSheet.create({
   },
 
   label: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "600",
     color: palette.ink,

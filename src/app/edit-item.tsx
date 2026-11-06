@@ -30,7 +30,7 @@ import {
   CLOTHING_SUBCATEGORIES,
 } from "../constants/clothingOptions";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
@@ -329,6 +329,7 @@ const styles = StyleSheet.create({
   },
 
   optionText: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.ink,
   },
@@ -339,6 +340,7 @@ const styles = StyleSheet.create({
 
   note: {
     marginTop: 20,
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 18,
     color: palette.subtle,

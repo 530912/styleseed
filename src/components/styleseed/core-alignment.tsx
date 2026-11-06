@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { palette } from "../../constants/ui";
+import { fonts, palette } from "../../constants/ui";
 
 import { Badge, Label, ScoreDisplay } from "./ui";
 
@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
   },
 
   compactScore: {
+    fontFamily: fonts.sans,
     fontSize: 18,
     fontWeight: "700",
     color: palette.ink,
@@ -72,6 +73,7 @@ const styles = StyleSheet.create({
 
   prototypeNote: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "600",
     letterSpacing: 1,

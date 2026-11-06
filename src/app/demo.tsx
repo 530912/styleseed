@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Badge, Screen, ScreenHeader } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
@@ -264,6 +264,7 @@ const styles = StyleSheet.create({
 
   number: {
     width: 22,
+    fontFamily: fonts.sans,
     fontSize: 22,
     fontWeight: "700",
     color: palette.ink,
@@ -280,6 +281,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
+    fontFamily: fonts.sans,
     fontSize: 16,
     fontWeight: "700",
     color: palette.ink,
@@ -287,11 +289,13 @@ const styles = StyleSheet.create({
 
   note: {
     marginTop: 3,
+    fontFamily: fonts.sans,
     fontSize: 12,
     color: palette.subtle,
   },
 
   arrow: {
+    fontFamily: fonts.sans,
     fontSize: 18,
     color: palette.ink,
   },

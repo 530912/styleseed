@@ -62,6 +62,8 @@ cat > "$OUT/_headers" <<'HEADERS'
   Cache-Control: public, max-age=31536000, immutable
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
 HEADERS
 
 fail=0
@@ -77,6 +79,13 @@ find "$OUT" -type d -name node_modules | grep -q . && check fail "출력에 node
 MISSING_ASSETS="$(grep -ohE "assets/vendor/[^\"']+" $BUNDLE | sort -u | while read -r p; do [ -f "$OUT/$p" ] || echo "$p"; done)"
 [ -z "$MISSING_ASSETS" ] && check ok "패키지 에셋 파일 모두 있음(Ionicons 포함)" || check fail "없는 에셋: $(echo $MISSING_ASSETS)"
 grep -q "assets/vendor/@expo/vector-icons/.*Ionicons\.[0-9a-f]*\.ttf" $BUNDLE && check ok "Ionicons 폰트 경로 있음" || check fail "Ionicons 폰트 경로 없음"
+# Pretendard 웹 폰트(public/fonts, 경로에 버전이 있어 오래 캐시): 모든 HTML이 CSS를 불러오고, CSS가 가리키는 woff2가 모두 있는지
+FONT_CSS="fonts/pretendard/1.3.9/pretendardvariable-dynamic-subset.css"
+NO_FONT_HTML="$(find "$OUT" -name '*.html' -exec grep -L "/$FONT_CSS" {} + || true)"
+[ -z "$NO_FONT_HTML" ] && check ok "모든 HTML이 Pretendard CSS를 불러옴" || check fail "Pretendard CSS가 없는 HTML: $(echo $NO_FONT_HTML)"
+MISSING_FONTS="$( [ -f "$OUT/$FONT_CSS" ] && grep -oE 'url\(\./[^)]+\)' "$OUT/$FONT_CSS" | sed -E 's/url\(\.\/(.*)\)/\1/' | sort -u | while read -r p; do [ -f "$OUT/$(dirname "$FONT_CSS")/$p" ] || echo "$p"; done || echo "$FONT_CSS")"
+[ -z "$MISSING_FONTS" ] && check ok "Pretendard 폰트 파일 모두 있음" || check fail "없는 폰트 파일: $(echo $MISSING_FONTS | head -c 200)"
+grep -q "Pretendard Variable" $BUNDLE && check ok "글자 스타일에 Pretendard 지정" || check fail "번들에 Pretendard 글꼴 이름이 없음"
 grep -q "localhost:3001" $BUNDLE && check fail "API 기본값(localhost:3001)이 남아 있음" || check ok "API 기본값 없음"
 
 # 번들 안의 Supabase 주소는 파일에 적은 것 하나뿐이어야 한다(테스트·운영 프로젝트가 섞이지 않게)

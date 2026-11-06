@@ -13,7 +13,7 @@ import {
 
 import { CLOTHING_CATEGORIES } from "../constants/clothingOptions";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { mockProducts } from "../data/mockProducts";
 
@@ -207,6 +207,7 @@ const styles = StyleSheet.create({
   },
 
   contextText: {
+    fontFamily: fonts.sans,
     fontSize: 15,
     lineHeight: 21,
     color: palette.body,
@@ -241,6 +242,7 @@ const styles = StyleSheet.create({
   },
 
   productImageText: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1,
@@ -254,6 +256,7 @@ const styles = StyleSheet.create({
   },
 
   productBrand: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1.2,
@@ -262,6 +265,7 @@ const styles = StyleSheet.create({
 
   productName: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 16,
     lineHeight: 21,
     fontWeight: "600",
@@ -270,6 +274,7 @@ const styles = StyleSheet.create({
 
   productPrice: {
     marginTop: 8,
+    fontFamily: fonts.sans,
     fontSize: 15,
     fontWeight: "700",
     color: palette.ink,
@@ -277,6 +282,7 @@ const styles = StyleSheet.create({
 
   reason: {
     marginTop: 8,
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "600",
     color: palette.subtle,

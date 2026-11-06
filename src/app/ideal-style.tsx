@@ -8,7 +8,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button, Screen, ScreenHeader } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { DEMO_CORE_OPTIONS, type CoreId } from "../data/coreDemo";
 
@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
   },
 
   cardName: {
+    fontFamily: fonts.sans,
     fontSize: 18,
     lineHeight: 22,
     fontWeight: "700",
@@ -134,6 +135,7 @@ const styles = StyleSheet.create({
   },
 
   keyword: {
+    fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 20,
     color: palette.body,
@@ -145,6 +147,7 @@ const styles = StyleSheet.create({
 
   cardStatus: {
     marginTop: 12,
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 0,

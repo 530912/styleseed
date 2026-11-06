@@ -6,7 +6,7 @@ import { Platform, Share, StyleSheet, Text, TextInput, View } from "react-native
 
 import { Button, Label, Screen, ScreenHeader } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { resetClosetSync } from "../hooks/use-closet-loader";
 
@@ -290,6 +290,7 @@ const styles = StyleSheet.create({
 
   value: {
     marginTop: 8,
+    fontFamily: fonts.sans,
     fontSize: 20,
     fontWeight: "700",
     color: palette.ink,
@@ -297,6 +298,7 @@ const styles = StyleSheet.create({
 
   meta: {
     marginTop: 6,
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.subtle,
   },
@@ -307,6 +309,7 @@ const styles = StyleSheet.create({
     borderColor: palette.line,
     paddingHorizontal: 16,
     marginBottom: 12,
+    fontFamily: fonts.sans,
     fontSize: 16,
     color: palette.ink,
   },
@@ -322,6 +325,7 @@ const styles = StyleSheet.create({
 
   notice: {
     marginBottom: 8,
+    fontFamily: fonts.sans,
     fontSize: 13,
     lineHeight: 19,
     color: palette.danger,
@@ -329,6 +333,7 @@ const styles = StyleSheet.create({
 
   message: {
     marginTop: 12,
+    fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 20,
     color: palette.body,

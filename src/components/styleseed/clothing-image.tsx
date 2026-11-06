@@ -7,7 +7,7 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { palette } from "../../constants/ui";
+import { fonts, palette } from "../../constants/ui";
 
 import { useClothingImagePreference } from "../../store/useImagePreferenceStore";
 
@@ -70,6 +70,7 @@ const styles = StyleSheet.create({
   },
 
   fallback: {
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 1,

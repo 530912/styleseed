@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { palette } from "../../constants/ui";
+import { fonts, palette } from "../../constants/ui";
 
 import { Label } from "./ui";
 
@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
 
   rowLabel: {
     width: 76,
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 1,
@@ -67,6 +68,7 @@ const styles = StyleSheet.create({
 
   rowValue: {
     flex: 1,
+    fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: "600",
     color: palette.ink,
@@ -74,12 +76,14 @@ const styles = StyleSheet.create({
 
   rowScore: {
     marginLeft: 8,
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "700",
     color: palette.ink,
   },
 
   rowMax: {
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "400",
     color: palette.muted,

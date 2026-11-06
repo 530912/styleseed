@@ -23,7 +23,11 @@ import {
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { layout, palette } from "../../constants/ui";
+import { size, type } from "../../constants/tokens";
+
+import { useHasTabBar } from "./tab-bar-context";
+
+import { fonts, layout, palette } from "../../constants/ui";
 
 type ScreenProps = {
   children: ReactNode;
@@ -83,6 +87,8 @@ export function Screen({
 }: ScreenProps) {
   const insets = useSafeAreaInsets();
 
+  const hasTabBar = useHasTabBar();
+
   const { content, meta } = liftHeaderMeta(children);
 
   const hasTopBar =
@@ -90,7 +96,10 @@ export function Screen({
 
   const paddingTop = hasTopBar ? 6 : insets.top + 16;
 
-  const paddingBottom = footer ? 16 : insets.bottom + 24;
+  // 앱 하단 탭바가 있으면 하단 안전 영역은 탭바가 맡는다
+  const bottomInset = hasTabBar ? 0 : insets.bottom;
+
+  const paddingBottom = footer ? 16 : bottomInset + 24;
 
   return (
     <View style={styles.screen}>
@@ -114,7 +123,7 @@ export function Screen({
           style={[
             styles.flex,
             styles.content,
-            { paddingTop, paddingBottom: footer ? 0 : insets.bottom },
+            { paddingTop, paddingBottom: footer ? 0 : bottomInset },
           ]}
         >
           {content}
@@ -122,10 +131,11 @@ export function Screen({
       )}
 
       {footer ? (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
+        <View style={[styles.footer, { paddingBottom: bottomInset + 12 }]}>
           {footer}
         </View>
       ) : null}
+
     </View>
   );
 }
@@ -294,19 +304,21 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         isPrimary ? styles.primaryButton : styles.secondaryButton,
-        isDisabled && styles.disabledButton,
-        pressed && styles.pressed,
+        pressed && !isDisabled && isPrimary && styles.primaryButtonPressed,
+        pressed && !isDisabled && !isPrimary && styles.pressed,
+        disabled && !loading && styles.disabledButton,
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? palette.background : palette.ink} />
+        <ActivityIndicator color={palette.onPrimary} />
       ) : null}
 
       <Text
         style={[
           styles.buttonText,
           isPrimary ? styles.primaryButtonText : styles.secondaryButtonText,
+          isDisabled && !loading && styles.disabledButtonText,
         ]}
       >
         {label}
@@ -445,6 +457,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
+    fontFamily: fonts.sans,
     fontSize: 26,
     lineHeight: 32,
     fontWeight: "700",
@@ -454,12 +467,14 @@ const styles = StyleSheet.create({
 
   description: {
     marginTop: 8,
+    fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 20,
     color: palette.body,
   },
 
   label: {
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 1.2,
@@ -478,6 +493,7 @@ const styles = StyleSheet.create({
   },
 
   badgeText: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1,
@@ -489,7 +505,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    minHeight: 54,
+    minHeight: size.button,
     paddingHorizontal: 16,
     flexDirection: "row",
     justifyContent: "center",
@@ -497,18 +513,25 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
+  // Figma 04 Button: primary = action/primary(Coral), secondary = action/secondary(검정), disabled = action/disabled
   primaryButton: {
-    backgroundColor: palette.ink,
+    backgroundColor: palette.primary,
+  },
+
+  primaryButtonPressed: {
+    backgroundColor: palette.primaryPressed,
   },
 
   secondaryButton: {
-    borderWidth: 1,
-    borderColor: palette.ink,
-    backgroundColor: palette.background,
+    backgroundColor: palette.secondary,
   },
 
   disabledButton: {
-    opacity: 0.3,
+    backgroundColor: palette.disabled,
+  },
+
+  disabledButtonText: {
+    color: palette.disabledText,
   },
 
   pressed: {
@@ -516,17 +539,18 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    fontSize: 14,
-    fontWeight: "700",
-    letterSpacing: 0.6,
+    fontFamily: fonts.sans,
+    fontSize: type.labelButton.fontSize,
+    lineHeight: type.labelButton.lineHeight,
+    fontWeight: "600",
   },
 
   primaryButtonText: {
-    color: palette.background,
+    color: palette.onPrimary,
   },
 
   secondaryButtonText: {
-    color: palette.ink,
+    color: palette.onPrimary,
   },
 
   scoreRow: {
@@ -535,6 +559,7 @@ const styles = StyleSheet.create({
   },
 
   scoreValue: {
+    fontFamily: fonts.sans,
     fontSize: 60,
     lineHeight: 64,
     fontWeight: "700",
@@ -543,6 +568,7 @@ const styles = StyleSheet.create({
   },
 
   scoreValueMedium: {
+    fontFamily: fonts.sans,
     fontSize: 44,
     lineHeight: 48,
     letterSpacing: -1,
@@ -551,6 +577,7 @@ const styles = StyleSheet.create({
   scoreSuffix: {
     marginLeft: 2,
     marginBottom: 9,
+    fontFamily: fonts.sans,
     fontSize: 24,
     fontWeight: "700",
     color: palette.ink,
@@ -558,11 +585,13 @@ const styles = StyleSheet.create({
 
   scoreSuffixMedium: {
     marginBottom: 6,
+    fontFamily: fonts.sans,
     fontSize: 18,
   },
 
   scoreCaption: {
     marginTop: 2,
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 2,
@@ -576,12 +605,14 @@ const styles = StyleSheet.create({
   },
 
   emptyTitle: {
+    fontFamily: fonts.sans,
     fontSize: 16,
     fontWeight: "600",
     color: palette.ink,
   },
 
   emptyDescription: {
+    fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 20,
     color: palette.body,

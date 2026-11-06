@@ -23,7 +23,7 @@ import {
   ScreenHeader,
 } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
@@ -305,6 +305,7 @@ const styles = StyleSheet.create({
   },
 
   optionLabel: {
+    fontFamily: fonts.sans,
     fontSize: 15,
     fontWeight: "700",
     color: palette.ink,
@@ -316,6 +317,7 @@ const styles = StyleSheet.create({
 
   optionDescription: {
     marginTop: 6,
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 17,
     color: palette.subtle,
@@ -327,6 +329,7 @@ const styles = StyleSheet.create({
 
   note: {
     marginTop: 12,
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 18,
     color: palette.muted,

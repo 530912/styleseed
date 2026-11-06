@@ -14,7 +14,7 @@ import {
   ScreenHeader,
 } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
 
   missingName: {
     marginTop: 12,
+    fontFamily: fonts.sans,
     fontSize: 30,
     lineHeight: 36,
     fontWeight: "700",
@@ -214,12 +215,14 @@ const styles = StyleSheet.create({
 
   missingMeta: {
     marginTop: 6,
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.subtle,
   },
 
   missingDescription: {
     marginTop: 16,
+    fontFamily: fonts.sans,
     fontSize: 15,
     lineHeight: 21,
     color: palette.body,
@@ -227,6 +230,7 @@ const styles = StyleSheet.create({
 
   otherMissing: {
     marginTop: 12,
+    fontFamily: fonts.sans,
     fontSize: 12,
     color: palette.subtle,
   },

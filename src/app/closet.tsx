@@ -23,7 +23,7 @@ import {
   ScreenHeader,
 } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { resetClosetSync, useClosetLoader } from "../hooks/use-closet-loader";
 
@@ -332,6 +332,7 @@ export default function ClosetScreen() {
 
 const styles = StyleSheet.create({
   headerLink: {
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 1,
@@ -363,7 +364,7 @@ const styles = StyleSheet.create({
   },
 
   imageSelected: {
-    borderColor: palette.ink,
+    borderColor: palette.selected,
   },
 
   image: {
@@ -392,10 +393,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    backgroundColor: palette.ink,
+    backgroundColor: palette.primary,
   },
 
   selectedTagText: {
+    fontFamily: fonts.sans,
     fontSize: 9,
     fontWeight: "700",
     letterSpacing: 1,
@@ -404,6 +406,7 @@ const styles = StyleSheet.create({
 
   cardTitle: {
     marginTop: 10,
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "700",
     letterSpacing: 0.5,
@@ -412,6 +415,7 @@ const styles = StyleSheet.create({
 
   cardMeta: {
     marginTop: 3,
+    fontFamily: fonts.sans,
     fontSize: 12,
     color: palette.subtle,
   },
@@ -427,6 +431,7 @@ const styles = StyleSheet.create({
   },
 
   footerHint: {
+    fontFamily: fonts.sans,
     fontSize: 12,
     fontWeight: "600",
     letterSpacing: 0,

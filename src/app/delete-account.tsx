@@ -8,7 +8,7 @@ import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-nativ
 
 import { Button, Screen, ScreenHeader } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { deleteMyAccount } from "../lib/accountDeletion";
 
@@ -38,9 +38,7 @@ export default function DeleteAccountScreen() {
       const outcome = await deleteMyAccount(password);
 
       if (outcome.kind === "deleted") {
-        Alert.alert("계정을 삭제했어요", "그동안 STYLESEED를 이용해주셔서 감사해요.");
-
-        router.replace("/");
+        router.replace("/account-deleted");
 
         return;
       }
@@ -154,12 +152,14 @@ const styles = StyleSheet.create({
   },
 
   bullet: {
+    fontFamily: fonts.sans,
     fontSize: 15,
     color: palette.ink,
   },
 
   itemText: {
     flex: 1,
+    fontFamily: fonts.sans,
     fontSize: 15,
     lineHeight: 22,
     color: palette.body,
@@ -168,6 +168,7 @@ const styles = StyleSheet.create({
   label: {
     marginTop: 28,
     marginBottom: 8,
+    fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: "700",
     color: palette.ink,
@@ -178,6 +179,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: palette.line,
     paddingHorizontal: 16,
+    fontFamily: fonts.sans,
     fontSize: 16,
     color: palette.ink,
   },
@@ -191,6 +193,7 @@ const styles = StyleSheet.create({
 
   checkText: {
     flex: 1,
+    fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 20,
     color: palette.ink,
@@ -198,6 +201,7 @@ const styles = StyleSheet.create({
 
   error: {
     marginTop: 20,
+    fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 20,
     color: palette.danger,

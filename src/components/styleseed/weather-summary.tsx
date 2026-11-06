@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 
-import { palette } from "../../constants/ui";
+import { fonts, palette } from "../../constants/ui";
 
 import {
   formatTemperature,
@@ -21,7 +21,7 @@ import {
 
 type IoniconName = ComponentProps<typeof Ionicons>["name"];
 
-const getWeatherIcon = (kind: WeatherKind, isDay: boolean): IoniconName => {
+export const getWeatherIcon = (kind: WeatherKind, isDay: boolean): IoniconName => {
   switch (kind) {
     case "clear":
       return isDay ? "sunny-outline" : "moon-outline";
@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
   },
 
   temperature: {
+    fontFamily: fonts.sans,
     fontSize: 34,
     lineHeight: 40,
     fontWeight: "700",
@@ -136,6 +137,7 @@ const styles = StyleSheet.create({
   },
 
   city: {
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 1.2,
@@ -144,23 +146,27 @@ const styles = StyleSheet.create({
 
   condition: {
     marginTop: 2,
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.body,
   },
 
   unavailableTitle: {
+    fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: "600",
     color: palette.ink,
   },
 
   muted: {
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 17,
     color: palette.subtle,
   },
 
   retry: {
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 1,

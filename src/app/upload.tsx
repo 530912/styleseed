@@ -21,7 +21,7 @@ import {
 
 import { Button, Screen, ScreenHeader } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { prepareClothingImage } from "../lib/imagePrep";
 
@@ -233,6 +233,7 @@ const styles = StyleSheet.create({
   },
 
   plus: {
+    fontFamily: fonts.sans,
     fontSize: 44,
     fontWeight: "200",
     color: palette.ink,
@@ -240,6 +241,7 @@ const styles = StyleSheet.create({
 
   placeholderTitle: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: "700",
     letterSpacing: 0,
@@ -248,6 +250,7 @@ const styles = StyleSheet.create({
 
   placeholderText: {
     marginTop: 8,
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.body,
   },
@@ -279,6 +282,7 @@ const styles = StyleSheet.create({
   },
 
   changeText: {
+    fontFamily: fonts.sans,
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 1.2,

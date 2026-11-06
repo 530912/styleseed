@@ -16,3 +16,9 @@ export const SHOW_PROTOTYPES = isPrototypeEnabled(
 export const RESEARCH_MODE = isPrototypeEnabled(
   process.env.EXPO_PUBLIC_RESEARCH_MODE,
 );
+
+// Figma 07 Prototype 미리보기(/prototype)를 사이트 첫 화면으로 쓴다(EXPO_PUBLIC_FIGMA_PREVIEW=true).
+// 끄면 인트로 뒤에 실제 홈이 나온다. 켜 있어도 "/?app=1"이면 실제 홈을 연다.
+export const FIGMA_PREVIEW = isPrototypeEnabled(
+  process.env.EXPO_PUBLIC_FIGMA_PREVIEW,
+);

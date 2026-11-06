@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { palette } from "../../constants/ui";
+import { fonts, palette } from "../../constants/ui";
 
 import type { Clothing } from "../../types";
 
@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
   },
 
   missingPlus: {
+    fontFamily: fonts.sans,
     fontSize: 24,
     fontWeight: "300",
     color: palette.ink,
@@ -130,6 +131,7 @@ const styles = StyleSheet.create({
 
   missingText: {
     marginTop: 2,
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1,

@@ -8,7 +8,7 @@ import { Button, Screen, ScreenHeader } from "../components/styleseed/ui";
 
 import { GEMINI_FREE_TIER_NOTICE } from "../constants/legal";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { hasAiConsent, saveAiConsent, withdrawAiConsent } from "../lib/aiConsent";
 
@@ -170,12 +170,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginTop: 28,
     marginBottom: 8,
+    fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: "700",
     color: palette.ink,
   },
 
   body: {
+    fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 21,
     color: palette.body,
@@ -194,6 +196,7 @@ const styles = StyleSheet.create({
   },
 
   recipientName: {
+    fontFamily: fonts.sans,
     fontSize: 14,
     fontWeight: "700",
     color: palette.ink,
@@ -202,12 +205,14 @@ const styles = StyleSheet.create({
 
   when: {
     marginTop: 2,
+    fontFamily: fonts.sans,
     fontSize: 12,
     color: palette.muted,
   },
 
   status: {
     marginTop: 24,
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "700",
     color: palette.ink,

@@ -25,7 +25,7 @@ import {
   ScoreDisplay,
 } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
   },
 
   lookName: {
+    fontFamily: fonts.sans,
     fontSize: 17,
     fontWeight: "700",
     letterSpacing: 1,
@@ -253,6 +254,7 @@ const styles = StyleSheet.create({
 
   itemNames: {
     marginTop: 8,
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "600",
     color: palette.ink,
@@ -260,6 +262,7 @@ const styles = StyleSheet.create({
 
   reason: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 17,
     color: palette.body,
@@ -275,6 +278,7 @@ const styles = StyleSheet.create({
   tag: {
     paddingHorizontal: 7,
     paddingVertical: 3,
+    fontFamily: fonts.sans,
     fontSize: 10,
     color: palette.subtle,
     backgroundColor: palette.surface,
@@ -301,6 +305,7 @@ const styles = StyleSheet.create({
   },
 
   otherName: {
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 0.8,
@@ -308,12 +313,14 @@ const styles = StyleSheet.create({
   },
 
   otherScore: {
+    fontFamily: fonts.sans,
     fontSize: 17,
     fontWeight: "700",
     color: palette.ink,
   },
 
   otherMax: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "400",
     color: palette.muted,
@@ -321,6 +328,7 @@ const styles = StyleSheet.create({
 
   otherItems: {
     marginTop: 6,
+    fontFamily: fonts.sans,
     fontSize: 10,
     lineHeight: 14,
     color: palette.body,

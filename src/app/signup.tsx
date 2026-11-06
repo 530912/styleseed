@@ -12,7 +12,11 @@ import { useState } from "react";
 
 import { signUpWithEmail } from "../lib/authActions";
 
-import { TopBar } from "../components/styleseed/ui";
+import { Button, TopBar } from "../components/styleseed/ui";
+
+import { size } from "../constants/tokens";
+
+import { fonts, palette } from "../constants/ui";
 
 import { useSavePendingClothing } from "../hooks/use-save-pending-clothing";
 
@@ -113,15 +117,12 @@ export default function SignupScreen() {
         onChangeText={setPassword}
       />
 
-      <Pressable
-        style={styles.button}
+      <Button
+        label={loading ? "가입 중..." : "회원가입"}
         onPress={handleSignup}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? "가입 중..." : "회원가입"}
-        </Text>
-      </Pressable>
+        loading={loading}
+        style={styles.submit}
+      />
 
       <Pressable
         style={styles.linkButton}
@@ -136,44 +137,39 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: palette.background,
     paddingHorizontal: 24,
     paddingTop: 120,
   },
 
   title: {
+    fontFamily: fonts.sans,
     fontSize: 28,
     fontWeight: "700",
-    color: "#111111",
+    color: palette.ink,
   },
 
   description: {
     marginTop: 12,
     marginBottom: 36,
+    fontFamily: fonts.sans,
     fontSize: 15,
-    color: "#666666",
+    color: palette.body,
   },
 
   input: {
-    height: 54,
+    height: size.input,
     borderWidth: 1,
-    borderColor: "#dddddd",
+    borderColor: palette.line,
+    color: palette.ink,
     paddingHorizontal: 16,
     marginBottom: 12,
+    fontFamily: fonts.sans,
     fontSize: 16,
   },
 
-  button: {
+  submit: {
     marginTop: 12,
-    paddingVertical: 18,
-    backgroundColor: "#111111",
-    alignItems: "center",
-  },
-
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600",
   },
 
   linkButton: {
@@ -182,7 +178,8 @@ const styles = StyleSheet.create({
   },
 
   linkText: {
+    fontFamily: fonts.sans,
     fontSize: 14,
-    color: "#666666",
+    color: palette.body,
   },
 });

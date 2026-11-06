@@ -20,7 +20,7 @@ import {
   ScoreDisplay,
 } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { SHOW_PROTOTYPES } from "../lib/featureFlags";
 
@@ -237,6 +237,7 @@ export default function StylingScreen() {
 const styles = StyleSheet.create({
   itemNames: {
     marginTop: 10,
+    fontFamily: fonts.sans,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "600",
@@ -254,6 +255,7 @@ const styles = StyleSheet.create({
   scoreNote: {
     flex: 1,
     paddingBottom: 4,
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 17,
     color: palette.subtle,
@@ -281,6 +283,7 @@ const styles = StyleSheet.create({
   },
 
   missingPlus: {
+    fontFamily: fonts.sans,
     fontSize: 22,
     fontWeight: "300",
     color: palette.ink,
@@ -297,6 +300,7 @@ const styles = StyleSheet.create({
 
   missingName: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 20,
     fontWeight: "700",
     letterSpacing: 0.3,
@@ -305,6 +309,7 @@ const styles = StyleSheet.create({
 
   missingMeta: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 17,
     color: palette.subtle,
@@ -321,6 +326,7 @@ const styles = StyleSheet.create({
   },
 
   footerHint: {
+    fontFamily: fonts.sans,
     fontSize: 12,
     fontWeight: "600",
     letterSpacing: 0,

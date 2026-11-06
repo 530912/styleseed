@@ -14,7 +14,7 @@ import {
   ScreenHeader,
 } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { POETCORE_DEMO_RULE } from "../data/coreDemo";
 
@@ -142,6 +142,7 @@ const styles = StyleSheet.create({
 
   ruleLabel: {
     width: 72,
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "600",
     letterSpacing: 1,
@@ -150,6 +151,7 @@ const styles = StyleSheet.create({
 
   ruleValue: {
     flex: 1,
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "600",
     color: palette.ink,
@@ -174,6 +176,7 @@ const styles = StyleSheet.create({
   },
 
   matchName: {
+    fontFamily: fonts.sans,
     fontSize: 15,
     fontWeight: "700",
     color: palette.ink,
@@ -181,17 +184,20 @@ const styles = StyleSheet.create({
 
   matchSignals: {
     marginTop: 3,
+    fontFamily: fonts.sans,
     fontSize: 12,
     color: palette.subtle,
   },
 
   matchCaption: {
     marginTop: 8,
+    fontFamily: fonts.sans,
     fontSize: 10,
     color: palette.ink,
   },
 
   matchScore: {
+    fontFamily: fonts.sans,
     fontSize: 40,
     fontWeight: "700",
     letterSpacing: -1,
@@ -199,11 +205,13 @@ const styles = StyleSheet.create({
   },
 
   matchPercent: {
+    fontFamily: fonts.sans,
     fontSize: 18,
   },
 
   disclaimer: {
     marginTop: 14,
+    fontFamily: fonts.sans,
     fontSize: 11,
     lineHeight: 16,
     color: palette.muted,

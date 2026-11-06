@@ -1,6 +1,6 @@
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { palette } from "../../constants/ui";
+import { fonts, palette } from "../../constants/ui";
 
 import type { ClosetLoadStatus } from "../../hooks/use-closet-loader";
 
@@ -187,11 +187,13 @@ const styles = StyleSheet.create({
   },
 
   caption: {
+    fontFamily: fonts.sans,
     fontSize: 12,
     color: palette.subtle,
   },
 
   itemNames: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "600",
@@ -199,12 +201,14 @@ const styles = StyleSheet.create({
   },
 
   weatherReason: {
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 17,
     color: palette.body,
   },
 
   weatherNote: {
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 17,
     color: palette.danger,
@@ -223,6 +227,7 @@ const styles = StyleSheet.create({
   },
 
   breakdownText: {
+    fontFamily: fonts.sans,
     fontSize: 12,
     fontWeight: "600",
     letterSpacing: 0,
@@ -236,6 +241,7 @@ const styles = StyleSheet.create({
   },
 
   emptyText: {
+    fontFamily: fonts.sans,
     fontSize: 14,
     lineHeight: 20,
     color: palette.body,

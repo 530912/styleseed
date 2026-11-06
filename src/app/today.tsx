@@ -16,7 +16,7 @@ import {
   ScoreDisplay,
 } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
@@ -207,6 +207,7 @@ const styles = StyleSheet.create({
   },
 
   weatherLine: {
+    fontFamily: fonts.sans,
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: 1,
@@ -215,11 +216,13 @@ const styles = StyleSheet.create({
 
   weatherSub: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.body,
   },
 
   counter: {
+    fontFamily: fonts.sans,
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 1,
@@ -228,6 +231,7 @@ const styles = StyleSheet.create({
 
   itemNames: {
     marginTop: 10,
+    fontFamily: fonts.sans,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "600",
@@ -249,6 +253,7 @@ const styles = StyleSheet.create({
   },
 
   breakdownText: {
+    fontFamily: fonts.sans,
     fontSize: 12,
     fontWeight: "600",
     letterSpacing: 0,
@@ -257,12 +262,14 @@ const styles = StyleSheet.create({
 
   weatherNote: {
     marginTop: 10,
+    fontFamily: fonts.sans,
     fontSize: 12,
     color: palette.subtle,
   },
 
   reasonLine: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 17,
     color: palette.body,
@@ -270,6 +277,7 @@ const styles = StyleSheet.create({
 
   shortageNote: {
     marginTop: 8,
+    fontFamily: fonts.sans,
     fontSize: 12,
     lineHeight: 17,
     color: palette.danger,

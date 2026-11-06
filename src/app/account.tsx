@@ -17,7 +17,7 @@ import {
 
 import { PRIVACY_POLICY_URL, TERMS_URL } from "../constants/legal";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { isSignedIn } from "../lib/sessionPolicy";
 
@@ -126,6 +126,7 @@ const styles = StyleSheet.create({
   section: {
     marginTop: 28,
     marginBottom: 4,
+    fontFamily: fonts.sans,
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 1.2,
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
   },
 
   rowLabel: {
+    fontFamily: fonts.sans,
     fontSize: 15,
     color: palette.ink,
   },
@@ -157,6 +159,7 @@ const styles = StyleSheet.create({
   },
 
   rowDetail: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.muted,
   },

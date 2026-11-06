@@ -29,7 +29,7 @@ import {
   CLOTHING_SUBCATEGORIES,
 } from "../constants/clothingOptions";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { apiPost } from "../lib/api";
 
@@ -332,7 +332,10 @@ export default function AnalyzeScreen() {
 
       clearImage();
 
-      router.replace("/closet");
+      router.replace({
+        pathname: "/save-success",
+        params: { clothingId: String(savedClothing.id) },
+      });
     } catch (error) {
       console.error("옷 저장 실패:", error);
 
@@ -748,6 +751,7 @@ const styles = StyleSheet.create({
 
   stepName: {
     width: 84,
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "700",
     letterSpacing: 1.5,
@@ -770,6 +774,7 @@ const styles = StyleSheet.create({
 
   errorText: {
     marginTop: 16,
+    fontFamily: fonts.sans,
     fontSize: 14,
     color: palette.danger,
   },
@@ -801,6 +806,7 @@ const styles = StyleSheet.create({
   },
 
   categoryValue: {
+    fontFamily: fonts.sans,
     fontSize: 28,
     lineHeight: 32,
     fontWeight: "700",
@@ -809,11 +815,13 @@ const styles = StyleSheet.create({
 
   categoryDetail: {
     marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.body,
   },
 
   aiNote: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "600",
     letterSpacing: 1,
@@ -838,7 +846,7 @@ const styles = StyleSheet.create({
   },
 
   cardEditing: {
-    borderColor: palette.ink,
+    borderColor: palette.selected,
   },
 
   cardHeader: {
@@ -848,6 +856,7 @@ const styles = StyleSheet.create({
   },
 
   cardLabel: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "600",
     letterSpacing: 1.2,
@@ -855,6 +864,7 @@ const styles = StyleSheet.create({
   },
 
   editText: {
+    fontFamily: fonts.sans,
     fontSize: 10,
     fontWeight: "700",
     letterSpacing: 1,
@@ -863,6 +873,7 @@ const styles = StyleSheet.create({
 
   attributeValue: {
     marginTop: 6,
+    fontFamily: fonts.sans,
     fontSize: 16,
     fontWeight: "700",
     color: palette.ink,
@@ -894,11 +905,12 @@ const styles = StyleSheet.create({
   },
 
   selectedOption: {
-    backgroundColor: palette.ink,
-    borderColor: palette.ink,
+    backgroundColor: palette.primary,
+    borderColor: palette.primary,
   },
 
   optionText: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.ink,
   },

@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button, Label, Screen } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { RESEARCH_MODE } from "../lib/featureFlags";
 
@@ -131,6 +131,7 @@ const styles = StyleSheet.create({
   },
 
   skip: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.subtle,
   },
@@ -141,6 +142,7 @@ const styles = StyleSheet.create({
 
   title: {
     marginTop: 14,
+    fontFamily: fonts.sans,
     fontSize: 30,
     lineHeight: 38,
     fontWeight: "700",
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
   },
 
   researchText: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     lineHeight: 20,
     color: palette.body,
@@ -162,6 +165,7 @@ const styles = StyleSheet.create({
 
   text: {
     marginTop: 18,
+    fontFamily: fonts.sans,
     fontSize: 15,
     lineHeight: 23,
     color: palette.body,

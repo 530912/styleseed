@@ -8,7 +8,7 @@ import { LookBoard } from "../components/styleseed/look-board";
 
 import { Button, EmptyState, Screen, ScreenHeader } from "../components/styleseed/ui";
 
-import { palette } from "../constants/ui";
+import { fonts, palette } from "../constants/ui";
 
 import { useClosetLoader } from "../hooks/use-closet-loader";
 
@@ -83,11 +83,22 @@ export default function SavedLooksScreen() {
       ) : (
         savedLooks.map(({ look, items }) => (
           <View key={look.key} style={styles.card}>
-            <LookBoard items={items} layout="row" height={120} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="저장한 코디 상세 보기"
+              onPress={() =>
+                router.push({
+                  pathname: "/saved-look",
+                  params: { lookKey: look.key },
+                })
+              }
+            >
+              <LookBoard items={items} layout="row" height={120} />
 
-            <Text style={styles.names} numberOfLines={2}>
-              {items.map(getClothingName).join("  ·  ")}
-            </Text>
+              <Text style={styles.names} numberOfLines={2}>
+                {items.map(getClothingName).join("  ·  ")}
+              </Text>
+            </Pressable>
 
             <View style={styles.actions}>
               {look.baseItemId !== null ? (
@@ -124,6 +135,7 @@ const styles = StyleSheet.create({
 
   names: {
     marginTop: 10,
+    fontFamily: fonts.sans,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "600",
@@ -137,6 +149,7 @@ const styles = StyleSheet.create({
   },
 
   link: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     fontWeight: "600",
     color: palette.ink,
@@ -144,6 +157,7 @@ const styles = StyleSheet.create({
   },
 
   remove: {
+    fontFamily: fonts.sans,
     fontSize: 13,
     color: palette.subtle,
   },
