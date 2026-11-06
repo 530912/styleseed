@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>qa image</title><body style="font:16px -apple-system;padding:12px"><pre id="o">running</pre>
+<script>
+// 실제 iOS Safari에서 사진 처리 방식 확인 — run-safari-sim.sh가 QA 빌드 복사본에만 넣는다(배포물 아님)
+const ping = (s) => fetch("http://127.0.0.1:54321/__ping/" + s).catch(() => {});
+const out = []; const log = (s) => { out.push(s); document.getElementById("o").textContent = out.join("\n"); ping(encodeURIComponent(s)); };
+const load = (src) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("decode fail " + src)); i.src = src; });
+const nonBlank = (ctx, w, h) => { const d = ctx.getImageData(Math.floor(w / 2) - 20, Math.floor(h / 2) - 20, 40, 40).data; let s = 0; for (let k = 0; k < d.length; k += 4) s += d[k] + d[k + 1] + d[k + 2] + d[k + 3]; return s > 0; };
+const fit = (w, h, m = 1600) => { const r = Math.min(1, m / Math.max(w, h)); return [Math.round(w * r), Math.round(h * r)]; };
+(async () => {
+  for (const f of ["photo-24mp-wide.jpg", "shirt-24mp.jpg", "jeans.heic"]) {
+    try {
+      const img = await load("/" + f);
+      // 새 방식(imagePrep.web.ts): 줄인 크기 canvas에 바로 그림
+      const [w, h] = fit(img.naturalWidth, img.naturalHeight);
+      const c = document.createElement("canvas"); c.width = w; c.height = h; const x = c.getContext("2d");
+      x.fillStyle = "#fff"; x.fillRect(0, 0, w, h); x.drawImage(img, 0, 0, w, h);
+      const url = c.toDataURL("image/jpeg", 0.8);
+      log(`NEW ${f} ${img.naturalWidth}x${img.naturalHeight} -> ${w}x${h} jpegKB=${Math.round(url.length * 0.75 / 1024)}`);
+      // 예전 방식(expo-image-manipulator 웹): 원본 크기 canvas를 먼저 만듦
+      const big = document.createElement("canvas"); big.width = img.naturalWidth; big.height = img.naturalHeight;
+      const bx = big.getContext("2d");
+      if (!bx) { log(`OLD ${f} getContext=null`); continue; }
+      bx.drawImage(img, 0, 0);
+      let ok = false; try { ok = nonBlank(bx, big.width, big.height); } catch (e) { log(`OLD ${f} read error ${e.message}`); }
+      log(`OLD ${f} fullcanvas ${big.width}x${big.height} pixels=${(big.width * big.height / 1e6).toFixed(1)}M drawn=${ok}`);
+    } catch (e) { log(`ERR ${f} ${e.message}`); }
+  }
+  // 메모리: 같은 페이지에서 24MP 처리 15회 반복
+  let n = 0; for (; n < 15; n += 1) { const img = await load("/photo-24mp-wide.jpg?" + n); const [w, h] = fit(img.naturalWidth, img.naturalHeight); const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(img, 0, 0, w, h); c.toDataURL("image/jpeg", 0.8); }
+  log(`MEM repeat24mp=${n} alive`); log("DONE");
+})();
+</script>

@@ -1,0 +1,11 @@
+garment_id,name_ko,image_url,source,source_ref,category,subcategory,main_color,color_tone,value,saturation,fit,silhouette,material,material_feel,thickness,season,tpo,mood,attribute_status,labeled_by,data_origin,note
+G001,화이트 오버핏 면 셔츠,,fixture,example#1,top,shirt,white,bright,light,low,oversized,H,cotton,crisp|matte,medium,spring|fall,casual|office,minimal|classic,confirmed,E1,human,예시 데이터 — 실제 패션 판단 아님
+G002,블랙 티셔츠,,fixture,example#2,top,tshirt,black,dark,dark,low,regular,H,cotton,soft|matte,thin,spring|summer,casual,casual|street,confirmed,E1,human,예시 데이터 — 실제 패션 판단 아님
+G003,네이비 울 슬랙스,,fixture,example#3,bottom,slacks,navy,dark,dark,low,regular,straight,wool,soft|matte,medium,fall|winter,office,classic|minimal,confirmed,E1,human,예시 데이터 — 실제 패션 판단 아님
+G004,블루 와이드 청바지,,fixture,example#4,bottom,jeans,blue,muted,medium,low,relaxed,wide,denim,matte,thick,spring|fall,casual,casual|street,confirmed,E1,human,예시 데이터 — 실제 패션 판단 아님
+G005,베이지 울 스커트,,fixture,example#5,bottom,skirt,beige,light,light,low,regular,A,wool,soft,medium,fall|winter,office|date,classic,proposed,,human,예시 데이터 — 실제 패션 판단 아님
+G006,네이비 블레이저,,fixture,example#6,outer,blazer,navy,dark,dark,low,regular,H,wool,crisp,medium,spring|fall,office|date,classic,confirmed,E1,human,예시 데이터 — 실제 패션 판단 아님
+G007,블랙 가죽 로퍼,,fixture,example#7,shoes,loafer,black,dark,dark,low,regular,,leather,glossy,medium,spring|fall|winter,office|date,classic,confirmed,E1,human,예시 데이터 — 실제 패션 판단 아님
+G008,화이트 스니커즈,,fixture,example#8,shoes,sneakers,white,bright,light,low,regular,,leather,matte,medium,spring|summer|fall,casual,casual|street,proposed,,human,예시 데이터 — 실제 패션 판단 아님
+G009,베이지 코튼 점프수트,,fixture,example#9,jumpsuit,jumpsuit,beige,muted,medium,low,regular,,cotton,matte,medium,spring|summer,casual,casual,proposed,,human,예시 데이터 — 실제 패션 판단 아님 — 연구용 대분류 jumpsuit → 앱 dress로 변환(converted)
+G010,블랙 린넨 롬퍼,,fixture,example#10,jumpsuit,romper,black,dark,dark,low,relaxed,,linen,crisp,thin,summer,casual,minimal|romantic,proposed,,human,예시 데이터 — 실제 패션 판단 아님 — 세부분류 romper가 앱 미지원 → 앱·엔진 입력 제외(unsupported)

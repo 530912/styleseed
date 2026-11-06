@@ -1,0 +1,106 @@
+{
+ "contract": "styleseed-round1-product-catalog",
+ "contract_version": "0.1.0",
+ "status": "draft",
+ "owner": "Claude A (계약·검증) / PO (브랜드 허가) / E1·E2 (속성 검수)",
+ "note": "Round 1 커머스 PoC용 상품 CSV 형식. 앱 속성 목록(app_lists)은 src/constants/clothingOptions.ts와 같아야 한다(테스트로 확인). 헤더는 '한국어 이름 [key]' 형식이며 [key]만 읽는다.",
+ "app_lists": {
+  "category": ["top", "bottom", "outer", "dress", "shoes", "bag", "accessory"],
+  "subcategory": {
+   "top": ["tshirt", "shirt", "blouse", "knit", "sweatshirt", "hoodie", "sleeveless"],
+   "bottom": ["jeans", "slacks", "trousers", "shorts", "skirt", "leggings"],
+   "outer": ["jacket", "coat", "cardigan", "blazer", "padding", "vest"],
+   "dress": ["mini-dress", "midi-dress", "maxi-dress", "jumpsuit"],
+   "shoes": ["sneakers", "loafer", "boots", "heels", "sandals", "flats"],
+   "bag": ["shoulder-bag", "crossbody-bag", "tote-bag", "backpack", "clutch"],
+   "accessory": ["hat", "belt", "scarf", "necklace", "bracelet", "earrings", "glasses"]
+  },
+  "color": ["black", "white", "gray", "beige", "brown", "navy", "blue", "red", "pink", "orange", "yellow", "green", "purple", "multi"],
+  "color_tone": ["bright", "light", "muted", "dark", "vivid"],
+  "fit": ["slim", "regular", "relaxed", "oversized", "straight", "wide"],
+  "material": ["cotton", "denim", "leather", "wool", "linen", "polyester", "nylon", "silk", "knit", "other"],
+  "season": ["spring", "summer", "fall", "winter"],
+  "tpo": ["casual", "office", "date", "formal", "travel", "party"],
+  "style": ["minimal", "classic", "casual", "street", "sporty", "feminine", "vintage"]
+ },
+ "lists": {
+  "brand_type": ["womenswear", "jewelry"],
+  "permission": ["yes", "pending", "no"],
+  "yes_no": ["yes", "no"],
+  "sale_status": ["on_sale", "sold_out", "discontinued"],
+  "attribute_source": ["brand", "ai", "reviewer"]
+ },
+ "files": {
+  "brands": "brands.csv",
+  "products": "products.csv"
+ },
+ "entities": {
+  "brands": {
+   "key": ["brand_id"],
+   "fields": [
+    { "key": "brand_id", "label": "브랜드 ID", "required": true, "pattern": "^[A-Z]{2,4}$", "example": "BRA", "desc": "영문 대문자 2~4자. 상품 ID 앞부분과 같다" },
+    { "key": "brand_name", "label": "브랜드명", "required": true, "example": "브랜드 A" },
+    { "key": "brand_type", "label": "브랜드 유형", "required": true, "list": "brand_type", "example": "womenswear" },
+    { "key": "data_permission", "label": "상품 정보 사용 허가", "required": true, "list": "permission", "example": "yes", "desc": "상품명·가격·속성을 STYLESEED 실험 앱에 표시해도 되는지" },
+    { "key": "image_permission", "label": "상품 이미지 사용 허가", "required": true, "list": "permission", "example": "yes", "desc": "no이면 이미지 없이 상품명만 표시" },
+    { "key": "utm_permission", "label": "UTM 파라미터 허용", "required": true, "list": "permission", "example": "pending", "desc": "yes일 때만 공식몰 링크에 UTM을 붙인다(D4)" },
+    { "key": "purchase_report", "label": "주문 확인 회신 동의", "required": true, "list": "permission", "example": "no", "desc": "UTM·쿠폰 기준 주문 수를 알려 주기로 했는지. no이면 실제 구매는 '측정 안 됨'" },
+    { "key": "permission_date", "label": "허가 확인일", "required": "data_permission=yes", "type": "date", "example": "2026-10-24" },
+    { "key": "permission_evidence", "label": "허가 근거", "required": "data_permission=yes", "example": "이메일 회신 2026-10-24", "desc": "서면 근거의 종류와 날짜. 담당자 실명·연락처는 적지 않는다" },
+    { "key": "notes", "label": "메모", "required": false }
+   ]
+  },
+  "products": {
+   "key": ["product_id"],
+   "fields": [
+    { "key": "product_id", "label": "상품 ID", "required": true, "pattern": "^[A-Z]{2,4}-[0-9]{3}$", "example": "BRA-001", "desc": "브랜드 ID-일련번호 3자리" },
+    { "key": "brand_id", "label": "브랜드 ID", "required": true, "ref": "brands", "example": "BRA" },
+    { "key": "product_name", "label": "상품명", "required": true, "max_length": 80, "example": "울 블렌드 싱글 코트" },
+    { "key": "price_krw", "label": "판매가(원)", "required": true, "type": "int", "min": 1000, "max": 5000000, "example": "189000", "desc": "VAT 포함 현재 판매가, 숫자만" },
+    { "key": "sale_status", "label": "판매 상태", "required": true, "list": "sale_status", "example": "on_sale", "desc": "on_sale만 실험 앱에 표시" },
+    { "key": "product_url", "label": "공식몰 상품 URL", "required": true, "type": "url", "example": "https://brand-a.example/products/001", "desc": "UTM을 붙이지 않은 원래 주소" },
+    { "key": "image_url", "label": "상품 이미지 URL", "required": "image_permission=yes", "type": "url", "example": "https://brand-a.example/images/001.jpg" },
+    { "key": "category", "label": "카테고리", "required": true, "app_list": "category", "example": "outer" },
+    { "key": "sub_category", "label": "세부 품목", "required": true, "app_list": "subcategory", "parent": "category", "example": "coat" },
+    { "key": "color", "label": "색", "required": true, "app_list": "color", "example": "beige" },
+    { "key": "color_tone", "label": "색 톤", "required": true, "app_list": "color_tone", "example": "muted" },
+    { "key": "fit", "label": "핏", "required": "category!=accessory", "app_list": "fit", "example": "regular", "desc": "가방·액세서리는 비워도 된다(가방은 선택)" },
+    { "key": "material", "label": "소재", "required": true, "app_list": "material", "example": "wool", "desc": "주얼리 금속·원석은 other" },
+    { "key": "season", "label": "계절", "required": true, "app_list": "season", "multi": true, "min_items": 1, "example": "fall|winter", "desc": "여러 값은 | 로 구분" },
+    { "key": "tpo", "label": "TPO", "required": true, "app_list": "tpo", "multi": true, "min_items": 1, "example": "office|casual" },
+    { "key": "style", "label": "스타일", "required": true, "app_list": "style", "multi": true, "min_items": 1, "max_items": 2, "example": "classic|minimal" },
+    { "key": "attribute_source", "label": "속성 출처", "required": true, "list": "attribute_source", "example": "brand", "desc": "brand(브랜드 제공) / ai(분석 결과) / reviewer(공동창업자 수정)" },
+    { "key": "reviewed_by", "label": "속성 검수자", "required": false, "pattern": "^E[0-9]{1,2}$", "example": "E1", "desc": "검수 전에는 비움. 비어 있으면 경고" },
+    { "key": "updated_at", "label": "정보 갱신일", "required": true, "type": "date", "example": "2026-10-24" },
+    { "key": "notes", "label": "메모", "required": false }
+   ]
+  }
+ },
+ "inclusion_rule": "brand.data_permission=yes AND product.sale_status=on_sale AND 오류 0. image_permission!=yes이면 이미지 없이 포함. utm_permission=yes일 때만 UTM 부착",
+ "utm": {
+  "utm_source": "styleseed",
+  "utm_medium": "app",
+  "utm_campaign": "r1_bm_validation",
+  "utm_content": "{product_id}"
+ },
+ "error_codes": {
+  "E_HEADER": "필수 열이 없음",
+  "E_REQUIRED": "필수 값이 비어 있음",
+  "E_PATTERN": "형식이 맞지 않음",
+  "E_ENUM": "허용값이 아님",
+  "E_PARENT_MISMATCH": "세부 품목이 카테고리에 속하지 않음",
+  "E_INT": "정수가 아니거나 범위를 벗어남",
+  "E_URL": "https 주소가 아님",
+  "E_DATE": "날짜 형식(YYYY-MM-DD)이 아님",
+  "E_ITEMS": "값 개수가 범위를 벗어남",
+  "E_DUPLICATE_KEY": "ID 중복",
+  "E_REF": "등록되지 않은 브랜드",
+  "E_PRODUCT_BRAND_PREFIX": "상품 ID 앞부분이 브랜드 ID와 다름",
+  "E_URL_HAS_UTM": "상품 URL에 이미 utm_ 파라미터가 있음(UTM은 앱이 허가된 경우에만 붙인다)",
+  "W_NOT_REVIEWED": "속성 검수 전(reviewed_by 비어 있음)",
+  "W_EXCLUDED_PERMISSION": "브랜드 상품 정보 사용 허가가 yes가 아니라 카탈로그에서 제외",
+  "W_EXCLUDED_NOT_ON_SALE": "판매 중이 아니라 카탈로그에서 제외",
+  "W_NO_IMAGE_PERMISSION": "이미지 사용 허가가 없어 이미지 없이 표시",
+  "W_JEWELRY_EXPOSURE": "액세서리는 현재 Missing Item 경로로 추천되지 않음(노출 경로는 PERSONALIZATION_COMMERCE_REVIEW.md)"
+ }
+}

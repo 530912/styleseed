@@ -1,0 +1,356 @@
+{
+ "closet": [
+  {
+   "id": 1,
+   "category": "top",
+   "subCategory": "shirt",
+   "color": "white",
+   "colorTone": "bright",
+   "fit": "oversized",
+   "material": "cotton",
+   "season": [
+    "spring",
+    "fall"
+   ],
+   "tpo": [
+    "casual",
+    "office"
+   ],
+   "style": [
+    "minimal",
+    "classic"
+   ]
+  },
+  {
+   "id": 2,
+   "category": "top",
+   "subCategory": "tshirt",
+   "color": "black",
+   "colorTone": "dark",
+   "fit": "regular",
+   "material": "cotton",
+   "season": [
+    "spring",
+    "summer"
+   ],
+   "tpo": [
+    "casual",
+    "travel"
+   ],
+   "style": [
+    "casual",
+    "street"
+   ]
+  },
+  {
+   "id": 3,
+   "category": "top",
+   "subCategory": "knit",
+   "color": "beige",
+   "colorTone": "light",
+   "fit": "relaxed",
+   "material": "wool",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "casual",
+    "date"
+   ],
+   "style": [
+    "minimal",
+    "feminine"
+   ]
+  },
+  {
+   "id": 4,
+   "category": "top",
+   "subCategory": "sleeveless",
+   "color": "pink",
+   "colorTone": "vivid",
+   "fit": "slim",
+   "material": "linen",
+   "season": [
+    "summer"
+   ],
+   "tpo": [
+    "date",
+    "party"
+   ],
+   "style": [
+    "feminine"
+   ]
+  },
+  {
+   "id": 5,
+   "category": "bottom",
+   "subCategory": "slacks",
+   "color": "black",
+   "colorTone": "dark",
+   "fit": "straight",
+   "material": "polyester",
+   "season": [
+    "spring",
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "office",
+    "formal"
+   ],
+   "style": [
+    "classic",
+    "minimal"
+   ]
+  },
+  {
+   "id": 6,
+   "category": "bottom",
+   "subCategory": "jeans",
+   "color": "blue",
+   "colorTone": "muted",
+   "fit": "wide",
+   "material": "denim",
+   "season": [
+    "spring",
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "casual",
+    "travel"
+   ],
+   "style": [
+    "casual",
+    "street"
+   ]
+  },
+  {
+   "id": 7,
+   "category": "bottom",
+   "subCategory": "shorts",
+   "color": "beige",
+   "colorTone": "light",
+   "fit": "relaxed",
+   "material": "cotton",
+   "season": [
+    "summer"
+   ],
+   "tpo": [
+    "casual",
+    "travel"
+   ],
+   "style": [
+    "casual",
+    "sporty"
+   ]
+  },
+  {
+   "id": 8,
+   "category": "bottom",
+   "subCategory": "skirt",
+   "color": "navy",
+   "colorTone": "dark",
+   "fit": "regular",
+   "material": "wool",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "office",
+    "date"
+   ],
+   "style": [
+    "feminine",
+    "classic"
+   ]
+  },
+  {
+   "id": 9,
+   "category": "outer",
+   "subCategory": "coat",
+   "color": "gray",
+   "colorTone": "muted",
+   "fit": "oversized",
+   "material": "wool",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "office",
+    "formal"
+   ],
+   "style": [
+    "classic",
+    "minimal"
+   ]
+  },
+  {
+   "id": 10,
+   "category": "outer",
+   "subCategory": "jacket",
+   "color": "brown",
+   "colorTone": "dark",
+   "fit": "regular",
+   "material": "leather",
+   "season": [
+    "spring",
+    "fall"
+   ],
+   "tpo": [
+    "casual",
+    "date"
+   ],
+   "style": [
+    "vintage",
+    "street"
+   ]
+  },
+  {
+   "id": 11,
+   "category": "dress",
+   "subCategory": "midi-dress",
+   "color": "green",
+   "colorTone": "muted",
+   "fit": "regular",
+   "material": "silk",
+   "season": [
+    "spring",
+    "summer"
+   ],
+   "tpo": [
+    "date",
+    "party"
+   ],
+   "style": [
+    "feminine"
+   ]
+  },
+  {
+   "id": 12,
+   "category": "shoes",
+   "subCategory": "sneakers",
+   "color": "white",
+   "colorTone": "bright",
+   "fit": "regular",
+   "material": "other",
+   "season": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "tpo": [
+    "casual",
+    "travel"
+   ],
+   "style": [
+    "casual",
+    "sporty"
+   ]
+  },
+  {
+   "id": 13,
+   "category": "shoes",
+   "subCategory": "loafer",
+   "color": "black",
+   "colorTone": "dark",
+   "fit": "regular",
+   "material": "leather",
+   "season": [
+    "spring",
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "office",
+    "formal"
+   ],
+   "style": [
+    "classic"
+   ]
+  },
+  {
+   "id": 14,
+   "category": "shoes",
+   "subCategory": "boots",
+   "color": "brown",
+   "colorTone": "dark",
+   "fit": "regular",
+   "material": "leather",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "casual",
+    "date"
+   ],
+   "style": [
+    "vintage"
+   ]
+  },
+  {
+   "id": 15,
+   "category": "bag",
+   "subCategory": "tote-bag",
+   "color": "beige",
+   "colorTone": "light",
+   "fit": "regular",
+   "material": "other",
+   "season": [
+    "spring",
+    "summer",
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "office",
+    "casual"
+   ],
+   "style": [
+    "minimal"
+   ]
+  }
+ ],
+ "weathers": {
+  "cold": {
+   "temperature": -3,
+   "apparentTemperature": -3,
+   "kind": "snow",
+   "label": "눈",
+   "isDay": true,
+   "city": "Seoul",
+   "observedAt": "2026-10-19T09:00:00+09:00"
+  },
+  "mild": {
+   "temperature": 17,
+   "apparentTemperature": 17,
+   "kind": "clear",
+   "label": "맑음",
+   "isDay": true,
+   "city": "Seoul",
+   "observedAt": "2026-10-19T09:00:00+09:00"
+  },
+  "hot": {
+   "temperature": 31,
+   "apparentTemperature": 31,
+   "kind": "clear",
+   "label": "맑음",
+   "isDay": true,
+   "city": "Seoul",
+   "observedAt": "2026-10-19T09:00:00+09:00"
+  },
+  "rain": {
+   "temperature": 14,
+   "apparentTemperature": 14,
+   "kind": "rain",
+   "label": "비",
+   "isDay": true,
+   "city": "Seoul",
+   "observedAt": "2026-10-19T09:00:00+09:00"
+  }
+ }
+}

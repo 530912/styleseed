@@ -1,0 +1,3 @@
+outfit_id,dimension,round,evaluator_1,score_1,evaluator_2,score_2,gap,label_1,label_2,reason_1,reason_2,cause,agreed_score,agreed_label,agreed_reason,action,rule_id,status,reviewed_at,data_origin,note
+P02,silhouette_fit,1,E1,2,E2,4,2,conditional,suitable,오버핏 셔츠와 와이드 청바지의 볼륨이 겹쳐 허리선이 흐려짐,스트릿 무드에서는 상하 볼륨이 의도된 루즈 실루엣으로 성립함,criteria,3,conditional,기본은 주의지만 street 무드면 성립 — 예외 규칙으로 분리,add_exception,FIT-002,agreed,2026-10-22,human,예시 데이터 — 실제 패션 판단 아님
+P03,color,1,E1,4,E2,2,2,suitable,conditional,블레이저의 구조감과 데님의 캐주얼함이 데이트 상황에 균형을 이룸,네이비 블레이저와 블루 데님의 청색 계열이 애매하게 겹침,,,,,,,open,,human,예시 데이터 — 실제 패션 판단 아님

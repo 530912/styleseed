@@ -1,0 +1,2028 @@
+{
+ "manifest": {
+  "contract_version": "0.2.0",
+  "source": "knowledge-lab",
+  "purpose": "example",
+  "exported_at": "2026-10-24T10:00:00+09:00",
+  "exported_by": "E1",
+  "format": "json",
+  "counts": {
+   "evaluators": 3,
+   "attribute_values": 63,
+   "garments": 10,
+   "outfits": 4,
+   "styling_rules": 10,
+   "outfit_evaluations": 8,
+   "disagreement_reviews": 2
+  }
+ },
+ "evaluators": [
+  {
+   "evaluator_id": "E1",
+   "role": "cofounder",
+   "can_approve": "yes",
+   "active": "yes",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "evaluator_id": "E2",
+   "role": "cofounder",
+   "can_approve": "yes",
+   "active": "yes",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "evaluator_id": "E3",
+   "role": "external",
+   "can_approve": "no",
+   "active": "yes",
+   "note": "승인 권한 없는 평가자 예시"
+  }
+ ],
+ "attribute_values": [
+  {
+   "attribute_key": "category",
+   "attribute_ko": "대분류",
+   "value_key": "top",
+   "value_ko": "상의",
+   "app_field": "category",
+   "app_value": "top",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "category",
+   "attribute_ko": "대분류",
+   "value_key": "bottom",
+   "value_ko": "하의",
+   "app_field": "category",
+   "app_value": "bottom",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "category",
+   "attribute_ko": "대분류",
+   "value_key": "outer",
+   "value_ko": "아우터",
+   "app_field": "category",
+   "app_value": "outer",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "category",
+   "attribute_ko": "대분류",
+   "value_key": "shoes",
+   "value_ko": "신발",
+   "app_field": "category",
+   "app_value": "shoes",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "category",
+   "attribute_ko": "대분류",
+   "value_key": "jumpsuit",
+   "value_ko": "점프수트·올인원",
+   "definition": "상·하체가 한 벌로 이어지고 하단이 양다리로 나뉘는 옷(연구용 대분류)",
+   "app_field": "category",
+   "app_value": "dress",
+   "app_supported": "converted",
+   "status": "proposed",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님 — Lab 연구용 8번째 대분류. 앱 대분류는 7개 고정이라 앱 dress로 변환"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "shirt",
+   "value_ko": "셔츠",
+   "parent_value": "top",
+   "app_field": "subCategory",
+   "app_value": "shirt",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "tshirt",
+   "value_ko": "티셔츠",
+   "parent_value": "top",
+   "app_field": "subCategory",
+   "app_value": "tshirt",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "slacks",
+   "value_ko": "슬랙스",
+   "parent_value": "bottom",
+   "app_field": "subCategory",
+   "app_value": "slacks",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "jeans",
+   "value_ko": "청바지",
+   "parent_value": "bottom",
+   "app_field": "subCategory",
+   "app_value": "jeans",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "skirt",
+   "value_ko": "스커트",
+   "parent_value": "bottom",
+   "app_field": "subCategory",
+   "app_value": "skirt",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "blazer",
+   "value_ko": "블레이저",
+   "parent_value": "outer",
+   "app_field": "subCategory",
+   "app_value": "blazer",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "coat",
+   "value_ko": "코트",
+   "parent_value": "outer",
+   "app_field": "subCategory",
+   "app_value": "coat",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "loafer",
+   "value_ko": "로퍼",
+   "parent_value": "shoes",
+   "app_field": "subCategory",
+   "app_value": "loafer",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "sneakers",
+   "value_ko": "스니커즈",
+   "parent_value": "shoes",
+   "app_field": "subCategory",
+   "app_value": "sneakers",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "jumpsuit",
+   "value_ko": "점프수트",
+   "parent_value": "jumpsuit",
+   "definition": "하단이 종아리 아래 기장의 바지인 일체형",
+   "app_field": "subCategory",
+   "app_value": "jumpsuit",
+   "app_supported": "yes",
+   "status": "proposed",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님 — 앱 지원값 유지(앱에서는 dress 아래)"
+  },
+  {
+   "attribute_key": "subcategory",
+   "attribute_ko": "세부분류",
+   "value_key": "romper",
+   "value_ko": "롬퍼·플레이수트",
+   "parent_value": "jumpsuit",
+   "definition": "하단이 쇼츠 기장인 일체형",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "proposed",
+   "data_origin": "claude_draft",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님 — 앱 지원 검증 전이라 미지원. 이 값을 쓰는 의류는 앱·엔진 입력에서 제외"
+  },
+  {
+   "attribute_key": "main_color",
+   "attribute_ko": "주색상",
+   "value_key": "white",
+   "value_ko": "화이트",
+   "app_field": "color",
+   "app_value": "white",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "main_color",
+   "attribute_ko": "주색상",
+   "value_key": "black",
+   "value_ko": "블랙",
+   "app_field": "color",
+   "app_value": "black",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "main_color",
+   "attribute_ko": "주색상",
+   "value_key": "navy",
+   "value_ko": "네이비",
+   "app_field": "color",
+   "app_value": "navy",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "main_color",
+   "attribute_ko": "주색상",
+   "value_key": "beige",
+   "value_ko": "베이지",
+   "app_field": "color",
+   "app_value": "beige",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "main_color",
+   "attribute_ko": "주색상",
+   "value_key": "blue",
+   "value_ko": "블루",
+   "app_field": "color",
+   "app_value": "blue",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "value",
+   "attribute_ko": "명도",
+   "value_key": "light",
+   "value_ko": "밝음",
+   "app_field": "colorTone",
+   "app_supported": "converted",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "value",
+   "attribute_ko": "명도",
+   "value_key": "medium",
+   "value_ko": "중간",
+   "app_field": "colorTone",
+   "app_supported": "converted",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "value",
+   "attribute_ko": "명도",
+   "value_key": "dark",
+   "value_ko": "어두움",
+   "app_field": "colorTone",
+   "app_supported": "converted",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "saturation",
+   "attribute_ko": "채도",
+   "value_key": "low",
+   "value_ko": "낮음",
+   "app_field": "colorTone",
+   "app_supported": "converted",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "saturation",
+   "attribute_ko": "채도",
+   "value_key": "medium",
+   "value_ko": "중간",
+   "app_field": "colorTone",
+   "app_supported": "converted",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "saturation",
+   "attribute_ko": "채도",
+   "value_key": "high",
+   "value_ko": "높음",
+   "app_field": "colorTone",
+   "app_supported": "converted",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "fit",
+   "attribute_ko": "핏",
+   "value_key": "slim",
+   "value_ko": "슬림",
+   "app_field": "fit",
+   "app_value": "slim",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "fit",
+   "attribute_ko": "핏",
+   "value_key": "regular",
+   "value_ko": "레귤러",
+   "app_field": "fit",
+   "app_value": "regular",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "fit",
+   "attribute_ko": "핏",
+   "value_key": "relaxed",
+   "value_ko": "릴랙스드",
+   "app_field": "fit",
+   "app_value": "relaxed",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "fit",
+   "attribute_ko": "핏",
+   "value_key": "oversized",
+   "value_ko": "오버사이즈",
+   "app_field": "fit",
+   "app_value": "oversized",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "fit",
+   "attribute_ko": "핏",
+   "value_key": "fitted",
+   "value_ko": "피티드",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "retired",
+   "data_origin": "human",
+   "version": 1,
+   "note": "폐기 값 예시(slim으로 통합했다고 가정)"
+  },
+  {
+   "attribute_key": "silhouette",
+   "attribute_ko": "실루엣",
+   "value_key": "I",
+   "value_ko": "I라인",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "silhouette",
+   "attribute_ko": "실루엣",
+   "value_key": "H",
+   "value_ko": "H라인",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "silhouette",
+   "attribute_ko": "실루엣",
+   "value_key": "A",
+   "value_ko": "A라인",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "silhouette",
+   "attribute_ko": "실루엣",
+   "value_key": "straight",
+   "value_ko": "스트레이트",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "silhouette",
+   "attribute_ko": "실루엣",
+   "value_key": "wide",
+   "value_ko": "와이드",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material",
+   "attribute_ko": "소재(섬유)",
+   "value_key": "cotton",
+   "value_ko": "면",
+   "app_field": "material",
+   "app_value": "cotton",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material",
+   "attribute_ko": "소재(섬유)",
+   "value_key": "wool",
+   "value_ko": "울",
+   "app_field": "material",
+   "app_value": "wool",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material",
+   "attribute_ko": "소재(섬유)",
+   "value_key": "denim",
+   "value_ko": "데님",
+   "app_field": "material",
+   "app_value": "denim",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material",
+   "attribute_ko": "소재(섬유)",
+   "value_key": "leather",
+   "value_ko": "가죽",
+   "app_field": "material",
+   "app_value": "leather",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material",
+   "attribute_ko": "소재(섬유)",
+   "value_key": "polyester",
+   "value_ko": "폴리에스터",
+   "app_field": "material",
+   "app_value": "polyester",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material",
+   "attribute_ko": "소재(섬유)",
+   "value_key": "silk",
+   "value_ko": "실크",
+   "app_field": "material",
+   "app_value": "silk",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material",
+   "attribute_ko": "소재(섬유)",
+   "value_key": "linen",
+   "value_ko": "리넨",
+   "app_field": "material",
+   "app_value": "linen",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material_feel",
+   "attribute_ko": "소재감",
+   "value_key": "crisp",
+   "value_ko": "빳빳함",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material_feel",
+   "attribute_ko": "소재감",
+   "value_key": "soft",
+   "value_ko": "부드러움",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material_feel",
+   "attribute_ko": "소재감",
+   "value_key": "matte",
+   "value_ko": "무광",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "material_feel",
+   "attribute_ko": "소재감",
+   "value_key": "glossy",
+   "value_ko": "광택",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "thickness",
+   "attribute_ko": "두께감",
+   "value_key": "thin",
+   "value_ko": "얇음",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "thickness",
+   "attribute_ko": "두께감",
+   "value_key": "medium",
+   "value_ko": "보통",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "thickness",
+   "attribute_ko": "두께감",
+   "value_key": "thick",
+   "value_ko": "두꺼움",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "season",
+   "attribute_ko": "계절",
+   "value_key": "spring",
+   "value_ko": "봄",
+   "app_field": "season",
+   "app_value": "spring",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "season",
+   "attribute_ko": "계절",
+   "value_key": "summer",
+   "value_ko": "여름",
+   "app_field": "season",
+   "app_value": "summer",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "season",
+   "attribute_ko": "계절",
+   "value_key": "fall",
+   "value_ko": "가을",
+   "app_field": "season",
+   "app_value": "fall",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "season",
+   "attribute_ko": "계절",
+   "value_key": "winter",
+   "value_ko": "겨울",
+   "app_field": "season",
+   "app_value": "winter",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "tpo",
+   "attribute_ko": "TPO",
+   "value_key": "casual",
+   "value_ko": "캐주얼",
+   "app_field": "tpo",
+   "app_value": "casual",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "tpo",
+   "attribute_ko": "TPO",
+   "value_key": "office",
+   "value_ko": "출근·오피스",
+   "app_field": "tpo",
+   "app_value": "office",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "tpo",
+   "attribute_ko": "TPO",
+   "value_key": "date",
+   "value_ko": "데이트",
+   "app_field": "tpo",
+   "app_value": "date",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "mood",
+   "attribute_ko": "무드",
+   "value_key": "minimal",
+   "value_ko": "미니멀",
+   "app_field": "style",
+   "app_value": "minimal",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "mood",
+   "attribute_ko": "무드",
+   "value_key": "classic",
+   "value_ko": "클래식",
+   "app_field": "style",
+   "app_value": "classic",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "mood",
+   "attribute_ko": "무드",
+   "value_key": "casual",
+   "value_ko": "캐주얼",
+   "app_field": "style",
+   "app_value": "casual",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "mood",
+   "attribute_ko": "무드",
+   "value_key": "street",
+   "value_ko": "스트릿",
+   "app_field": "style",
+   "app_value": "street",
+   "app_supported": "yes",
+   "status": "confirmed",
+   "decided_by": [
+    "E1",
+    "E2"
+   ],
+   "decided_at": "2026-10-20",
+   "data_origin": "human",
+   "version": 1,
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "attribute_key": "mood",
+   "attribute_ko": "무드",
+   "value_key": "romantic",
+   "value_ko": "로맨틱",
+   "app_field": "none",
+   "app_supported": "no",
+   "status": "proposed",
+   "data_origin": "claude_draft",
+   "version": 1,
+   "note": "미확정 값 예시(승인 규칙에서 쓰면 E_UNCONFIRMED_VALUE)"
+  }
+ ],
+ "garments": [
+  {
+   "garment_id": "G001",
+   "name_ko": "화이트 오버핏 면 셔츠",
+   "source": "fixture",
+   "source_ref": "example#1",
+   "category": "top",
+   "subcategory": "shirt",
+   "main_color": "white",
+   "color_tone": "bright",
+   "value": "light",
+   "saturation": "low",
+   "fit": "oversized",
+   "silhouette": "H",
+   "material": "cotton",
+   "material_feel": [
+    "crisp",
+    "matte"
+   ],
+   "thickness": "medium",
+   "season": [
+    "spring",
+    "fall"
+   ],
+   "tpo": [
+    "casual",
+    "office"
+   ],
+   "mood": [
+    "minimal",
+    "classic"
+   ],
+   "attribute_status": "confirmed",
+   "labeled_by": [
+    "E1"
+   ],
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "garment_id": "G002",
+   "name_ko": "블랙 티셔츠",
+   "source": "fixture",
+   "source_ref": "example#2",
+   "category": "top",
+   "subcategory": "tshirt",
+   "main_color": "black",
+   "color_tone": "dark",
+   "value": "dark",
+   "saturation": "low",
+   "fit": "regular",
+   "silhouette": "H",
+   "material": "cotton",
+   "material_feel": [
+    "soft",
+    "matte"
+   ],
+   "thickness": "thin",
+   "season": [
+    "spring",
+    "summer"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "mood": [
+    "casual",
+    "street"
+   ],
+   "attribute_status": "confirmed",
+   "labeled_by": [
+    "E1"
+   ],
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "garment_id": "G003",
+   "name_ko": "네이비 울 슬랙스",
+   "source": "fixture",
+   "source_ref": "example#3",
+   "category": "bottom",
+   "subcategory": "slacks",
+   "main_color": "navy",
+   "color_tone": "dark",
+   "value": "dark",
+   "saturation": "low",
+   "fit": "regular",
+   "silhouette": "straight",
+   "material": "wool",
+   "material_feel": [
+    "soft",
+    "matte"
+   ],
+   "thickness": "medium",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "office"
+   ],
+   "mood": [
+    "classic",
+    "minimal"
+   ],
+   "attribute_status": "confirmed",
+   "labeled_by": [
+    "E1"
+   ],
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "garment_id": "G004",
+   "name_ko": "블루 와이드 청바지",
+   "source": "fixture",
+   "source_ref": "example#4",
+   "category": "bottom",
+   "subcategory": "jeans",
+   "main_color": "blue",
+   "color_tone": "muted",
+   "value": "medium",
+   "saturation": "low",
+   "fit": "relaxed",
+   "silhouette": "wide",
+   "material": "denim",
+   "material_feel": [
+    "matte"
+   ],
+   "thickness": "thick",
+   "season": [
+    "spring",
+    "fall"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "mood": [
+    "casual",
+    "street"
+   ],
+   "attribute_status": "confirmed",
+   "labeled_by": [
+    "E1"
+   ],
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "garment_id": "G005",
+   "name_ko": "베이지 울 스커트",
+   "source": "fixture",
+   "source_ref": "example#5",
+   "category": "bottom",
+   "subcategory": "skirt",
+   "main_color": "beige",
+   "color_tone": "light",
+   "value": "light",
+   "saturation": "low",
+   "fit": "regular",
+   "silhouette": "A",
+   "material": "wool",
+   "material_feel": [
+    "soft"
+   ],
+   "thickness": "medium",
+   "season": [
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "office",
+    "date"
+   ],
+   "mood": [
+    "classic"
+   ],
+   "attribute_status": "proposed",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "garment_id": "G006",
+   "name_ko": "네이비 블레이저",
+   "source": "fixture",
+   "source_ref": "example#6",
+   "category": "outer",
+   "subcategory": "blazer",
+   "main_color": "navy",
+   "color_tone": "dark",
+   "value": "dark",
+   "saturation": "low",
+   "fit": "regular",
+   "silhouette": "H",
+   "material": "wool",
+   "material_feel": [
+    "crisp"
+   ],
+   "thickness": "medium",
+   "season": [
+    "spring",
+    "fall"
+   ],
+   "tpo": [
+    "office",
+    "date"
+   ],
+   "mood": [
+    "classic"
+   ],
+   "attribute_status": "confirmed",
+   "labeled_by": [
+    "E1"
+   ],
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "garment_id": "G007",
+   "name_ko": "블랙 가죽 로퍼",
+   "source": "fixture",
+   "source_ref": "example#7",
+   "category": "shoes",
+   "subcategory": "loafer",
+   "main_color": "black",
+   "color_tone": "dark",
+   "value": "dark",
+   "saturation": "low",
+   "fit": "regular",
+   "material": "leather",
+   "material_feel": [
+    "glossy"
+   ],
+   "thickness": "medium",
+   "season": [
+    "spring",
+    "fall",
+    "winter"
+   ],
+   "tpo": [
+    "office",
+    "date"
+   ],
+   "mood": [
+    "classic"
+   ],
+   "attribute_status": "confirmed",
+   "labeled_by": [
+    "E1"
+   ],
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "garment_id": "G008",
+   "name_ko": "화이트 스니커즈",
+   "source": "fixture",
+   "source_ref": "example#8",
+   "category": "shoes",
+   "subcategory": "sneakers",
+   "main_color": "white",
+   "color_tone": "bright",
+   "value": "light",
+   "saturation": "low",
+   "fit": "regular",
+   "material": "leather",
+   "material_feel": [
+    "matte"
+   ],
+   "thickness": "medium",
+   "season": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "mood": [
+    "casual",
+    "street"
+   ],
+   "attribute_status": "proposed",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "garment_id": "G009",
+   "name_ko": "베이지 코튼 점프수트",
+   "source": "fixture",
+   "source_ref": "example#9",
+   "category": "jumpsuit",
+   "subcategory": "jumpsuit",
+   "main_color": "beige",
+   "color_tone": "muted",
+   "value": "medium",
+   "saturation": "low",
+   "fit": "regular",
+   "material": "cotton",
+   "material_feel": [
+    "matte"
+   ],
+   "thickness": "medium",
+   "season": [
+    "spring",
+    "summer"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "mood": [
+    "casual"
+   ],
+   "attribute_status": "proposed",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님 — 연구용 대분류 jumpsuit → 앱 dress로 변환(converted)"
+  },
+  {
+   "garment_id": "G010",
+   "name_ko": "블랙 린넨 롬퍼",
+   "source": "fixture",
+   "source_ref": "example#10",
+   "category": "jumpsuit",
+   "subcategory": "romper",
+   "main_color": "black",
+   "color_tone": "dark",
+   "value": "dark",
+   "saturation": "low",
+   "fit": "relaxed",
+   "material": "linen",
+   "material_feel": [
+    "crisp"
+   ],
+   "thickness": "thin",
+   "season": [
+    "summer"
+   ],
+   "tpo": [
+    "casual"
+   ],
+   "mood": [
+    "minimal",
+    "romantic"
+   ],
+   "attribute_status": "proposed",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님 — 세부분류 romper가 앱 미지원 → 앱·엔진 입력 제외(unsupported)"
+  }
+ ],
+ "outfits": [
+  {
+   "outfit_id": "P01",
+   "set": "pilot",
+   "split": "dev",
+   "context_label": "가을 · 출근",
+   "context_tpo": "office",
+   "context_season": "fall",
+   "garment_ids": [
+    "G001",
+    "G003",
+    "G007"
+   ],
+   "status": "active",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P02",
+   "set": "pilot",
+   "split": "dev",
+   "context_label": "봄 · 주말",
+   "context_tpo": "casual",
+   "context_season": "spring",
+   "garment_ids": [
+    "G001",
+    "G004",
+    "G008"
+   ],
+   "status": "active",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P03",
+   "set": "pilot",
+   "split": "holdout",
+   "context_label": "가을 · 데이트",
+   "context_tpo": "date",
+   "context_season": "fall",
+   "garment_ids": [
+    "G006",
+    "G002",
+    "G004",
+    "G007"
+   ],
+   "status": "active",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P04",
+   "set": "pilot",
+   "split": "holdout",
+   "context_label": "겨울 · 눈 오는 날 출근",
+   "context_tpo": "office",
+   "context_season": "winter",
+   "context_weather": "snow",
+   "garment_ids": [
+    "G006",
+    "G001",
+    "G005",
+    "G007"
+   ],
+   "status": "active",
+   "data_origin": "claude_draft",
+   "note": "코디 구성은 Claude 초안이어도 평가는 사람이 함"
+  }
+ ],
+ "styling_rules": [
+  {
+   "rule_id": "FIT-001",
+   "rule_version": 1,
+   "rule_type": "base",
+   "dimension": "silhouette_fit",
+   "a_category": "top",
+   "a_attribute": "fit",
+   "a_values": [
+    "oversized"
+   ],
+   "b_category": "bottom",
+   "b_attribute": "silhouette",
+   "b_values": [
+    "wide"
+   ],
+   "judgement": "caution",
+   "strength": 3,
+   "reason": "상·하의 볼륨이 동시에 커져 허리선과 비율이 흐려질 수 있음",
+   "display_text": "상의와 하의가 모두 넉넉해 허리선이 흐려질 수 있어요",
+   "exception_note": "street 무드는 FIT-002",
+   "confidence": "high",
+   "author": "E1",
+   "approval_status": "in_review",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "rule_id": "FIT-002",
+   "rule_version": 1,
+   "rule_type": "exception",
+   "exception_of": "FIT-001",
+   "dimension": "silhouette_fit",
+   "a_category": "top",
+   "a_attribute": "fit",
+   "a_values": [
+    "oversized"
+   ],
+   "b_category": "bottom",
+   "b_attribute": "silhouette",
+   "b_values": [
+    "wide"
+   ],
+   "context_mood": [
+    "street"
+   ],
+   "judgement": "conditional",
+   "strength": 3,
+   "reason": "street 무드에서는 상하 볼륨이 의도된 루즈 실루엣으로 성립함",
+   "display_text": "스트릿 무드에서는 넉넉한 상하의가 의도된 실루엣으로 보여요",
+   "confidence": "medium",
+   "author": "E2",
+   "reviewer": "E1",
+   "approval_status": "approved",
+   "approved_at": "2026-10-22",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "rule_id": "COL-001",
+   "rule_version": 1,
+   "rule_type": "base",
+   "dimension": "color",
+   "a_category": "any",
+   "a_attribute": "main_color",
+   "a_values": [
+    "navy"
+   ],
+   "b_category": "any",
+   "b_attribute": "main_color",
+   "b_values": [
+    "white"
+   ],
+   "judgement": "recommended",
+   "strength": 4,
+   "reason": "명도 대비가 분명하면서 색 충돌이 적어 안정적임",
+   "display_text": "네이비와 화이트는 밝기 대비가 분명하면서 차분하게 어울려요",
+   "confidence": "high",
+   "author": "E1",
+   "reviewer": "E2",
+   "approval_status": "approved",
+   "approved_at": "2026-10-22",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "rule_id": "COL-002",
+   "rule_version": 1,
+   "rule_type": "base",
+   "dimension": "color",
+   "a_category": "any",
+   "a_attribute": "saturation",
+   "a_values": [
+    "high"
+   ],
+   "b_category": "any",
+   "b_attribute": "saturation",
+   "b_values": [
+    "high"
+   ],
+   "judgement": "caution",
+   "strength": 3,
+   "reason": "두 색이 동시에 선명하면 시선이 나뉘어 산만해 보일 수 있음",
+   "confidence": "medium",
+   "author": "E2",
+   "reviewer": "E1",
+   "approval_status": "approved",
+   "approved_at": "2026-10-22",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "rule_id": "COL-002",
+   "rule_version": 2,
+   "rule_type": "base",
+   "dimension": "color",
+   "a_category": "any",
+   "a_attribute": "saturation",
+   "a_values": [
+    "high"
+   ],
+   "b_category": "any",
+   "b_attribute": "saturation",
+   "b_values": [
+    "high"
+   ],
+   "judgement": "caution",
+   "strength": 2,
+   "reason": "두 색이 동시에 선명하면 시선이 나뉘지만 면적 비율이 다르면 부담이 줄어듦",
+   "exception_note": "컬러블로킹 의도는 예외 규칙으로 분리 예정",
+   "confidence": "medium",
+   "author": "E2",
+   "reviewer": "E1",
+   "approval_status": "approved",
+   "approved_at": "2026-10-24",
+   "data_origin": "human",
+   "note": "버전 2 예시: 빌드는 승인된 최고 버전(2)만 사용"
+  },
+  {
+   "rule_id": "MAT-001",
+   "rule_version": 1,
+   "rule_type": "base",
+   "dimension": "material_season",
+   "a_category": "any",
+   "a_attribute": "material",
+   "a_values": [
+    "silk",
+    "linen"
+   ],
+   "context_weather": [
+    "cold",
+    "snow"
+   ],
+   "judgement": "not_recommended",
+   "strength": 5,
+   "reason": "얇고 통기성이 큰 소재는 영하·눈 오는 날 보온이 부족함",
+   "display_text": "오늘처럼 추운 날엔 실크·리넨이 너무 얇아요",
+   "confidence": "high",
+   "author": "E1",
+   "reviewer": "E2",
+   "approval_status": "approved",
+   "approved_at": "2026-10-22",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "rule_id": "TPO-001",
+   "rule_version": 1,
+   "rule_type": "base",
+   "dimension": "tpo",
+   "a_category": "outer",
+   "a_attribute": "subcategory",
+   "a_values": [
+    "blazer"
+   ],
+   "b_category": "bottom",
+   "b_attribute": "subcategory",
+   "b_values": [
+    "jeans"
+   ],
+   "context_tpo": [
+    "office",
+    "date"
+   ],
+   "judgement": "recommended",
+   "strength": 4,
+   "reason": "격식 있는 구조감과 캐주얼 소재가 균형을 만들어 활용도가 높음",
+   "confidence": "high",
+   "author": "E1",
+   "approval_status": "in_review",
+   "data_origin": "human",
+   "note": "검토중 예시(빌드 제외)"
+  },
+  {
+   "rule_id": "MOOD-001",
+   "rule_version": 1,
+   "rule_type": "base",
+   "dimension": "mood",
+   "a_category": "any",
+   "a_attribute": "mood",
+   "a_values": [
+    "minimal"
+   ],
+   "b_category": "any",
+   "b_attribute": "mood",
+   "b_values": [
+    "street"
+   ],
+   "judgement": "caution",
+   "strength": 2,
+   "reason": "미니멀과 스트릿이 섞이면 무드 방향이 흐려질 수 있음",
+   "confidence": "low",
+   "approval_status": "draft",
+   "data_origin": "human",
+   "note": "초안 예시(작성자 미지정 허용)"
+  },
+  {
+   "rule_id": "FIT-003",
+   "rule_version": 1,
+   "rule_type": "base",
+   "dimension": "silhouette_fit",
+   "a_category": "bottom",
+   "a_attribute": "silhouette",
+   "a_values": [
+    "A"
+   ],
+   "b_category": "top",
+   "b_attribute": "fit",
+   "b_values": [
+    "slim"
+   ],
+   "judgement": "recommended",
+   "strength": 3,
+   "reason": "A라인 하의와 슬림 상의는 허리선을 강조해 비율이 좋아 보임",
+   "confidence": "medium",
+   "author": "E2",
+   "reviewer": "E1",
+   "approval_status": "retired",
+   "approved_at": "2026-10-22",
+   "data_origin": "human",
+   "note": "폐기 예시(빌드 제외)"
+  },
+  {
+   "rule_id": "COL-003",
+   "rule_version": 1,
+   "rule_type": "base",
+   "dimension": "color",
+   "a_category": "any",
+   "a_attribute": "main_color",
+   "a_values": [
+    "beige"
+   ],
+   "b_category": "any",
+   "b_attribute": "main_color",
+   "b_values": [
+    "black"
+   ],
+   "judgement": "recommended",
+   "strength": 3,
+   "reason": "베이지와 블랙은 대비가 부드러워 차분한 인상을 줌",
+   "confidence": "low",
+   "approval_status": "draft",
+   "data_origin": "claude_draft",
+   "note": "Claude 초안 예시(사람이 human으로 바꾸고 승인해야 사용)"
+  }
+ ],
+ "outfit_evaluations": [
+  {
+   "outfit_id": "P01",
+   "evaluator_id": "E1",
+   "round": 1,
+   "score_color": 5,
+   "score_silhouette_fit": 4,
+   "score_material_season": 4,
+   "score_tpo": 5,
+   "score_mood": 4,
+   "score_overall": 4,
+   "label": "suitable",
+   "recommendable": "yes",
+   "reason": "화이트 셔츠와 네이비 슬랙스의 명도 대비가 단정하고 출근 격식에 맞음",
+   "confidence": "high",
+   "rated_at": "2026-10-21",
+   "submission_status": "submitted",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P02",
+   "evaluator_id": "E1",
+   "round": 1,
+   "score_color": 4,
+   "score_silhouette_fit": 2,
+   "score_material_season": 4,
+   "score_tpo": 4,
+   "score_mood": 3,
+   "score_overall": 3,
+   "label": "conditional",
+   "recommendable": "unsure",
+   "reason": "오버핏 셔츠와 와이드 청바지의 볼륨이 겹쳐 허리선이 흐려짐",
+   "confidence": "high",
+   "rated_at": "2026-10-21",
+   "submission_status": "submitted",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P03",
+   "evaluator_id": "E1",
+   "round": 1,
+   "score_color": 4,
+   "score_silhouette_fit": 4,
+   "score_material_season": 4,
+   "score_tpo": 4,
+   "score_mood": 4,
+   "score_overall": 4,
+   "label": "suitable",
+   "recommendable": "yes",
+   "reason": "블레이저의 구조감과 데님의 캐주얼함이 데이트 상황에 균형을 이룸",
+   "confidence": "high",
+   "rated_at": "2026-10-21",
+   "submission_status": "submitted",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P04",
+   "evaluator_id": "E1",
+   "round": 1,
+   "score_color": 4,
+   "score_silhouette_fit": 4,
+   "score_material_season": 3,
+   "score_tpo": 4,
+   "score_mood": 4,
+   "score_overall": 4,
+   "label": "suitable",
+   "recommendable": "yes",
+   "reason": "울 블레이저와 울 스커트가 계절에 맞고 출근 격식에 적합함",
+   "confidence": "medium",
+   "rated_at": "2026-10-21",
+   "submission_status": "submitted",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P01",
+   "evaluator_id": "E2",
+   "round": 1,
+   "score_color": 5,
+   "score_silhouette_fit": 4,
+   "score_material_season": 4,
+   "score_tpo": 5,
+   "score_mood": 4,
+   "score_overall": 5,
+   "label": "suitable",
+   "recommendable": "yes",
+   "reason": "네이비와 화이트 대비가 깔끔하고 로퍼가 격식을 완성함",
+   "confidence": "high",
+   "rated_at": "2026-10-21",
+   "submission_status": "submitted",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P02",
+   "evaluator_id": "E2",
+   "round": 1,
+   "score_color": 4,
+   "score_silhouette_fit": 4,
+   "score_material_season": 4,
+   "score_tpo": 4,
+   "score_mood": 4,
+   "score_overall": 4,
+   "label": "suitable",
+   "recommendable": "yes",
+   "reason": "스트릿 무드에서는 상하 볼륨이 의도된 루즈 실루엣으로 성립함",
+   "confidence": "high",
+   "rated_at": "2026-10-21",
+   "submission_status": "submitted",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P03",
+   "evaluator_id": "E2",
+   "round": 1,
+   "score_color": 2,
+   "score_silhouette_fit": 4,
+   "score_material_season": 4,
+   "score_tpo": 4,
+   "score_mood": 3,
+   "score_overall": 3,
+   "label": "conditional",
+   "recommendable": "unsure",
+   "reason": "네이비 블레이저와 블루 데님의 청색 계열이 애매하게 겹침",
+   "confidence": "high",
+   "rated_at": "2026-10-21",
+   "submission_status": "submitted",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P04",
+   "evaluator_id": "E2",
+   "round": 1,
+   "score_color": 4,
+   "score_silhouette_fit": 4,
+   "score_material_season": 4,
+   "score_tpo": 4,
+   "score_mood": 4,
+   "score_overall": 4,
+   "label": "suitable",
+   "recommendable": "yes",
+   "reason": "전부 울 소재라 눈 오는 날에도 보온과 격식을 함께 갖춤",
+   "confidence": "high",
+   "rated_at": "2026-10-21",
+   "submission_status": "submitted",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  }
+ ],
+ "disagreement_reviews": [
+  {
+   "outfit_id": "P02",
+   "dimension": "silhouette_fit",
+   "round": 1,
+   "evaluator_1": "E1",
+   "score_1": 2,
+   "evaluator_2": "E2",
+   "score_2": 4,
+   "gap": 2,
+   "label_1": "conditional",
+   "label_2": "suitable",
+   "reason_1": "오버핏 셔츠와 와이드 청바지의 볼륨이 겹쳐 허리선이 흐려짐",
+   "reason_2": "스트릿 무드에서는 상하 볼륨이 의도된 루즈 실루엣으로 성립함",
+   "cause": "criteria",
+   "agreed_score": 3,
+   "agreed_label": "conditional",
+   "agreed_reason": "기본은 주의지만 street 무드면 성립 — 예외 규칙으로 분리",
+   "action": "add_exception",
+   "rule_id": "FIT-002",
+   "status": "agreed",
+   "reviewed_at": "2026-10-22",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  },
+  {
+   "outfit_id": "P03",
+   "dimension": "color",
+   "round": 1,
+   "evaluator_1": "E1",
+   "score_1": 4,
+   "evaluator_2": "E2",
+   "score_2": 2,
+   "gap": 2,
+   "label_1": "suitable",
+   "label_2": "conditional",
+   "reason_1": "블레이저의 구조감과 데님의 캐주얼함이 데이트 상황에 균형을 이룸",
+   "reason_2": "네이비 블레이저와 블루 데님의 청색 계열이 애매하게 겹침",
+   "status": "open",
+   "data_origin": "human",
+   "note": "예시 데이터 — 실제 패션 판단 아님"
+  }
+ ]
+}

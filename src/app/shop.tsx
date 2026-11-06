@@ -1,181 +1,290 @@
-import { StyleSheet, Text, View } from "react-native";
-
 import { useLocalSearchParams } from "expo-router";
 
-import { mockOutfits } from "../data/mockOutfits";
+import { Image, StyleSheet, Text, View } from "react-native";
+
+import { ClothingImage } from "../components/styleseed/clothing-image";
+
+import {
+  EmptyState,
+  Label,
+  Screen,
+  ScreenHeader,
+} from "../components/styleseed/ui";
+
+import { CLOTHING_CATEGORIES } from "../constants/clothingOptions";
+
+import { fonts, palette } from "../constants/ui";
+
 import { mockProducts } from "../data/mockProducts";
 
+import { useClosetLoader } from "../hooks/use-closet-loader";
+
+import { useClosetStore } from "../store/useClosetStore";
+
+import type { ClothingCategory } from "../types";
+
+import { getClothingName, toTitle, toUpperLabel } from "../utils/format";
+
 export default function ShopScreen() {
-  const { outfitId } = useLocalSearchParams<{
-    outfitId: string;
+  const {
+    clothingId,
+    missingCategory: missingCategoryParam,
+    missingSubCategory,
+    missingColor,
+    missingStyle,
+  } = useLocalSearchParams<{
+    clothingId?: string;
+    missingCategory?: string;
+    missingSubCategory?: string;
+    missingColor?: string;
+    missingStyle?: string;
   }>();
 
-  const selectedOutfit = mockOutfits.find(
-    (outfit) => outfit.id === Number(outfitId),
+  const clothes = useClosetStore((state) => state.clothes);
+
+  useClosetLoader();
+
+  // Styling 화면에서 선택했던 옷
+  const selectedClothing = clothes.find(
+    (clothing) => clothing.id === Number(clothingId),
   );
 
-  const capitalize = (text: string) => {
-    return text.charAt(0).toUpperCase() + text.slice(1);
-  };
+  // URL로 들어온 값이
+  // 실제 ClothingCategory인지 확인
+  const missingCategory = CLOTHING_CATEGORIES.includes(
+    missingCategoryParam as ClothingCategory,
+  )
+    ? (missingCategoryParam as ClothingCategory)
+    : null;
 
-  if (!selectedOutfit) {
-    return (
-      <View style={styles.container}>
-        <Text>추천 코디를 찾을 수 없습니다.</Text>
-      </View>
-    );
-  }
+  // 부족한 카테고리에 해당하는
+  // 상품만 추천
+  const recommendedProducts = missingCategory
+    ? mockProducts
+        .filter((product) => product.category === missingCategory)
+        .map((product) => {
+          let matchScore = 0;
 
-  const missingItem = selectedOutfit.missingItem;
+          const matchedAttributes: string[] = [];
 
-  if (!missingItem) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Recommended Item</Text>
+          if (product.subCategory === missingSubCategory) {
+            matchScore += 40;
+            matchedAttributes.push(toTitle(product.subCategory));
+          }
 
-        <Text style={styles.description}>
-          현재 옷장만으로 코디를 완성할 수 있어요.
-        </Text>
-      </View>
-    );
-  }
+          if (product.color === missingColor) {
+            matchScore += 35;
+            matchedAttributes.push(toTitle(product.color));
+          }
 
-  const recommendedProducts = mockProducts.filter(
-    (product) =>
-      product.category === missingItem.category &&
-      product.subCategory === missingItem.subCategory &&
-      product.color === missingItem.color,
-  );
+          if (product.style === missingStyle) {
+            matchScore += 25;
+            matchedAttributes.push(toTitle(product.style));
+          }
+
+          return {
+            product,
+            matchScore,
+            matchedAttributes,
+          };
+        })
+        .sort((a, b) => b.matchScore - a.matchScore)
+    : [];
+
+  const missingItemName = missingCategory
+    ? [missingColor, missingSubCategory ?? missingCategory]
+        .filter((value): value is string => Boolean(value))
+        .map(toTitle)
+        .join(" ")
+    : null;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Recommended Item</Text>
+    <Screen>
+      <ScreenHeader
+        eyebrow="SHOP"
+        badge="예시 상품"
+        title="내 옷장을 위한 추천 상품"
+        description="코디를 완성해줄 아이템의 예시예요. 실제 판매 상품이 아니며 구매 링크는 없어요."
+      />
 
-      <Text style={styles.description}>
-        코디를 완성하기 위해 필요한 아이템이에요.
-      </Text>
+      {missingCategory && missingItemName ? (
+        <View style={styles.contextBox}>
+          {selectedClothing ? (
+            <ClothingImage
+              clothing={selectedClothing}
+              style={styles.contextThumb}
+              padding={4}
+            />
+          ) : null}
 
-      <View style={styles.missingBox}>
-        <Text style={styles.label}>MISSING ITEM</Text>
+          <View style={styles.contextInfo}>
+            <Label>코디를 완성하는 아이템</Label>
 
-        <Text style={styles.missingItem}>
-          {capitalize(missingItem.color)} {capitalize(missingItem.subCategory)}
-        </Text>
-      </View>
-
-      <Text style={styles.sectionTitle}>Recommended Products</Text>
-
-      <View style={styles.productGrid}>
-        {recommendedProducts.map((product) => (
-          <View key={product.id} style={styles.productCard}>
-            <View style={styles.imageBox}>
-              <Text style={styles.imageText}>Product Image</Text>
-            </View>
-
-            <Text style={styles.productName}>{product.name}</Text>
-
-            <Text style={styles.productInfo}>
-              {capitalize(product.color)}
-              {" · "}
-              {capitalize(product.material)}
-              {" · "}
-              {capitalize(product.style)}
+            <Text style={styles.contextText} numberOfLines={2}>
+              {selectedClothing
+                ? `${getClothingName(selectedClothing)} + `
+                : ""}
+              <Text style={styles.contextMissing}>{missingItemName}</Text>
             </Text>
-
-            <Text style={styles.price}>{product.price.toLocaleString()}원</Text>
           </View>
-        ))}
-      </View>
-    </View>
+        </View>
+      ) : null}
+
+      {!missingCategory ? (
+        <EmptyState title="부족한 아이템 정보를 찾을 수 없어요." />
+      ) : recommendedProducts.length === 0 ? (
+        <EmptyState title="해당 카테고리의 추천 상품이 아직 없어요." />
+      ) : (
+        recommendedProducts.map(({ product, matchedAttributes }) => {
+          const matchesMissingItem =
+            product.subCategory === missingSubCategory;
+
+          return (
+            <View key={product.id} style={styles.productCard}>
+              <View style={styles.productImage}>
+                {product.image ? (
+                  <Image
+                    source={product.image}
+                    style={styles.productPhoto}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text style={styles.productImageText} numberOfLines={2}>
+                    {toUpperLabel(product.subCategory)}
+                  </Text>
+                )}
+              </View>
+
+              <View style={styles.productInfo}>
+                <Text style={styles.productBrand}>
+                  {product.brand.toUpperCase()}
+                </Text>
+
+                <Text style={styles.productName} numberOfLines={2}>
+                  {product.name}
+                </Text>
+
+                <Text style={styles.productPrice}>
+                  {product.price.toLocaleString()}원
+                </Text>
+
+                <Text style={styles.reason} numberOfLines={1}>
+                  {matchesMissingItem
+                    ? "부족한 아이템과 딱 맞아요"
+                    : "이 코디에 추천해요"}
+                  {matchedAttributes.length > 0
+                    ? ` · ${matchedAttributes.join(", ")}`
+                    : ""}
+                </Text>
+              </View>
+            </View>
+          );
+        })
+      )}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 24,
-    paddingTop: 100,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111111",
-  },
-
-  description: {
-    marginTop: 12,
-    fontSize: 16,
-    color: "#666666",
-  },
-
-  missingBox: {
-    marginTop: 40,
-    padding: 20,
-    backgroundColor: "#f4f4f4",
-  },
-
-  label: {
-    fontSize: 12,
-    color: "#888888",
-  },
-
-  missingItem: {
-    marginTop: 8,
-    fontSize: 22,
-    fontWeight: "600",
-    color: "#111111",
-  },
-
-  sectionTitle: {
-    marginTop: 32,
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111111",
-  },
-
-  productGrid: {
-    marginTop: 16,
+  contextBox: {
+    marginBottom: 16,
+    padding: 12,
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: palette.surface,
+  },
+
+  contextThumb: {
+    width: 52,
+    height: 64,
+    backgroundColor: palette.background,
+  },
+
+  contextInfo: {
+    flex: 1,
+    gap: 4,
+  },
+
+  contextText: {
+    fontFamily: fonts.sans,
+    fontSize: 15,
+    lineHeight: 21,
+    color: palette.body,
+  },
+
+  contextMissing: {
+    fontWeight: "700",
+    color: palette.ink,
   },
 
   productCard: {
-    width: "48%",
-    marginBottom: 28,
+    marginBottom: 12,
+    padding: 12,
+    flexDirection: "row",
+    gap: 14,
+    borderWidth: 1,
+    borderColor: palette.line,
   },
 
-  imageBox: {
-    width: "100%",
-    aspectRatio: 1,
-    backgroundColor: "#eeeeee",
+  productImage: {
+    width: 96,
+    height: 116,
+    backgroundColor: palette.placeholder,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 6,
   },
 
-  imageText: {
-    color: "#999999",
+  productPhoto: {
+    width: "100%",
+    height: "100%",
   },
 
-  productName: {
-    marginTop: 12,
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111111",
+  productImageText: {
+    fontFamily: fonts.sans,
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textAlign: "center",
+    color: palette.muted,
   },
 
   productInfo: {
-    marginTop: 4,
-    fontSize: 13,
-    color: "#777777",
+    flex: 1,
+    justifyContent: "center",
   },
 
-  price: {
-    marginTop: 8,
+  productBrand: {
+    fontFamily: fonts.sans,
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    color: palette.muted,
+  },
+
+  productName: {
+    marginTop: 4,
+    fontFamily: fonts.sans,
     fontSize: 16,
+    lineHeight: 21,
     fontWeight: "600",
-    color: "#111111",
+    color: palette.ink,
+  },
+
+  productPrice: {
+    marginTop: 8,
+    fontFamily: fonts.sans,
+    fontSize: 15,
+    fontWeight: "700",
+    color: palette.ink,
+  },
+
+  reason: {
+    marginTop: 8,
+    fontFamily: fonts.sans,
+    fontSize: 11,
+    fontWeight: "600",
+    color: palette.subtle,
   },
 });

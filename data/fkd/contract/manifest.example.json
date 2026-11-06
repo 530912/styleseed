@@ -1,0 +1,25 @@
+{
+ "contract_version": "0.1.0",
+ "source": "knowledge-lab",
+ "exported_at": "2026-10-25T14:00:00+09:00",
+ "exported_by": "E1",
+ "files": {
+  "evaluators.csv": "<sha256 hex>",
+  "garment_schema.csv": "<sha256 hex>",
+  "garments.csv": "<sha256 hex>",
+  "outfits.csv": "<sha256 hex>",
+  "styling_rules.csv": "<sha256 hex>",
+  "disagreement_review.csv": "<sha256 hex>",
+  "evaluations/outfit_evaluation_E1.csv": "<sha256 hex>",
+  "evaluations/outfit_evaluation_E2.csv": "<sha256 hex>"
+ },
+ "counts": {
+  "evaluators": 2,
+  "attribute_values": 127,
+  "garments": 15,
+  "outfits": 20,
+  "styling_rules": 0,
+  "outfit_evaluations": 40,
+  "disagreement_reviews": 0
+ }
+}

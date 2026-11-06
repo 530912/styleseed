@@ -1,0 +1,611 @@
+{
+ "styling": {
+  "1": {
+   "items": [
+    1,
+    5,
+    13
+   ],
+   "score": 100,
+   "missing": []
+  },
+  "2": {
+   "items": [
+    2,
+    7,
+    12
+   ],
+   "score": 100,
+   "missing": []
+  },
+  "3": {
+   "items": [
+    3,
+    8,
+    12
+   ],
+   "score": 88,
+   "missing": []
+  },
+  "4": {
+   "items": [
+    4,
+    8,
+    12
+   ],
+   "score": 61,
+   "missing": []
+  },
+  "5": {
+   "items": [
+    5,
+    1,
+    13
+   ],
+   "score": 99,
+   "missing": []
+  },
+  "6": {
+   "items": [
+    6,
+    2,
+    12
+   ],
+   "score": 96,
+   "missing": []
+  },
+  "7": {
+   "items": [
+    7,
+    2,
+    12
+   ],
+   "score": 100,
+   "missing": []
+  },
+  "8": {
+   "items": [
+    8,
+    1,
+    13
+   ],
+   "score": 100,
+   "missing": []
+  },
+  "9": {
+   "items": [
+    9,
+    1,
+    5,
+    13
+   ],
+   "score": 98,
+   "missing": []
+  },
+  "10": {
+   "items": [
+    10,
+    2,
+    6,
+    14
+   ],
+   "score": 96,
+   "missing": []
+  },
+  "11": {
+   "items": [
+    11,
+    12
+   ],
+   "score": 51,
+   "missing": []
+  },
+  "12": {
+   "items": [
+    12,
+    2,
+    7
+   ],
+   "score": 100,
+   "missing": []
+  },
+  "13": {
+   "items": [
+    13,
+    1,
+    8
+   ],
+   "score": 100,
+   "missing": []
+  },
+  "14": {
+   "items": [
+    14,
+    1,
+    8
+   ],
+   "score": 75,
+   "missing": []
+  },
+  "15": {
+   "items": [
+    15,
+    1,
+    5,
+    12
+   ],
+   "score": 89,
+   "missing": []
+  }
+ },
+ "looks": [
+  {
+   "items": [
+    2,
+    7,
+    12
+   ],
+   "total": 77,
+   "details": {
+    "color": 86,
+    "fit": 92,
+    "material": 74,
+    "season": 53,
+    "tpo": 100,
+    "preference": 93
+   },
+   "reasons": [
+    "Casual / Travel 상황에 어울려요",
+    "평소 입는 Minimal 취향과 가까워요",
+    "상·하의 실루엣 균형이 좋아요"
+   ],
+   "completeness": 1
+  },
+  {
+   "items": [
+    6,
+    2,
+    12
+   ],
+   "total": 75,
+   "details": {
+    "color": 82,
+    "fit": 92,
+    "material": 77,
+    "season": 48,
+    "tpo": 100,
+    "preference": 90
+   },
+   "reasons": [
+    "Casual / Travel 상황에 어울려요",
+    "상·하의 실루엣 균형이 좋아요",
+    "평소 입는 Minimal 취향과 가까워요"
+   ],
+   "completeness": 1
+  },
+  {
+   "items": [
+    1,
+    5,
+    13
+   ],
+   "total": 72,
+   "details": {
+    "color": 82,
+    "fit": 84,
+    "material": 72,
+    "season": 77,
+    "tpo": 53,
+    "preference": 99
+   },
+   "reasons": [
+    "평소 입는 Minimal 취향과 가까워요",
+    "실루엣이 무난하게 맞아요",
+    "안정적인 색 조합이에요"
+   ],
+   "completeness": 1
+  },
+  {
+   "items": [
+    1,
+    5,
+    13,
+    9
+   ],
+   "total": 68,
+   "details": {
+    "color": 84,
+    "fit": 84,
+    "material": 76,
+    "season": 53,
+    "tpo": 53,
+    "preference": 97
+   },
+   "reasons": [
+    "평소 입는 Minimal 취향과 가까워요",
+    "톤이 자연스럽게 연결돼요",
+    "실루엣이 무난하게 맞아요"
+   ],
+   "completeness": 1
+  },
+  {
+   "items": [
+    8,
+    1,
+    13
+   ],
+   "total": 68,
+   "details": {
+    "color": 86,
+    "fit": 84,
+    "material": 80,
+    "season": 53,
+    "tpo": 48,
+    "preference": 96
+   },
+   "reasons": [
+    "평소 입는 Minimal 취향과 가까워요",
+    "톤이 자연스럽게 연결돼요",
+    "실루엣이 무난하게 맞아요"
+   ],
+   "completeness": 1
+  }
+ ],
+ "looksForItem": {
+  "1": [
+   {
+    "items": [
+     1,
+     5,
+     13
+    ],
+    "total": 72,
+    "details": {
+     "color": 82,
+     "fit": 84,
+     "material": 72,
+     "season": 77,
+     "tpo": 53,
+     "preference": 99
+    },
+    "reasons": [
+     "평소 입는 Minimal 취향과 가까워요",
+     "실루엣이 무난하게 맞아요",
+     "안정적인 색 조합이에요"
+    ],
+    "completeness": 1
+   },
+   {
+    "items": [
+     1,
+     5,
+     13,
+     9
+    ],
+    "total": 68,
+    "details": {
+     "color": 84,
+     "fit": 84,
+     "material": 76,
+     "season": 53,
+     "tpo": 53,
+     "preference": 97
+    },
+    "reasons": [
+     "평소 입는 Minimal 취향과 가까워요",
+     "톤이 자연스럽게 연결돼요",
+     "실루엣이 무난하게 맞아요"
+    ],
+    "completeness": 1
+   },
+   {
+    "items": [
+     1,
+     8,
+     13
+    ],
+    "total": 68,
+    "details": {
+     "color": 86,
+     "fit": 84,
+     "material": 80,
+     "season": 53,
+     "tpo": 48,
+     "preference": 96
+    },
+    "reasons": [
+     "평소 입는 Minimal 취향과 가까워요",
+     "톤이 자연스럽게 연결돼요",
+     "실루엣이 무난하게 맞아요"
+    ],
+    "completeness": 1
+   }
+  ],
+  "6": [
+   {
+    "items": [
+     6,
+     2,
+     12
+    ],
+    "total": 75,
+    "details": {
+     "color": 82,
+     "fit": 92,
+     "material": 77,
+     "season": 48,
+     "tpo": 100,
+     "preference": 90
+    },
+    "reasons": [
+     "Casual / Travel 상황에 어울려요",
+     "상·하의 실루엣 균형이 좋아요",
+     "평소 입는 Minimal 취향과 가까워요"
+    ],
+    "completeness": 1
+   },
+   {
+    "items": [
+     6,
+     1,
+     12
+    ],
+    "total": 69,
+    "details": {
+     "color": 78,
+     "fit": 92,
+     "material": 77,
+     "season": 65,
+     "tpo": 53,
+     "preference": 83
+    },
+    "reasons": [
+     "상·하의 실루엣 균형이 좋아요",
+     "평소 입는 Minimal 취향과 가까워요",
+     "안정적인 색 조합이에요"
+    ],
+    "completeness": 1
+   },
+   {
+    "items": [
+     6,
+     1,
+     12,
+     10
+    ],
+    "total": 69,
+    "details": {
+     "color": 81,
+     "fit": 92,
+     "material": 77,
+     "season": 65,
+     "tpo": 48,
+     "preference": 81
+    },
+    "reasons": [
+     "상·하의 실루엣 균형이 좋아요",
+     "안정적인 색 조합이에요",
+     "평소 입는 Minimal 취향과 가까워요"
+    ],
+    "completeness": 1
+   }
+  ],
+  "11": [
+   {
+    "items": [
+     11,
+     12
+    ],
+    "total": 59,
+    "details": {
+     "color": 80,
+     "fit": 68,
+     "material": 72,
+     "season": 77,
+     "tpo": 30,
+     "preference": 80
+    },
+    "reasons": [
+     "안정적인 색 조합이에요",
+     "평소 입는 Minimal 취향과 가까워요",
+     "Spring / Summer에 함께 입기 좋아요"
+    ],
+    "completeness": 1
+   },
+   {
+    "items": [
+     11,
+     12,
+     10
+    ],
+    "total": 56,
+    "details": {
+     "color": 82,
+     "fit": 74,
+     "material": 72,
+     "season": 53,
+     "tpo": 30,
+     "preference": 79
+    },
+    "reasons": [
+     "안정적인 색 조합이에요",
+     "평소 취향과 어느 정도 맞아요",
+     "비슷한 실루엣으로 정돈돼요"
+    ],
+    "completeness": 1
+   }
+  ]
+ },
+ "today": {
+  "none": [
+   {
+    "base": 2,
+    "items": [
+     2,
+     7,
+     12
+    ],
+    "styleScore": 77,
+    "weatherScore": null,
+    "score": 77,
+    "weatherLabel": null
+   },
+   {
+    "base": 1,
+    "items": [
+     1,
+     5,
+     13
+    ],
+    "styleScore": 72,
+    "weatherScore": null,
+    "score": 72,
+    "weatherLabel": null
+   },
+   {
+    "base": 3,
+    "items": [
+     3,
+     8,
+     12
+    ],
+    "styleScore": 59,
+    "weatherScore": null,
+    "score": 59,
+    "weatherLabel": null
+   }
+  ],
+  "cold": [
+   {
+    "base": 3,
+    "items": [
+     3,
+     5,
+     14,
+     9
+    ],
+    "styleScore": 64,
+    "weatherScore": 91,
+    "score": 72,
+    "weatherLabel": "-3°C · 눈 — 두꺼운 아우터와 보온 레이어드, 눈길 대비"
+   }
+  ],
+  "mild": [
+   {
+    "base": 2,
+    "items": [
+     2,
+     6,
+     12
+    ],
+    "styleScore": 75,
+    "weatherScore": 88,
+    "score": 79,
+    "weatherLabel": "17°C · 맑음 — 가벼운 겉옷"
+   },
+   {
+    "base": 1,
+    "items": [
+     1,
+     5,
+     13
+    ],
+    "styleScore": 72,
+    "weatherScore": 90,
+    "score": 77,
+    "weatherLabel": "17°C · 맑음 — 가벼운 겉옷"
+   },
+   {
+    "base": 3,
+    "items": [
+     3,
+     8,
+     12
+    ],
+    "styleScore": 59,
+    "weatherScore": 78,
+    "score": 65,
+    "weatherLabel": "17°C · 맑음 — 가벼운 겉옷"
+   }
+  ],
+  "hot": [
+   {
+    "base": 2,
+    "items": [
+     2,
+     7,
+     12
+    ],
+    "styleScore": 77,
+    "weatherScore": 95,
+    "score": 82,
+    "weatherLabel": "31°C · 맑음 — 가벼운 옷차림"
+   },
+   {
+    "base": 4,
+    "items": [
+     4,
+     7,
+     12
+    ],
+    "styleScore": 58,
+    "weatherScore": 95,
+    "score": 69,
+    "weatherLabel": "31°C · 맑음 — 가벼운 옷차림"
+   },
+   {
+    "base": 1,
+    "items": [
+     1,
+     7,
+     12
+    ],
+    "styleScore": 59,
+    "weatherScore": 78,
+    "score": 65,
+    "weatherLabel": "31°C · 맑음 — 가벼운 옷차림"
+   }
+  ],
+  "rain": [
+   {
+    "base": 3,
+    "items": [
+     3,
+     5,
+     14,
+     9
+    ],
+    "styleScore": 64,
+    "weatherScore": 96,
+    "score": 74,
+    "weatherLabel": "14°C · 비 — 레이어링, 비 대비"
+   },
+   {
+    "base": 1,
+    "items": [
+     1,
+     5,
+     14,
+     9
+    ],
+    "styleScore": 59,
+    "weatherScore": 93,
+    "score": 69,
+    "weatherLabel": "14°C · 비 — 레이어링, 비 대비"
+   },
+   {
+    "base": 2,
+    "items": [
+     2,
+     6,
+     14,
+     9
+    ],
+    "styleScore": 56,
+    "weatherScore": 88,
+    "score": 66,
+    "weatherLabel": "14°C · 비 — 레이어링, 비 대비"
+   }
+  ]
+ }
+}

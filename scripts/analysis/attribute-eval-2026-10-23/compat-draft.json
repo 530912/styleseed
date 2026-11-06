@@ -1,0 +1,72 @@
+{
+  "status": "draft — Knowledge Lab 최종 인계 전. 앱·엔진에 연결하지 않는다. 값 목록(활성 17개·핏 7개)은 이 파일이 아니라 인계 JSON에서 읽는다",
+  "rules_version": "SIL-draft-r1",
+  "sources": {
+    "legacy_fit": "Lab 실루엣 인계 r1 C2(핏 straight·wide → 실루엣, 핏은 미평가) · Lab 핏 폐기 사유 '실루엣 섹션으로 이동' · 계약 D-F01(공동창업자 결정 전)",
+    "retired": "Lab 실루엣 인계 r1 C4(I·H → rectangular, volume 자동 매핑 금지)",
+    "aliases": "Lab 실루엣 인계 r2 초안 B1(skater는 circle의 스타일·쇼핑 명칭, 승인 대기)",
+    "scope": "Lab 실루엣 인계 r1 1장 '주 적용 범위' + C6(대분류 제한은 DB가 강제하지 않음 → 경고만)",
+    "region_and_precedence": "Lab 실루엣 인계 r2 초안 B2·B3(전체 X, 하단 A·flared·circle·mermaid, mermaid > flared, jogger > tapered) · r1 2장(boxy는 넓고 각진 비례가 뚜렷할 때 rectangular보다 우선)",
+    "observability": "Lab 핏 compression 판단 원칙('사진에서 타이트하게 보인다는 이유만으로 분류하지 않음') · 연구 속성 인계(조직·가공은 앱 필드 없음)"
+  },
+  "legacy_fit": {
+    "straight": { "silhouette": "straight", "fit_status": "unrecorded", "fit_reason": "legacy_fit_moved_to_silhouette" },
+    "wide": { "silhouette": "wide", "fit_status": "unrecorded", "fit_reason": "legacy_fit_moved_to_silhouette" }
+  },
+  "retired_silhouette": { "I": "rectangular", "H": "rectangular" },
+  "unresolved_silhouette": ["volume"],
+  "silhouette_aliases": { "skater": "circle" },
+  "not_applicable_categories": {
+    "silhouette": ["shoes", "bag", "accessory"],
+    "fit": ["shoes", "bag", "accessory"]
+  },
+  "garment_groups": {
+    "pants": { "category": ["bottom"], "subCategory": ["jeans", "slacks", "trousers", "shorts", "leggings"], "also": [["dress", "jumpsuit"]] },
+    "skirt": { "category": ["bottom"], "subCategory": ["skirt"] },
+    "one_piece": { "category": ["dress"] },
+    "outer": { "category": ["outer"] },
+    "top": { "category": ["top"] }
+  },
+  "silhouette_scope": {
+    "A": ["skirt", "one_piece", "outer", "top"],
+    "X": ["one_piece", "outer", "top"],
+    "Y": ["outer", "top", "one_piece"],
+    "rectangular": ["outer", "top", "one_piece", "skirt"],
+    "boxy": ["outer", "top"],
+    "cocoon": ["outer", "one_piece"],
+    "balloon": ["skirt", "pants", "one_piece", "top"],
+    "mermaid": ["skirt", "one_piece"],
+    "tulip": ["skirt", "one_piece"],
+    "circle": ["skirt", "one_piece"],
+    "flared": ["pants", "skirt", "one_piece"],
+    "straight": ["pants"],
+    "wide": ["pants"],
+    "bootcut": ["pants"],
+    "tapered": ["pants"],
+    "barrel": ["pants"],
+    "jogger": ["pants"]
+  },
+  "silhouette_region": {
+    "whole": ["X", "Y", "rectangular", "boxy", "cocoon"],
+    "lower": ["A", "flared", "circle", "mermaid", "tulip", "balloon"],
+    "leg": ["straight", "wide", "bootcut", "tapered", "barrel", "jogger", "flared", "balloon"]
+  },
+  "precedence": [
+    { "win": "mermaid", "over": "flared", "when": "always" },
+    { "win": "jogger", "over": "tapered", "when": "always" },
+    { "win": "boxy", "over": "rectangular", "when": "always" },
+    { "win": "X", "over": ["A", "flared", "circle", "mermaid"], "when": "one_piece_with_upper_emphasis" }
+  ],
+  "observability": {
+    "category": "photo",
+    "subcategory": "photo",
+    "main_color": "photo",
+    "silhouette": "photo",
+    "fit": "worn_photo_preferred",
+    "fit_values_requiring_text": ["compression"],
+    "material": "photo_partial",
+    "fabric_construction": "text_or_closeup",
+    "finishing": "text_or_closeup",
+    "thickness": "photo_partial"
+  }
+}

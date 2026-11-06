@@ -1,0 +1,5 @@
+outfit_id,evaluator_id,round,outfit_summary,score_color,score_silhouette_fit,score_material_season,score_tpo,score_mood,score_overall,label,recommendable,reason,improvement,confidence,rated_at,submission_status,data_origin,note
+P01,E2,1,,5,4,4,5,4,5,suitable,yes,네이비와 화이트 대비가 깔끔하고 로퍼가 격식을 완성함,,high,2026-10-21,submitted,human,예시 데이터 — 실제 패션 판단 아님
+P02,E2,1,,4,4,4,4,4,4,suitable,yes,스트릿 무드에서는 상하 볼륨이 의도된 루즈 실루엣으로 성립함,,high,2026-10-21,submitted,human,예시 데이터 — 실제 패션 판단 아님
+P03,E2,1,,2,4,4,4,3,3,conditional,unsure,네이비 블레이저와 블루 데님의 청색 계열이 애매하게 겹침,,high,2026-10-21,submitted,human,예시 데이터 — 실제 패션 판단 아님
+P04,E2,1,,4,4,4,4,4,4,suitable,yes,전부 울 소재라 눈 오는 날에도 보온과 격식을 함께 갖춤,,high,2026-10-21,submitted,human,예시 데이터 — 실제 패션 판단 아님

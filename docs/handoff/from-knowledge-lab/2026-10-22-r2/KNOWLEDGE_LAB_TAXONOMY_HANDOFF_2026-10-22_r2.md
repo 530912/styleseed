@@ -1,0 +1,939 @@
+# KNOWLEDGE_LAB_TAXONOMY_HANDOFF
+
+- 보낸 쪽: Claude C (Knowledge Lab) · 받는 쪽: Claude A (STYLESEED 앱·추천 엔진·Data Contract)
+- 작성: 2026-10-22 · **개정 r2(2026-10-22 12:08)**: 담당자 승인 수정 23칸(T-1~T-6) 반영, JSON에 계약 필수 필드 `attribute_ko`·`decided_by`·`decided_at` 추가(Claude A 검토 P1-6)
+- 기준: Knowledge Lab 실제 DB(`zsooiouckmmzystjebkg`) 조회 결과
+- 기준 스냅샷: `backups/lab-backup-2026-10-22T03-07-33.json`(sha256 `0caf6ebb355e`, git 제외). 이 문서의 1장·부록 A와 `knowledge-lab-taxonomy-2026-10-22-r2.json`은 이 스냅샷에서 기계적으로 만들었습니다(문장 수정 없음).
+- 상태: 담당자(E1) 작성·검토 단계는 **완료**했습니다. 공동창업자 2명의 최종 승인·서명은 **아직 안 했습니다**. 대분류 8개와 세부분류 63개는 모두 **제안** 상태이고 서명은 0건입니다. 이 문서는 승인 결과가 아닙니다.
+- 출처 표시:
+  - **[DB]**: 실제 DB를 조회한 결과입니다.
+  - **[앱]**: `~/Desktop/styleseed` 앱 코드를 읽기 전용으로 확인한 결과입니다(커밋 `9285f7d`).
+  - **[계약 0.2.0]**: 앱 저장소의 `data/fkd/contract/fkd-contract-v0.1.json`(`contract_version 0.2.0`)과 `docs/handoff/knowledge-lab-app-mapping-0.2.md`입니다.
+  - **[추론]**: 위 자료로 판단한 내용입니다. 확인이 필요합니다.
+- 하지 않은 것: 앱 코드, 운영 DB, Data Contract, Lab 데이터(정의·판단 기준·예시·메모·매핑), 승인·서명·내보내기는 모두 변경하지 않았습니다.
+
+### 기준 계약과 문서(먼저 확인)
+
+| 구분 | 기준으로 쓸 것 | 확인값 |
+|---|---|---|
+| **Data Contract** | **0.2.0**: 앱 저장소 `data/fkd/contract/fkd-contract-v0.1.json`. 파일명은 v0.1이지만 내용은 `contract_version 0.2.0`이고 `app_compat`이 들어 있습니다. `docs/handoff/fkd-data-contract-v0.1/contract/`의 사본도 같은 파일입니다 | styleseed 커밋 `9285f7d` · sha256 `78311d5bc310` |
+| 앱 매핑 규칙 | `docs/handoff/knowledge-lab-app-mapping-0.2.md`(앱 저장소), 계약의 `app_compat.support_rules`·`derived_conversions`, 검증 코드 `E_APP_FIELD`·`E_APP_VALUE`·`E_APP_PARENT_MISMATCH`·`W_APP_VALUE_IGNORED` | 같은 커밋 |
+| Lab 분류 데이터 | **이 문서(r2)와 `knowledge-lab-taxonomy-2026-10-22-r2.json`**(10/22 12:07 DB 스냅샷, 담당자 수정·T-1~T-6 정리 반영) | 스냅샷 sha256 `0caf6ebb355e` |
+| 쓰면 안 되는 것 | ① Lab `vendor/styleseed-fkd/`(계약 **0.1.0**, sha256 `0bf7b5cad9fa`, app_compat 없음) ② Lab `docs/09-CONTRACT-COMPATIBILITY.md`·`docs/handoff/KNOWLEDGE_LAB_CONTRACT_REQUEST.md`(0.1.0 기준, 10/19) ③ Lab `docs/12-SUBCATEGORY-REVIEW.md` 9~11장과 `docs/subcategory/subcategory-draft.json`(담당자 수정 전 초안) ④ 첫 판 `knowledge-lab-taxonomy-2026-10-22.json`(r1, 스냅샷 `c76e347f8c44`: T-1~T-6 정리 전, `attribute_ko` 없음) ⑤ 앱 저장소 `scripts/fkd/__tests__/fixtures/lab-taxonomy-2026-10-21.json`(키·상위값만 있음. 키·상위값은 지금도 같지만 정의·기준·메모는 없음) | — |
+
+- 매핑 규칙 점검 결과 [DB]+[계약 0.2.0]:
+  - 이 문서 3장의 판정은 0.2.0 규칙을 그대로 적용한 것입니다. 지원(yes)은 app_values에 있는 값만, 변환(converted)은 앱 값이 필수이고, 상위 대분류는 앱 변환값과 같아야 합니다.
+  - 그 결과 오류는 `jumpsuit` 1건이고, 앱 저장소 테스트 `app-compat.test.mjs`의 "Lab 현재 상태" 기대값과 같습니다.
+
+---
+
+## 0. 요약
+
+| 항목 | 값 | 출처 |
+|---|---|---|
+| 대분류 | **8개**(top, bottom, dress, outer, shoes, bag, accessory, jumpsuit). 전부 제안 상태, 출처는 전부 사람 | [DB] |
+| 세부분류 | **63개**(폐기 0). 10/21 이후 신규 추가는 없습니다. 전부 제안 상태 | [DB] |
+| 대분류별 세부분류 수 | top 12 · bottom 8 · dress 5 · outer 9 · shoes 9 · bag 8 · accessory 10 · jumpsuit 2 | [DB] |
+| 출처 | 사람 44개, Claude 초안 19개(10/21에 등록한 신규 19개. 메모는 사람이 고쳤지만 "내가 확인함"은 아직 누르지 않음) | [DB] |
+| 앱 지원 | 대분류: 예 7개, 아니요 1개(jumpsuit). 세부분류: 예 41개, 아니요 22개 | [DB] |
+| 형식 검사 | 빈 칸 0 · 중복 키 0 · 중복 표시명 0 · 없는 상위 대분류 연결 0 · 입력 제한 초과 0 · 서명 0 | [DB] `npm run lab:taxonomy-verify` |
+| 앱 매핑 오류(계약 0.2.0 규칙) | **1건**: 세부분류 `jumpsuit`에서 `E_APP_PARENT_MISMATCH`(대분류 `jumpsuit`의 앱 매핑이 비어 있음) | [DB]+[계약 0.2.0] |
+| 저장·새로고침 | r2 반영 후 E1·E2가 각각 새 연결로 2번씩, 모두 4번 읽은 결과가 같습니다(해시 `1d6ef0a575c86f13`). r2 백업 파일과도 칸 단위로 같습니다(71행 × 13칸) | [DB] |
+| 10/21 이후 사람 수정 | E1이 화면에서 55개 항목을 수정했습니다(세부분류 정의·판단 기준·예시·메모). 작업 이력에는 UPDATE 57건이 있으며, 그중 2건은 10/21에 승인받아 스크립트로 정리한 `dress`·`vest` 메모입니다 | [DB] audit_log |
+
+---
+
+## 1. 전체 대분류·세부분류 최신 목록 [DB]
+
+- 정의·판단 기준·예시·메모 원문은 **부록 A**에 있습니다.
+- 기계가 읽는 사본은 `docs/handoff/knowledge-lab-taxonomy-2026-10-22-r2.json`입니다. 계약 `garment_schema.csv`의 필드 17개를 모두 담았고(`attribute_ko` 포함, 미확정이라 `decided_by`·`decided_at`은 빈 값), 개인정보는 없습니다.
+- 표의 "앱 매핑"은 `app_field / app_value / app_supported` 순서입니다. `app_value`가 빈 칸이면 키와 같은 값을 뜻합니다(계약 support_rules).
+
+| # | 대분류 | 키 | 표시명 | 앱 매핑 | 출처 |
+|---|---|---|---|---|---|
+| C1 | — | `top` | 상의 | category / top / yes | 사람 |
+| C2 | — | `bottom` | 하의 | category / bottom / yes | 사람 |
+| C3 | — | `dress` | 원피스 | category / dress / yes | 사람 |
+| C4 | — | `outer` | 아우터 | category / outer / yes | 사람 |
+| C5 | — | `shoes` | 신발 | category / shoes / yes | 사람 |
+| C6 | — | `bag` | 가방 | category / bag / yes | 사람 |
+| C7 | — | `accessory` | 액세서리 | category / accessory / yes | 사람 |
+| C8 | — | `jumpsuit` | 점프수트 및 올인원 | none / · / no | 사람 |
+| 1 | top | `tshirt` | 티셔츠 | subCategory / tshirt / yes | 사람 |
+| 2 | top | `shirt` | 셔츠 | subCategory / shirt / yes | 사람 |
+| 3 | top | `blouse` | 블라우스 | subCategory / blouse / yes | 사람 |
+| 4 | top | `knit` | 니트 | subCategory / knit / yes | 사람 |
+| 5 | top | `sweatshirt` | 맨투맨 | subCategory / sweatshirt / yes | 사람 |
+| 6 | top | `hoodie` | 후드티 | subCategory / hoodie / yes | 사람 |
+| 7 | top | `sleeveless` | 민소매 | subCategory / sleeveless / yes | 사람 |
+| 8 | top | `polo-shirt` | 폴로셔츠 | none / · / no | Claude 초안 |
+| 9 | top | `bodysuit` | 바디수트 | none / · / no | Claude 초안 |
+| 10 | top | `bustier-top` | 뷔스티에·코르셋 탑 | none / · / no | Claude 초안 |
+| 11 | top | `knit-vest` | 니트 베스트 | none / · / no | 사람 |
+| 12 | top | `tailored-vest` | 테일러드 베스트 | none / · / no | 사람 |
+| 13 | bottom | `jeans` | 청바지 | subCategory / jeans / yes | 사람 |
+| 14 | bottom | `slacks` | 슬랙스 | subCategory / slacks / yes | 사람 |
+| 15 | bottom | `trousers` | 면바지·트라우저 | subCategory / trousers / yes | 사람 |
+| 16 | bottom | `shorts` | 반바지 | subCategory / shorts / yes | 사람 |
+| 17 | bottom | `skirt` | 스커트 | subCategory / skirt / yes | 사람 |
+| 18 | bottom | `leggings` | 레깅스 | subCategory / leggings / yes | 사람 |
+| 19 | bottom | `culottes` | 큐롯 팬츠 | none / · / no | Claude 초안 |
+| 20 | bottom | `skort` | 스코트(치마형 반바지) | none / · / no | Claude 초안 |
+| 21 | dress | `mini-dress` | 미니 원피스 | subCategory / mini-dress / yes | 사람 |
+| 22 | dress | `midi-dress` | 미디 원피스 | subCategory / midi-dress / yes | 사람 |
+| 23 | dress | `maxi-dress` | 맥시 원피스 | subCategory / maxi-dress / yes | 사람 |
+| 24 | dress | `shirt-dress` | 셔츠 원피스 | none / · / no | Claude 초안 |
+| 25 | dress | `slip-dress` | 슬립 드레스 | none / · / no | Claude 초안 |
+| 26 | outer | `jacket` | 재킷 | subCategory / jacket / yes | 사람 |
+| 27 | outer | `coat` | 코트 | subCategory / coat / yes | 사람 |
+| 28 | outer | `cardigan` | 가디건 | subCategory / cardigan / yes | 사람 |
+| 29 | outer | `blazer` | 블레이저 | subCategory / blazer / yes | 사람 |
+| 30 | outer | `padding` | 패딩 | subCategory / padding / yes | 사람 |
+| 31 | outer | `vest` | 조끼 | subCategory / vest / yes | 사람 |
+| 32 | outer | `windbreaker` | 윈드브레이커 | none / · / no | Claude 초안 |
+| 33 | outer | `cape-poncho` | 케이프·판초 | none / · / no | Claude 초안 |
+| 34 | outer | `padded-vest` | 패딩 베스트 | none / · / no | 사람 |
+| 35 | shoes | `sneakers` | 스니커즈 | subCategory / sneakers / yes | 사람 |
+| 36 | shoes | `loafer` | 로퍼 | subCategory / loafer / yes | 사람 |
+| 37 | shoes | `boots` | 부츠 | subCategory / boots / yes | 사람 |
+| 38 | shoes | `heels` | 힐 | subCategory / heels / yes | 사람 |
+| 39 | shoes | `sandals` | 샌들 | subCategory / sandals / yes | 사람 |
+| 40 | shoes | `flats` | 플랫 | subCategory / flats / yes | 사람 |
+| 41 | shoes | `mules` | 뮬 | none / · / no | Claude 초안 |
+| 42 | shoes | `oxford-shoes` | 옥스퍼드화 | none / · / no | Claude 초안 |
+| 43 | shoes | `mary-jane` | 메리제인 | none / · / no | Claude 초안 |
+| 44 | bag | `shoulder-bag` | 숄더백 | subCategory / shoulder-bag / yes | 사람 |
+| 45 | bag | `crossbody-bag` | 크로스백 | subCategory / crossbody-bag / yes | 사람 |
+| 46 | bag | `tote-bag` | 토트백 | subCategory / tote-bag / yes | 사람 |
+| 47 | bag | `backpack` | 백팩 | subCategory / backpack / yes | 사람 |
+| 48 | bag | `clutch` | 클러치 | subCategory / clutch / yes | 사람 |
+| 49 | bag | `bucket-bag` | 버킷백 | none / · / no | Claude 초안 |
+| 50 | bag | `hobo-bag` | 호보백 | none / · / no | Claude 초안 |
+| 51 | bag | `belt-bag` | 벨트백 | none / · / no | Claude 초안 |
+| 52 | accessory | `hat` | 모자 | subCategory / hat / yes | 사람 |
+| 53 | accessory | `belt` | 벨트 | subCategory / belt / yes | 사람 |
+| 54 | accessory | `scarf` | 스카프 | subCategory / scarf / yes | 사람 |
+| 55 | accessory | `necklace` | 목걸이 | subCategory / necklace / yes | 사람 |
+| 56 | accessory | `bracelet` | 팔찌 | subCategory / bracelet / yes | 사람 |
+| 57 | accessory | `earrings` | 귀걸이 | subCategory / earrings / yes | 사람 |
+| 58 | accessory | `glasses` | 안경 | subCategory / glasses / yes | 사람 |
+| 59 | accessory | `ring` | 반지 | none / · / no | Claude 초안 |
+| 60 | accessory | `hair-accessory` | 헤어 액세서리 | none / · / no | Claude 초안 |
+| 61 | accessory | `gloves` | 장갑 | none / · / no | Claude 초안 |
+| 62 | jumpsuit | `jumpsuit` | 점프수트 | subCategory / jumpsuit / yes | 사람 |
+| 63 | jumpsuit | `romper` | 롬퍼·플레이수트 | none / · / no | Claude 초안 |
+
+---
+
+## 2. 판단 기준·포함/제외 조건·예시
+
+- 원문은 **부록 A**에 있습니다(항목별 정의 D, 판단 기준 G, 예시 E, 메모 N). [DB]
+- 작성 형식은 출처에 따라 다릅니다. [DB]
+  - **사람이 작성한 44개**는 판단 기준(G)을 서술형으로 썼고, 메모(N)에 `[세부분류 경계 검토]`·`[독립 속성 개선 검토]` 섹션이 있습니다.
+  - **Claude 초안 19개**는 판단 기준을 `포함: … 제외: …` 형식으로 썼습니다. 그 뒤 담당자가 메모(N)에 `[분류 결정]`·`[경계 기준 확정]` 같은 결정 문장을 덧붙였습니다.
+  - 그래서 **판단 기준·예시(초안 문장)와 메모(담당자 결정)가 서로 다른 답을 주는 항목**이 있습니다. 4.1에 정리했습니다.
+- 우선순위 해석 [추론]: 담당자의 결정 문장이 메모에 있으면 그 결정이 최신 의도라고 봅니다. 다만 이 문서는 DB를 고치지 않았습니다. 고칠지는 담당자가 정합니다.
+
+---
+
+## 3. 앱 필드·앱 값 매핑표와 지원 구분
+
+### 3.1 앱이 받는 값 [앱][계약 0.2.0]
+
+- 앱 대분류는 7개로 고정입니다(PO 결정 2026-10-21, 1라운드 동안 8번째 대분류를 추가하지 않음): top, bottom, outer, dress, shoes, bag, accessory.
+- 앱 세부분류 41개는 `src/constants/clothingOptions.ts`의 `CLOTHING_SUBCATEGORIES`와 같습니다. Gemini 분석 스키마(`backend/server.js`)도 같은 41개로 고정되어 있습니다.
+  - 앱에서 `jumpsuit`는 `dress` 아래에 있고, `vest`는 `outer` 아래에 있습니다.
+
+### 3.2 Lab 63개의 앱 지원 구분 [DB]
+
+| 구분 | 개수 | 항목 |
+|---|---|---|
+| **앱 지원(예), 값 그대로** | 40 | 앱 세부분류 41개 중 jumpsuit를 뺀 나머지 전부. 키와 앱 상위 대분류가 Lab과 같습니다 |
+| **앱 지원(예), 상위 대분류 변환 필요** | 1 | `jumpsuit`: Lab 상위는 `jumpsuit`, 앱 상위는 `dress` → **현재 E_APP_PARENT_MISMATCH** |
+| **앱 미지원(아니요)**, 10/21 신규 19개 | 19 | polo-shirt, bodysuit, bustier-top, culottes, skort, shirt-dress, slip-dress, windbreaker, cape-poncho, romper, mules, oxford-shoes, mary-jane, bucket-bag, hobo-bag, belt-bag, ring, hair-accessory, gloves |
+| **앱 미지원(아니요)**, 담당자 추가 3개 | 3 | knit-vest(top), tailored-vest(top), padded-vest(outer) |
+| **변환(converted)** | 0 | 아직 없습니다 |
+
+### 3.3 대분류 [DB][계약 0.2.0]
+
+| Lab 대분류 | 현재 Lab 매핑 | 계약 0.2.0이 요구하는 매핑 |
+|---|---|---|
+| top · bottom · dress · outer · shoes · bag · accessory | category / (키) / 예 | 그대로 |
+| **jumpsuit** | **none / (빈 값) / 아니요** | **category / dress / 변환(converted)**. 이 변경이 없으면 세부분류 `jumpsuit`를 앱으로 보낼 수 없습니다 |
+
+### 3.4 변환 후보: 공동창업자 결정 필요, Lab에 아직 기록 없음 [DB 메모]+[추론]
+
+| Lab 값 | 메모에 적힌 후보 | 앱 상위 정합 | 주의 |
+|---|---|---|---|
+| romper | dress 계열로 변환하거나 보류(Claude A 검증 후 결정) | 앱 `jumpsuit`(dress 아래)로 변환하면 상위가 맞습니다(Lab 대분류 jumpsuit → dress 변환을 전제로 함) | 결정 전까지 romper 의류는 앱·엔진 입력에서 **제외**됩니다 |
+| polo-shirt | tshirt 또는 shirt | top → top, 맞음 | |
+| windbreaker | jacket | outer → outer, 맞음 | |
+| padded-vest | (메모 없음) [추론] padding 또는 vest | outer → outer, 맞음 | |
+| knit-vest · tailored-vest | 기존 vest 매핑과 호환성 검토 | **앱 vest는 outer 아래 → E_APP_PARENT_MISMATCH**. 앱 `top` 아래 값(예: knit·sleeveless)으로 변환하거나, 1라운드에서는 미지원으로 유지 | 계약 0.2.0 지침 4장의 X-1 |
+| shirt-dress · slip-dress | 기장 키(mini/midi/maxi-dress) | dress → dress, 맞음. 다만 **기장 정보가 의류마다 다르기 때문에 값 하나로 정한 변환은 불가능**합니다 | 5.4 참고 |
+| mules · oxford-shoes · mary-jane | (기존 메모에 loafer 변환 가능성이 적혀 있었지만, 담당자가 지움) | shoes → shoes | 가까운 값으로 바꾸면 날씨 규칙(heels·flats 회피)이 틀어집니다. 6장 참고 |
+
+---
+
+## 4. 분류 체계 분석
+
+### 4.1 판단 기준 ↔ 메모 모순 [DB]
+
+같은 항목 안에서, 또는 서로 다른 항목끼리 같은 제품에 다른 답을 주던 경우입니다. 공통 원인은 Claude 초안의 판단 기준·예시가 담당자 결정 이전 문장으로 남아 있던 것입니다.
+
+> **r2 상태(2026-10-22):** T-1~T-6은 담당자 결정에 따라 **DB에서 정리했습니다**(11개 항목 23칸, 작업 이력 E1 UPDATE 11건). 아래 표의 '충돌 내용'은 정리 전 문장이고, 지금 답은 '정리 결과' 열입니다. T-7~T-9는 아직 그대로입니다.
+>
+> | ID | 정리 결과(현재 DB) |
+> |---|---|
+> | T-1 | 폐쇄형 끈 여밈만 oxford-shoes. **개방형 여밈 더비슈즈는 제외**(브로그 장식이 있어도). 더비가 들어갈 세부분류는 아직 없음(4.3) |
+> | T-2·T-3 | 셔츠 원피스·슬립 드레스 구조가 뚜렷하면 **shirt-dress·slip-dress 우선**, 기장은 독립 속성 후보. 니트 원피스처럼 구조형 값이 없으면 mini/midi/maxi-dress. 기장 원피스 예시도 고침 |
+> | T-4 | 몸통이 부드럽게 처지는 호보형은 어깨에 메도 **hobo-bag**. shoulder-bag 판단 기준·예시에서 '호보 숄더백' 제외. 단단한 크레센트백은 shoulder-bag |
+> | T-5 | 기장보다 **분리된 넓은 바지통 + 스커트형 실루엣** 우선. 종아리 기장 와이드 슬랙스(스커트형 아님)는 slacks |
+> | T-6 | 머리카락 고정·장식 중심 **터번형 헤드밴드는 hair-accessory**, 머리를 감싸 덮는 **모자형 터번은 hat**, 반다나는 scarf(hat 판단 기준에도 같은 문장 추가) |
+
+| ID | 항목 | 충돌 내용 | 같은 제품의 답 |
+|---|---|---|---|
+| T-1 | `oxford-shoes` | 판단 기준은 "포함: 옥스퍼드, **더비**, 브로그"이고 예시도 "더비 슈즈 → oxford-shoes"입니다. 그런데 메모 `[경계 기준 확정]`은 "개방형 여밈의 **더비슈즈는 옥스퍼드화에서 제외**"입니다 | 더비 → oxford-shoes 또는 없음. **제외하면 더비가 들어갈 세부분류가 없습니다** |
+| T-2 | `shirt-dress` ↔ `mini/midi/maxi-dress` | shirt-dress 판단 기준은 "기장과 관계없이 셔츠 구조가 대표값"이고 예시도 "스트라이프 셔츠 원피스 → shirt-dress"입니다. 반면 mini-dress 판단 기준은 "셔츠 원피스·슬립 드레스…라도 기장 기준을 충족하면 mini-dress로 분류할 수 있다"이고 예시도 "셔츠형 미니 원피스 → mini-dress"입니다 | 셔츠 미니 원피스 → shirt-dress 또는 mini-dress |
+| T-3 | `slip-dress` ↔ 기장 원피스 | slip-dress 예시는 "캐미솔 맥시 원피스 → slip-dress"입니다. maxi-dress 예시는 "롱 슬립 드레스 → maxi-dress", mini는 "미니 슬립 드레스 → mini-dress", midi는 "슬립 미디 드레스 → midi-dress"입니다 | 슬립 드레스 → 4가지 답 |
+| T-4 | `hobo-bag` ↔ `shoulder-bag` | shoulder-bag 판단 기준에 "**호보 숄더백** 포함", 예시에 "호보 스타일 숄더백 → shoulder-bag"이 있습니다. hobo-bag 메모는 "호보형 몸통이 뚜렷하면 hobo-bag"입니다 | 호보 숄더백 → shoulder-bag 또는 hobo-bag |
+| T-5 | `culottes` | 판단 기준(초안)은 "포함: 와이드 실루엣에 **7~8부 기장**인 바지"이고 예시도 "와이드 크롭 슬랙스(종아리 기장) → culottes"입니다. 메모(결정)는 "**기장만으로 판단하지 않는다**. 스커트형 외관이 두드러지지 않으면 슬랙스·트라우저"입니다 | 종아리 기장 와이드 슬랙스 → culottes 또는 slacks |
+| T-6 | `hair-accessory` ↔ `scarf` | hair-accessory 판단 기준은 "머리에 두르는 큰 천(반다나·**터번**)은 scarf"입니다. 메모는 "**터번형 헤어밴드는 hair-accessory**, 스카프형이라도 헤어 고정 구조가 중심이면 hair-accessory"입니다 | 터번 → scarf 또는 hair-accessory |
+| T-7 | `belt-bag` ↔ `backpack`·`crossbody-bag` | belt-bag 정의는 "웨이스트백·패니팩·**슬링백**을 포함", 예시는 "슬링백(가슴 착용) → belt-bag"입니다. 메모는 포함 목록에서 슬링백을 뺐습니다. backpack 판단 기준은 "슬링백은 별도 검토, 일반 크로스백과 구분"입니다 | 슬링백 → belt-bag, crossbody-bag, 또는 미정 |
+| T-8 | `loafer` ↔ `mules` | loafer 메모는 "뒤축이 없는 로퍼형 뮬은 mules와의 **우선순위를 검토**"입니다. mules 메모 `[경계 기준 확정]`은 "로퍼형 갑피가 있더라도 뒤축이 없으면 mules"입니다 | 답은 같지만, loafer 메모가 아직 결정 전 문장입니다 |
+| T-9 | `knit-vest` | 메모는 "니트 베스트를 대표 세부분류로 우선 사용할지 검토"입니다. 하지만 knit·sleeveless·vest의 판단 기준은 이미 "니트 베스트는 knit-vest"로 정했습니다 | 답은 같지만, 메모가 결정 전 문장입니다 |
+
+### 4.2 오래된 사실·표기 오류: 추후 정리해도 됨 [DB]
+
+| 항목 | 칸 | 내용 |
+|---|---|---|
+| 대분류 `jumpsuit` | 메모 | "기존 Data Contract 및 추천엔진에서 jumpsuit를 지원하는지 **확인해야 한다**"는 계약 0.2.0이 답했습니다(앱 대분류 7개 고정, converted → dress) |
+| 대분류 `top` | 메모 | "가디건 및 베스트의 상의/아우터 경계는 세부분류 단계에서 검토"는 베스트 3종 등록 후 일부 해소되었습니다(가디건은 보류 중) |
+| 대분류 `dress` | 판단 기준 | "룸퍼(romper)"는 다른 곳의 표기 "롬퍼"와 다릅니다 |
+| 대분류 `outer` | 메모 | 문장 끝에 마침표가 두 번 있습니다("유지한다..") |
+| 대분류 `shoes` | 판단 기준 | "구분한다, 양말…"에서 마침표 자리에 쉼표가 있습니다 |
+| `knit` | 판단 기준 | "카디건"은 표시명 "가디건"과 표기가 다릅니다 |
+| `bodysuit` | 메모 | 첫 표시가 `분류 결정]`으로, 여는 대괄호가 빠졌습니다 |
+| `vest` | 메모 | 빈 `[추가 메모]` 표시가 남아 있습니다 |
+| `belt-bag` | 정의·메모 | "패니팩"과 "퍼니팩" 표기가 다릅니다 |
+| `tshirt` | 메모 | 예전 메모 원문 "Numbers의 tee"가 "…tee는 보존한다"는 설명 문장으로 바뀌었습니다(원문 표식 자체는 없어짐) |
+| `cape-poncho`·`romper` | 판단 기준 | 줄바꿈과 백틱(\`)이 들어 있습니다. CSV로 내보낼 때 따옴표 처리를 확인해야 합니다(검증은 Claude A 쪽) |
+| `vest`, `mules`, `oxford-shoes`, `mary-jane`, `hobo-bag`, `belt-bag` | 메모 | **491~499자**로 500자 제한에 거의 닿았습니다. 섹션을 더 붙이면 저장이 거부됩니다 |
+
+### 4.3 대분류 ↔ 세부분류 연결 정합성 [DB]+[추론]
+
+- 모든 세부분류의 상위 대분류가 실제로 존재하고, 대분류 8개 모두 세부분류가 1개 이상 있습니다. [DB]
+- 대분류 정의와 각 세부분류의 연결은 서로 맞습니다. 예: dress는 하단이 스커트, jumpsuit는 하단이 바지(jumpsuit·romper). [DB]
+- **경계 원칙 충돌** [추론]:
+  - 대분류 outer 메모는 "동일 제품의 대분류는 레이어링 위치와 관계없이 일관되게 유지"입니다.
+  - 그런데 니트 레이어 두 종류가 서로 다른 대분류에 있습니다: `cardigan`(니트, 앞여밈)은 **outer**, `knit-vest`(니트, 소매 없음)는 **top**.
+  - 베스트 계열도 나뉘어 있습니다: `vest`·`padded-vest`는 outer, `knit-vest`·`tailored-vest`는 top.
+  - 앱의 vest는 outer라서 앱 매핑에도 영향이 있습니다. cardigan은 담당자가 보류(`[분류 검토 보류]`)로 둔 상태입니다.
+- **들어갈 곳이 없는 품목** [DB 문장에서 추론]:
+  - 더비 슈즈(T-1)
+  - 크롭·카프리 팬츠: shorts는 "자동 분류하지 않고 별도 검토"라고 하고, trousers에는 언급이 없습니다
+  - 플립플롭(sandals의 "별도 운영 기준")
+  - 슬링백(T-7)
+  - 레그웨어(양말·스타킹·타이츠): 대분류 bottom·shoes·accessory가 모두 "별도 합의 필요"라고 적었습니다
+  - 손목시계, 스포츠 고글, 암워머, 이너용 슬립
+  - 세트업 관계: bottom 메모에 "별도 데이터로 관리" 검토라고 되어 있습니다
+
+### 4.4 서로 다른 분류 차원이 섞인 항목, 독립 속성 후보 [DB 메모]
+
+담당자가 메모에 `[독립 속성 개선 검토]`로 적은 내용을 차원별로 모았습니다.
+
+| 차원 | 지금 세부분류에 섞여 있는 곳 | 독립 속성 후보 |
+|---|---|---|
+| 기장 | mini/midi/maxi-dress, shorts(밑단 길이), culottes | 의류 기장(미니·무릎·미디·맥시, 반바지 세부 기장) |
+| 소매 형태 | sleeveless | 소매 형태(민소매·캡·반팔·7부·긴팔) |
+| 소재·편성 | knit, jeans(데님) | 소재는 이미 있음(앱 material의 knit·denim과 중복) |
+| 스타일·포멀도 | slacks, trousers, blazer | 포멀도, 스타일 |
+| 굽 높이·형태 | heels, flats | 굽 높이(플랫·로우·미드·하이), 굽 형태(스틸레토·청키·웨지·플랫폼) |
+| 신발 디테일 | mary-jane, mules, oxford-shoes, sneakers, boots | 앞코 형태, 여밈(끈 폐쇄형·개방형, 스트랩·슬링백), 뒤축 유무, 샤프트 높이 |
+| 가방 휴대 방식 | shoulder-bag, crossbody-bag, tote-bag, backpack, clutch, belt-bag | 휴대 방식(손·어깨·크로스·등·허리, 여러 개 허용) |
+| 가방 형태 | bucket-bag, hobo-bag | 몸통 형태(버킷·호보·사각·바게트), 구조 유연성 |
+| 여밈·후드·기모 | hoodie, sweatshirt, cardigan | 여밈(풀오버·반집업·풀집업), 후드 유무, 기모(보온성 → 계절 적합도) |
+| 레이어링 역할 | cardigan, hoodie(집업), vest 계열, shirt | 코디 규칙의 이너/아우터 역할(의류 속성이 아니라 스타일링 규칙) |
+
+### 4.5 AI 의류 사진 분석에서 혼동 가능성이 높은 경계 [추론]
+
+| 위험 | 경계 | 이유 |
+|---|---|---|
+| 높음 | mini ↔ midi ↔ maxi-dress | 밑단 위치는 착용자 키·촬영 각도·누끼 사진에 따라 달라집니다(담당자 메모도 "경계 사례 관리"라고 함) |
+| 높음 | shirt-dress·slip-dress ↔ 기장 원피스 | T-2·T-3 때문에 정답 자체가 둘입니다 |
+| 높음 | shoulder-bag ↔ crossbody-bag ↔ hobo-bag | 사진에 보이는 메는 방식이 실제 설계와 다를 수 있고(조절 스트랩), T-4도 있습니다 |
+| 높음 | jumpsuit(와이드) ↔ maxi-dress, culottes ↔ skirt ↔ skort | 넓은 바지통은 정면 사진에서 스커트처럼 보입니다 |
+| 높음 | cardigan ↔ knit ↔ knit-vest ↔ vest | 단추를 채운 가디건은 풀오버처럼 보이고, 니트 베스트와 조끼는 같은 앱 값(vest)으로 들어갑니다 |
+| 중간 | oxford ↔ derby ↔ loafer, mules ↔ loafer | 끈 구조와 뒤축은 정면 사진에서 잘 안 보입니다 |
+| 중간 | jacket ↔ blazer ↔ coat, padding ↔ padded-vest ↔ jacket(퀼팅), windbreaker ↔ jacket·hoodie(집업) | 기장·충전재는 사진으로 판정하기 어렵습니다 |
+| 중간 | tshirt(얇은 니트) ↔ knit, sweatshirt ↔ hoodie(후드 접힘), shirt ↔ blouse | 담당자 기준이 원단 조직·패턴 구조라서 사진에서 직접 보이지 않습니다 |
+| 중간 | heels ↔ mary-jane ↔ flats ↔ sandals | 굽이 있는 메리제인·뮬은 앱 enum에 없어서 heels로 강제될 수 있습니다 |
+| 낮음 | hat ↔ hair-accessory(헤어밴드·터번) ↔ scarf | T-6 |
+| 구조적 | 앱 Gemini enum이 41개로 고정 | 신규 22개 값은 **앱 분석이 출력할 수 없습니다**. 모델은 가장 가까운 앱 값을 고릅니다(예: 뮬 → loafer/sandals, 니트 베스트 → vest). 계약 0.2.0의 "가까운 값으로 임의 대체 금지"와 앱 분석 쪽 동작이 맞는지 Claude A가 확인해야 합니다 |
+
+---
+
+## 5. 호환성 문제: 점프수트·롬퍼·신규 베스트·원피스 기장
+
+### 5.1 점프수트 [DB][계약 0.2.0]
+
+- **Lab 현재 상태**: 대분류 `jumpsuit`는 none / 빈 값 / 아니요입니다. 세부분류 `jumpsuit`는 상위 jumpsuit, subCategory / jumpsuit / 예입니다.
+- **앱**: `jumpsuit`는 `dress` 아래에 있습니다. 대분류 jumpsuit는 없습니다.
+- **결과**: 계약 0.2.0 검증에서 `E_APP_PARENT_MISMATCH:subcategory/jumpsuit` **1건**이 납니다. 앱 저장소의 `scripts/fkd/__tests__/app-compat.test.mjs`가 이 상태를 그대로 재현합니다.
+- **필요한 Lab 변경**: 대분류 `jumpsuit`를 category / dress / converted로 바꿉니다. 키·상위·정의는 그대로 둡니다. 공동창업자 결정 사항입니다. 이번 작업에서는 바꾸지 않았습니다.
+- **확정 순서**: 대분류 jumpsuit 확정 → 세부분류 jumpsuit·romper 확정(`E_PARENT_MISMATCH` 방지).
+- **엔진 영향** [앱]: `recommendation.ts`·`outfitScore.ts`는 `category === "dress"`일 때 상의+하의를 대체합니다. 따라서 converted → dress로 바꾸면 점프수트 코디 구성이 그대로 동작합니다. 대분류 jumpsuit 그대로 앱에 들어가면 상·하의 대체 규칙이 적용되지 않습니다.
+
+### 5.2 롬퍼 [DB][계약 0.2.0]
+
+- **Lab 현재 상태**: 상위 jumpsuit, 앱 미지원입니다. 담당자 메모는 "dress 계열 변환 또는 보류는 Claude A 검증 후 결정, 분류 확정과 앱 매핑 변경은 별개"입니다.
+- **계약 0.2.0**: 미지원이면 그 의류는 앱·엔진 입력에서 **제외**하고 사유를 남깁니다. converted를 쓰려면 공동창업자 결정이 필요합니다(예: romper → 앱 jumpsuit).
+- **영향** [추론]: 여름 코디(Today·날씨)에서 롬퍼 의류가 빠집니다. 앱 jumpsuit로 변환하면 날씨 규칙상 긴 기장으로 취급될 위험이 있습니다. 현재 날씨 규칙에 jumpsuit 항목이 없어서 실제 영향은 작습니다.
+
+### 5.3 신규 베스트 3종 [DB][계약 0.2.0]
+
+| Lab 값 | Lab 상위 | 앱 vest(outer)로 변환하면 | 비고 |
+|---|---|---|---|
+| knit-vest | top | **E_APP_PARENT_MISMATCH** | 앱 top 아래 값으로 변환하거나 미지원 유지 |
+| tailored-vest | top | **E_APP_PARENT_MISMATCH** | 같음. 앱 쪽 후보는 blazer 계열 포멀 규칙과 연결 검토 |
+| padded-vest | outer | 통과 | padding으로 변환하면 보온(겨울) 규칙이 적용되고, vest로 변환하면 적용되지 않습니다 [앱 weatherRecommendation] |
+| vest(기존) | outer | 그대로 | Lab에서는 "범용 베스트"로 범위를 좁혔지만, 앱 vest와 Gemini는 모든 베스트를 포함합니다. **같은 키인데 의미 범위가 다릅니다** |
+
+- 같은 니트 베스트 사진이 앱 분석에서는 `outer/vest`로, Lab 정답에서는 `top/knit-vest`로 나옵니다. 그래서 일치율을 측정하면 대분류부터 틀린 것으로 집계됩니다. [추론]
+
+### 5.4 원피스 기장 분류 [DB][앱]
+
+- **앱**: 원피스 세부분류는 기장 3개(mini/midi/maxi)와 jumpsuit뿐입니다. 날씨 규칙은 `mini-dress`를 더운 날 선호 항목으로 씁니다(`weatherRecommendation.ts`).
+- **Lab(r2, 담당자 결정)**: 셔츠 원피스·슬립 드레스 구조가 뚜렷하면 **구조형 shirt-dress·slip-dress를 우선**하고, 기장은 독립 속성 후보로 관리합니다. 기장 키(mini/midi/maxi)는 구조형 값이 없는 원피스에 씁니다. 두 구조형 값은 앱 미지원입니다.
+- **문제** [추론]:
+  1. 라벨링할 때 구조형을 고르면 그 의류는 앱 미지원이 되어 **엔진 입력에서 빠집니다**. mini 기장이라는 날씨 신호도 사라집니다.
+  2. 구조형 → 기장형 변환은 의류마다 기장 값이 있어야 가능합니다. 지금은 기장 속성이 없어서 값 하나로 정한 converted를 쓸 수 없습니다.
+- **영향과 선택지** [추론]: Lab 정답은 이제 구조형입니다. 따라서 셔츠·슬립 원피스는 그대로 두면 앱·엔진 입력에서 빠집니다. 앱에 넣으려면 다음 중 하나가 필요합니다.
+  - (가) 의류별 기장 값을 함께 기록하고, 변환 규칙(구조형 + 기장 → mini/midi/maxi-dress)을 계약 `derived_conversions`에 추가합니다.
+  - (나) 평가·Pilot용 의류만 앱용 대표값을 따로 기록합니다(Claude A 검토 P1-1·P1-2의 '앱용 대표값'안).
+  - 어느 쪽이든 공동창업자 결정과 계약 변경 승인이 필요합니다. r1의 '1라운드는 기장 키 우선' 권장은 담당자 결정으로 대체되었습니다.
+
+---
+
+## 6. Styling·Looks·Today·패션 코어 개인화 추천에 영향을 주는 분류 [앱]+[추론]
+
+| 엔진 사용처 [앱] | 쓰는 세부분류 | Lab 변화가 주는 영향 [추론] |
+|---|---|---|
+| 날씨 규칙 `weatherRecommendation.ts`(Today) | coat, padding, boots(추위 선호), sleeveless·shorts·sandals(추위 회피), mini-dress·sleeveless·shorts·sandals(더위 선호), padding·coat·knit·hoodie·sweatshirt·boots(더위 회피), 비/눈 회피 sandals·heels·flats | 담당자가 **sleeveless를 탱크·캐미솔로 좁혔습니다**(민소매 블라우스 → blouse). 그러면 민소매 블라우스는 더위 선호·추위 회피 신호를 잃습니다. **heels를 펌프스로 좁혔습니다**(힐 뮬 → mules, 힐 메리제인 → mary-jane, 힐 샌들 → sandals). 그러면 비 오는 날 힐 회피가 빠집니다. **padded-vest**를 padding과 분리했기 때문에 보온 규칙이 적용되지 않습니다. 기장·소매·굽 독립 속성이 이 손실을 메우는 근거가 됩니다 |
+| 코디 구성 `recommendation.ts`·`outfitScore.ts`(Styling·Looks) | `category === "dress"`는 상의+하의 대체, 기본 대체 코디(loafer·sneakers·slacks·jeans·shirt·tshirt·blazer·jacket·midi-dress·shoulder-bag·belt) | jumpsuit는 converted → dress일 때만 이 규칙에 들어갑니다. bodysuit는 Lab상 top이므로 하의가 필요하고, 그대로 맞습니다 |
+| 패션 코어 `prototypeCore.ts` + `src/data/coreDemo.ts` | 예: poetcore primary blazer·skirt·shirt·loafer, secondary cardigan·knit·coat·trousers·slacks·jeans·blouse·boots·scarf | tailored-vest·knit-vest·oxford-shoes·mary-jane은 다크 아카데미아·포엣코어 계열의 대표 아이템입니다. 그런데 미지원이라 엔진에 들어가지 못하고, 코어 규칙 목록에도 없습니다. **신규 값이 지원되면 코어 규칙 목록도 함께 넣어야 합니다** |
+| 앱 분석(Gemini) | 41개 enum | 4.5 "구조적" 항목과 같습니다. 사용자가 올린 사진의 분류는 Lab의 신규 값 체계와 다르게 나옵니다 |
+
+---
+
+## 7. 독립 속성 개선 후보와 우선순위 [추론, 확정은 공동창업자]
+
+| 순위 | 속성 | 이유 | 앱·계약 영향 |
+|---|---|---|---|
+| 1 | **의류 기장**(원피스·스커트·하의 공통) | T-2·T-3 해소, 날씨 규칙(mini-dress·shorts) 유지, 구조형 원피스 도입의 전제 | 새 속성은 계약 부 버전 변경입니다. 앱 필드가 없으므로 연구 전용으로 시작할 수 있습니다 |
+| 2 | **굽 높이(+굽 형태)** | heels 축소에 따른 비/눈 회피 손실, mules·mary-jane·loafer·boots·sandals 공통 | 날씨 규칙이 subCategory 대신 굽 속성을 읽어야 합니다(앱 변경) |
+| 3 | **가방 휴대 방식(여러 값)** | T-4·T-7, 투웨이 가방 | 연구 전용으로 시작할 수 있습니다 |
+| 4 | **소매 형태** | sleeveless 축소에 따른 더위 신호 손실 | 날씨 규칙 변경이 필요합니다 |
+| 5 | **레이어링 역할**(코디 규칙) | cardigan 보류, vest 계열, 후드 집업, 셔츠 아우터 활용 | 의류 속성이 아니라 스타일링 규칙(rules)입니다 |
+| 6 | 여밈·후드·기모, 신발 앞코·여밈, 넥라인 | 세부 경계 보조 | 연구 전용 |
+
+---
+
+## 8. Claude A가 검증할 테스트 시나리오
+
+모두 Lab 실제 데이터(`knowledge-lab-taxonomy-2026-10-22-r2.json`)를 입력으로 씁니다. 앱 코드와 계약 변경은 별도 승인 후 진행합니다.
+
+| # | 시나리오 | 입력 | 기대 결과 |
+|---|---|---|---|
+| S1 | 현재 Lab 사전을 계약 0.2.0 앱 호환 검증에 넣기 | JSON 그대로 | `E_APP_PARENT_MISMATCH:subcategory/jumpsuit` 1건만 나오고, 다른 오류는 0 |
+| S2 | 대분류 jumpsuit를 category/dress/converted로 바꾼 사본 | S1 + 그 1칸 | 오류 0 |
+| S3 | 의류 변환 보고서 | jumpsuit/jumpsuit 의류 1벌, jumpsuit/romper 1벌 | 앞의 것은 converted(category jumpsuit → dress), 뒤의 것은 unresolved(subcategory=romper)이고 연구 원본은 보존 |
+| S4 | 베스트 3종을 앱 vest로 변환한 가상 사본 | knit-vest·tailored-vest·padded-vest = converted → vest | knit-vest·tailored-vest는 E_APP_PARENT_MISMATCH, padded-vest는 통과 |
+| S5 | 날씨 규칙 회귀 | 힐 뮬(mules), 힐 메리제인(mary-jane), 비 오는 날 | 현재 앱은 미지원이라 제외됩니다. 변환하게 되면 heels 회피가 유지되는지 확인 |
+| S6 | 날씨 규칙 회귀 | 민소매 블라우스(blouse), 35°C | sleeveless 선호 신호가 없어지는 것을 확인하고, 소매 형태 속성이 필요한지 판단 |
+| S7 | 원피스 기장 | 셔츠 미니 원피스: Lab 정답(r2) shirt-dress, 비교용 mini-dress | shirt-dress는 unsupported(엔진 제외), mini-dress는 exact. (가)안 변환 규칙을 쓰면 converted(→ mini-dress)로 나오는지 확인 |
+| S8 | 앱 Gemini 분석 vs Lab 정답 | 신규 22개 값의 대표 사진 각 1장 | 앱 출력 값 기록(가까운 값 강제 여부). Lab 정답과 대분류·세부분류 일치율 |
+| S9 | 코디 구성 | 점프수트(converted → dress) + shoes + bag | 상의·하의 없이 완성된 코디로 계산(dress 대체 규칙) |
+| S10 | 패션 코어 | tailored-vest·oxford-shoes·mary-jane이 있는 옷장 | 미지원이므로 코어 점수에서 빠지는 것을 확인. 지원하게 되면 coreDemo 규칙 목록을 갱신해야 하는지 판단 |
+| S11 | 내보내기 형식 | cape-poncho·romper 판단 기준의 줄바꿈과 백틱 | CSV 묶음과 JSON 묶음 모두 원문 그대로 왕복 |
+| S12 | 계약 버전 | Lab 내보내기(현재 Lab 사본 계약 0.1.0) → 앱 검증기 0.2.0 | 버전 차이 처리(부 버전 호환인지)와 app_compat 규칙 적용 여부 |
+
+---
+
+## 9. 지금 처리할 문제 / 추후 개선해도 되는 문제
+
+### 지금(10/29 서명·내보내기 전)
+
+| # | 문제 | 누가 | 비고 |
+|---|---|---|---|
+| N-1 | 대분류 `jumpsuit` 앱 매핑을 converted → dress로 변경 | 공동창업자 결정 → Lab에서 수정 | 없으면 앱용 내보내기에서 E_APP_PARENT_MISMATCH |
+| N-2 | ~~T-1~T-6~~ **정리 완료(r2)**. 남은 것: T-7 슬링백, 더비슈즈를 넣을 세부분류(T-1 결과) | 담당자 | 정답이 둘이면 라벨링 일치도와 AI 평가가 무의미해집니다 |
+| N-3 | Claude 초안 19개의 "내가 확인함" | 담당자(사람만 가능) | 누르지 않으면 서명할 수 없습니다(DB 규칙) |
+| N-4 | Lab에 들어 있는 계약 사본이 0.1.0입니다(앱 저장소는 0.2.0, app_compat 규칙 포함). Lab 검증·내보내기에는 앱 호환 규칙이 없습니다 | Claude C(별도 승인 후 사본 갱신) | Lab 화면에서는 오류 0으로 보여도 앱 검증기에서는 1건 오류가 납니다 |
+
+### 추후
+
+- 4.2 표기·오래된 문장 정리. 메모 500자 한도에 다가간 6개는 섹션을 줄여야 합니다.
+- 4.3 들어갈 곳이 없는 품목(더비·크롭 팬츠·플립플롭·슬링백·레그웨어·세트업)
+- 5.3 베스트 계열 앱 매핑, cardigan 대분류 보류 결정
+- 7장 독립 속성(기장 → 굽 → 휴대 방식 → 소매 순서 제안)
+- 신규 값을 앱에서 지원하게 될 때 Gemini enum, 날씨 규칙, 패션 코어 규칙 목록도 함께 갱신
+
+---
+
+## 10. Claude A 변환 매핑 명세 수신 준비 (Lab 쪽, 현재 변경 없음)
+
+점프수트·베스트 3종의 앱 호환 구현은 Claude A가 맡습니다. Lab 원본 대분류·세부분류 키와 상위 연결은 **바꾸지 않습니다**. 명세를 받으면 아래 기준으로 Lab에 필요한 변경을 분석해 보고하고, 반영은 승인 후에만 합니다.
+
+### 10.1 구분 기준: 원본 직접 지원과 변환 후 호환
+
+| 구분 | Lab 기록(`app_supported`) | 뜻 | 현재 개수 [DB] |
+|---|---|---|---|
+| **원본 직접 지원** | `yes`, `app_value`는 빈 값 또는 키와 같음 | Lab 값 그대로 앱 값입니다. 세부분류라면 앱 상위 대분류도 Lab 상위와 같습니다 | 대분류 7 · 세부분류 40 |
+| **직접 지원(상위 대분류 변환 경유)** | 세부분류는 `yes`, 상위 대분류는 `converted` | 세부분류 값은 그대로이고 상위 대분류만 변환됩니다. 예: `jumpsuit/jumpsuit` → 앱 `dress/jumpsuit` | 0(대분류 jumpsuit가 변환으로 바뀌면 `jumpsuit` 1) |
+| **변환 후 호환** | `converted`, `app_value`(앱 허용값) 필수. 규칙형 변환은 계약 `derived_conversions`에 있어야 함 | 앱이 모르는 연구 값을 앱 값으로 바꿔 보냅니다. 연구 원본은 보존됩니다 | 0 |
+| **미지원** | `no` | 이 값을 쓰는 의류는 앱·엔진 입력에서 제외되고 사유가 남습니다 | 대분류 1(jumpsuit) · 세부분류 22 |
+| **오류** | — | `E_APP_VALUE`·`E_APP_PARENT_MISMATCH` 등 | 세부분류 1(`jumpsuit`, 상위 대분류에 앱 매핑이 없음) |
+
+- `npm run lab:taxonomy-verify`가 이 구분을 출력합니다(`LAB_APP_CONTRACT=<계약 파일>`).
+- 이 문서 3장의 '예/아니요'만으로는 직접 지원과 변환을 구분할 수 없습니다. 위 표의 용어를 기준으로 합니다.
+
+### 10.2 명세에서 받아야 할 내용
+
+| 항목 | 값마다 필요한 것 |
+|---|---|
+| 대상 | 최소한 대분류 `jumpsuit`, 세부분류 `knit-vest`·`tailored-vest`·`padded-vest`. romper 등 다른 미지원 값은 명세에 있으면 포함 |
+| 앱 쪽 결과 | `app_field`, `app_value`, 구분(직접 지원·변환·미지원) |
+| 변환 방식 | 값 단위 변환(한 값 → 한 앱 값)인지, 규칙형(다른 속성을 함께 읽음. 예: 구조형 원피스 + 기장)인지 |
+| 상위 정합 | 변환 후 앱 상위 대분류(`E_APP_PARENT_MISMATCH` 기준) |
+| 계약 | 적용 계약 버전과 파일 해시, `app_values` 변경 여부(앱 값 추가가 있는지) |
+| 테스트 | 앱 쪽 테스트 이름과 기대 결과(변환 보고서 상태 exact·converted·lossy·unsupported) |
+
+### 10.3 명세를 받으면 분석할 Lab 변경 (지금은 변경 안 함)
+
+| 영역 | 예상 변경 | 승인 |
+|---|---|---|
+| 속성 사전 앱 매핑 | 명세 대상 값의 `app_field`·`app_value`·`app_supported`만. 키·상위·정의·상태·서명은 그대로 | 공동창업자 결정 + Lab 데이터 변경 승인 |
+| Lab 계약 사본 | `vendor/styleseed-fkd/` 0.1.0 → 명세 기준 버전으로 다시 가져오기(해시 기록, 수정 없이 호출) | Claude C 작업 승인 |
+| 내보내기 검증 | 지금은 계약 0.1.0 검증(앱 호환 규칙 없음). 바뀐 뒤에는 `E_APP_*` 규칙을 적용해, 앱 매핑 오류가 있으면 내보내기 화면에서 차단하거나 표시 | 같음 |
+| 속성 사전 화면 | 지금은 `converted`가 배지 표시뿐이고 앱 값 필수 검사가 없음. 앱 허용값 선택, 변환이면 앱 값 필수, 상위 정합 결과 표시(앱 매핑 지침 M2·M5) | 같음 |
+| 의류 화면 | 미지원·변환 값을 쓴 의류에 '앱·엔진 입력에서 제외됨' 또는 '변환됨' 안내(지침 M7) | 같음 |
+
+### 10.4 Claude A 구현·테스트가 끝난 뒤 재검증 순서
+
+1. **명세 겹침 시험(DB 그대로)**:
+   - 명세를 10.2 형식의 JSON으로 옮깁니다.
+   - `LAB_APP_CONTRACT=<새 계약> npm run lab:taxonomy-verify -- --mapping <명세.json>`을 실행합니다.
+   - 기대 결과: 앱 매핑 문제 0, 그리고 구분별 개수가 명세와 같아야 합니다.
+   - 예시: 가상 명세(jumpsuit → dress, knit-vest → vest, padded-vest → padding)로 돌리면 knit-vest만 `E_APP_PARENT_MISMATCH`이고, 이 문서 S4와 같습니다.
+2. **앱 검증기 교차 확인**: 앱 저장소 `scripts/analysis/taxonomy-review-2026-10-22/run.sh`에 이 r2 JSON(또는 명세를 겹친 사본)을 넣습니다. Lab 판정과 같은 오류 집합이 나와야 합니다.
+3. **승인 후 Lab 반영**: 백업 → 대상 칸만 변경 → 백업과 칸 단위 대조 → Admin·Researcher 재조회.
+4. **내보내기 리허설(체험용, `purpose=example`)**: Lab에 넣은 새 계약 사본으로 검증한 결과와 앱 검증기 결과가 같아야 합니다. 실제 내보내기(production)는 공동창업자 승인 후에 합니다.
+5. **Lab 의류 15벌 [DB]**: 현재 15벌은 모두 앱 직접 지원 값입니다(점프수트·베스트 없음). 변환 보고서는 모두 exact여야 합니다. 변환 대상 값의 의류는 담당자가 라벨링한 뒤 다시 확인합니다.
+
+---
+
+## 부록 A. 항목별 원문 [DB]
+
+D 정의 · G 판단 기준(포함·제외) · E 예시 · N 메모. DB 원문을 그대로 옮겼습니다(r2 스냅샷).
+
+### A.1 대분류 8개
+
+#### 상의 — `top` · 앱 category/top/yes · 사람
+
+- **D** 상체를 주로 덮으며 기본 착장 또는 이너 레이어로 착용하도록 설계된 의류.
+- **G** 티셔츠, 셔츠, 블라우스, 스웨트셔츠, 풀오버 니트 등 상체 중심 의류를 포함한다. 제품의 구조와 주된 착용 목적을 기준으로 분류하며, 세부 디자인 및 형태의 차이는 세부분류에서 구분한다.
+- **E** 반팔 티셔츠 → top /셔츠 → top / 블라우스 → top / 풀오버 니트 → top
+- **N** 가디건 및 베스트의 상의 / 아우터 분류 경계는 세부분류 단계에서 검토.
+
+#### 하의 — `bottom` · 앱 category/bottom/yes · 사람
+
+- **D** 허리 또는 골반 부위에 착용하며, 하체를 주로 덮도록 설계된 독립적인 의류.
+- **G** 팬츠, 스커트, 쇼츠, 레깅스 등 하체 중심의 독립적인 의류를 포함한다. 제품의 구조와 주된 착용 목적을 기준으로 분류하며, 길이와 핏과 실루엣 등의 차이는 세부분류 및 개별 속성에서 구분한다. 하체를 덮더라도 상체와 하나로 연결된 원피스나 점프 수트는 하의로 분류하지 않는다.
+- **E** 데님 팬츠 → bottom / 슬랙스 → bottom / 미니스커트 → bottom / 쇼츠 → bottom / 레깅스 → bottom
+- **N** 레깅스처럼 단독 착장과 이너웨어 역할을 겸하는 품목은 세부분류 단계에서 기준을 검토한다. 스타킹과 타이츠와 양말 등 레그웨어의 분류 위치는 별도 합의가 필요한 상황이다. 세트업에 포함된 하의는 독립된 하의로 분류하되, 세트 관계는 별도 데이터로 관리하는 방안을 검토한다.
+
+#### 원피스 — `dress` · 앱 category/dress/yes · 사람
+
+- **D** 상체와 하체를 하나의 구조로 연결해 착용하며, 일반적으로 허리 아래 부분이 스커트 형태로 구성된 일체형 의류.
+- **G** 상체와 하체가 연결된 단일 의류로, 하단이 양쪽 다리로 분리되지 않은 드레스류를 포함한다. 셔츠 원피스, 니트 원피스, 슬립 드레스, 미니/미디/맥시 원피스 등이 해당한다. 길이, 실루엣, 소재, 소매 유무의 차이는 세부분류 및 개별 속성으로 구분한다. 하단이 바지 형태로 분리되는 점프수트와 룸퍼(romper)와 별도의 상의 및 하의로 구성된 세트업은 원피스로 분류하지 않는다.
+- **E** 셔츠 원피스 → dress / 니트 원피스 → dress / 슬립 드레스 → dress / 플리츠 원피스 → dress / 멜빵 원피스 → dress
+- **N** 점프수트·롬퍼 등 하단이 바지 형태인 일체형 의류는 대분류 jumpsuit(점프수트 및 올인원)에 연결되어 있다(세부분류 jumpsuit·romper, 2026-10-21 결정). 멜빵 원피스처럼 이너와 함께 착용하는 제품도 구조적으로 원피스라면 dress로 분류한다. 원피스는 기본적으로 상·하의를 대체하는 단일 착장 아이템으로 처리하되, 코디 구성 시 단독 착용뿐 아니라 티셔츠 및 블라우스 등의 이너 레이어와 재킷 및 가디건 등의 외부 레이어와 조합할 수 있다. 이러한 조합 가능성은 원피스의 대분류를 변경하지 않고 별도의 스타일링 규칙에서 판단한다.
+
+#### 아우터 — `outer` · 앱 category/outer/yes · 사람
+
+- **D** 기본 착장 위에 겹쳐 입는 외부 레이어로 설계된 의류.
+- **G** 재킷, 코트, 점퍼, 패딩, 블레이저 등 외부 레이어 역할이 주된 의류를 포함한다. 단순히 다른 옷 위에 착용했다는 이유만으로 아우터로 분류하지 않으며, 제품의 구조와 주된 착용 목적을 기준으로 판단한다. 가디건과 베스트처럼 상의와 아우터의 경계가 모호한 의류는 세부분류에서 일관된 기준을 정한다.
+- **E** 트렌치코트 → outer / 테일러드 재킷 → outer / 패딩 점퍼 → outer / 블레이저 → outer
+- **N** 가디건 및 베스트 등 상의와 아우터의 경계가 모호한 품목은 세부분류 단계에서 제품의 구조, 여밈 방식, 소재 두께 및 주된 착용 목적을 고려하여 분류 기준을 확정한다. 니트 베스트와 패딩 베스트처럼 동일한 품목명이라도 설계와 용도에 따라 대분류가 달라질 수 있다. 동일 제품의 대분류는 실제 코디에서 레이어링 위치와 관계 없이 일관되게 유지한다..
+
+#### 신발 — `shoes` · 앱 category/shoes/yes · 사람
+
+- **D** 발을 감싸거나 지지하도록 설계되어 착용하며, 보행 기능과 패션 스타일링 요소를 함께 갖는 신발류.
+- **G** 스니커즈, 로퍼, 옥스퍼드화, 플랫슈즈, 펌프스, 부츠, 샌들, 뮬, 슬리퍼 등 발에 직접 착용하는 독립적인 신발류를 포함한다. 제품의 기본 구조와 주된 착용 목적에 따라 신발로 분류하며, 굽높이, 앞코 형태, 발목을 덮는 높이, 여밈 방식, 소재 및 디자인의 차이는 세부분류와 개별 속성에서 구분한다, 양말, 스타킹, 타이츠 등 발과 다리를 덮는 섬유 제품은 신발에 포함하지 않는다.
+- **E** 스니커즈 → shoes / 페니 로퍼 → shoes / 발레 플랫 → shoes / 앵클부츠 → shoes / 스트랩 샌들 → shoes / 뮬 → shoes
+- **N** 신발의 세부분류에서는 형태와 착용 구조를 기준으로 종류를 구분하고, 굽 높이와 앞코 형태, 발목 높이, 소재 등은 별도 속성으로 관리하는 방안을 검토한다. 양말과 스타킹, 타이츠는 신발과 구분하며 레그웨어의 분류 위치를 별도로 확정한다. 동일한 신발이라도 착용 목적과 디자인에 따라 TPO 및 패션 코어 적합성이 달라질 수 있으므로, 해당 판단은 스타일링 규칙에서 다룬다.
+
+#### 가방 — `bag` · 앱 category/bag/yes · 사람
+
+- **D** 소지품을 수납하거나 휴대하기 위해 제작되며, 착장의 기능적 및 장식적 요소로 활용되는 패션 아이템
+- **G** 토트백, 숄더백, 크로스바디백, 백팩, 클러치, 버킷백, 호보백 등 소지품의 수납과 휴대를 주요 목적으로 하는 패션 가방류를 포함한다. 제품의 기본 구조와 주된 사용 목적을 기준으로 분류하며, 휴대 방식, 크기, 형태, 소재 및 디자인의 차이는 세부분류와 개별 속성에서 구분한다. 장식적 비중이 크거나 수납 기능이 제한적이더라도 가방의 구조와 용도를 갖춘 제품은 가방으로 분류한다.
+- **E** 토트백 → bag / 숄더백 → bag / 크로스바디백 → bag / 백팩 → bag / 클러치 → bag / 버킷백 → bag
+- **N** 가방은 휴대 방식(토트·숄더·크로스바디), 구조적 형태(버킷·호보·클러치), 크기(미니·미디엄·라지) 등의 분류 기준이 중첩될 수 있으므로, 세부분류에서는 대표 유형과 개별 속성을 구분하는 방안을 검토한다. 스트랩의 유무 및 탈부착에 따라 휴대 방식이 달라질 수 있으므로 단일 기준으로 제한하지 않는다. 가방의 크기, 소재, 형태 및 장식 요소가 TPO와 패션 코어에 미치는 영향은 스타일링 규칙에서 별도로 판단한다.
+
+#### 액세서리 — `accessory` · 앱 category/accessory/yes · 사람
+
+- **D** 의류, 신발, 가방 외에 신체 또는 착장에 착용·부착하여 기능적 역할이나 장식적 효과를 더하는 패션 아이템.
+- **G** 귀걸이, 목걸이, 반지, 팔찌 등 주얼리와 벨트, 모자, 스카프, 장갑, 헤어 액세서리 등 착장을 보완하는 독립적인 패션 소품을 포함한다. 제품의 구조와 주된 사용 목적을 기준으로 분류하며, 착용 위치, 형태, 소재, 크기 및 장식 방식의 차이는 세부분류와 개별 속성에서 구분한다. 의류·신발·가방은 각각의 독립 대분류로 유지하며, 해당 제품에 부착된 장식 요소는 별도의 액세서리로 분류하지 않는다.
+- **E** 귀걸이 → accessory / 목걸이 → accessory / 반지 → accessory / 벨트 → accessory / 볼캡 → accessory / 스카프 → accessory / 헤어핀 → accessory / 장갑 → accessory
+- **N** 주얼리, 헤드웨어, 벨트, 스카프 등 다양한 소품이 포함되므로 세부분류 단계에서 착용 위치와 기능을 기준으로 분류체계를 정리한다. 양말·스타킹·타이츠 등 레그웨어와 언더웨어의 분류 위치는 별도 검토가 필요하다. 가방에 부착하는 백참이나 의류에 부착하는 브로치처럼 독립적으로 탈착 가능한 장식품은 액세서리로 분류할 수 있다. 액세서리의 소재, 크기, 색상, 장식성이 패션 코어와 코디의 무드에 미치는 영향은 스타일링 규칙에서 다룬다.
+
+#### 점프수트 및 올인원 — `jumpsuit` · 앱 none/·/no · 사람
+
+- **D** 상체와 하체가 하나의 구조로 연결되어 있으며, 하단이 양쪽 다리를 구분하는 바지 형태로 구성된 일체형 의류.
+- **G** 상·하체가 분리되지 않은 단일 의류 중 하단이 바지 구조인 제품을 포함한다. 점프수트, 롬퍼, 플레이수트 등이 해당하며, 하의 길이와 실루엣의 차이는 세부분류 및 개별 속성에서 구분한다. 하단이 스커트 형태인 원피스와 별도의 상의·하의로 구성된 세트업은 포함하지 않는다.
+- **E** 롱 점프수트 → jumpsuit / 데님 점프수트 → jumpsuit / 롬퍼 → jumpsuit / 플레이수트 → jumpsuit
+- **N** 현재 STYLESEED 앱의 대분류에 없는 신규 후보값이다. 기존 Data Contract 및 추천엔진에서 jumpsuit를 지원하는지 확인해야 한다. 점프수트와 롬퍼는 동일 대분류에 포함하되 하의 길이와 착용 목적은 세부분류 및 개별 속성으로 관리한다. 원피스와 마찬가지로 상·하의를 대체하는 일체형 의류로 취급하되 레이어링 가능 여부는 코디 구성 규칙에서 별도로 검토한다.
+
+### A.2 세부분류 63개
+
+#### 티셔츠 — `tshirt` (상위 `top`) · 앱 subCategory/tshirt/yes · 사람
+
+- **D** 주로 저지(Jersey) 등 신축성이 있는 편성 원단으로 제작되며, 일반적으로 풀오버 방식으로 착용하는 상체 중심의 캐주얼 의류. 기본적인 몸판과 소매 구조를 가지며, 소매 길이와 네크라인, 핏, 기장에 따라 다양한 형태로 구분된다.
+- **G** 라운드넥과 브이넥 티셔츠, 반팔과 긴팔 티셔츠, 크롭 티셔츠, 그래픽 티셔츠 등을 포함한다. 제품의 원단 조직, 패턴 구조, 여밈 방식 및 주된 착용 목적을 종합적으로 판단한다. 일반적인 셔츠처럼 앞판 전체에 단추 여밈과 셔츠 칼라가 있는 의류는 셔츠로, 스웨트 원단의 두꺼운 맨투맨과 후디는 각각 해당 세부분류로 구분한다. 니트 조직이라도 스웨터류에 해당하는 제품은 니트로 분류하며, 폴로 칼라와 짧은 단추 여밈을 가진 제품은 폴로셔츠로 구분한다. 소매 길이와 기장만으로 티셔츠의 세부분류를 변경하지 않는다.
+- **E** 반팔 라운드넥 티셔츠 → tshirt / 긴팔 티셔츠 → tshirt / 브이넥 티셔츠 → tshirt / 크롭 그래픽 티셔츠 → tshirt
+- **N** 기존 앱의 tshirt 값과 매핑을 유지한다. 반팔과 긴팔, 크롭 등은 별도의 티셔츠 유형으로 중복 생성하기보다 소매 형태 및 기장 속성으로 구분하는 방안을 검토한다. 폴로셔츠와 민소매 탑은 별도 세부분류와 경계를 확인한다. 기존 메모의 Numbers의 tee는 데이터 출처 관련 기록이므로 보존한다.
+
+#### 셔츠 — `shirt` (상위 `top`) · 앱 subCategory/shirt/yes · 사람
+
+- **D** 주로 직물 소재로 제작되며, 칼라·앞여밈·커프스·요크 등 셔츠 특유의 패턴 및 봉제 구조를 기반으로 설계된 상체 의류. 정장용부터 캐주얼용까지 포함하며, 칼라와 여밈 방식, 핏, 기장에 따라 다양한 형태로 구분된다.
+- **G** 드레스 셔츠, 옥스퍼드 셔츠, 오버사이즈 셔츠, 데님 셔츠, 플란넬 셔츠, 차이나칼라 셔츠 등을 포함한다. 칼라 형태, 앞여밈 구조, 커프스, 요크, 원단 특성을 종합적으로 확인해 셔츠 특유의 구조를 가진 제품으로 분류한다. 칼라나 단추가 없는 디자인도 셔츠형 패턴 구조가 확인되면 포함할 수 있다. 저지 소재의 일반 티셔츠, 짧은 단추 여밈의 폴로셔츠, 프릴·드레이프 등 장식적 디자인이 주된 블라우스는 각각 별도 세부분류로 구분한다. 셔츠를 겉에 걸쳐 입더라도 제품의 기본 유형이 셔츠라면 아우터로 변경하지 않는다.
+- **E** 옥스퍼드 버튼다운 셔츠 → shirt / 화이트 드레스 셔츠 → shirt / 데님 셔츠 → shirt / 오버사이즈 스트라이프 셔츠 → shirt / 차이나칼라 셔츠 → shirt
+- **N** 셔츠와 블라우스의 경계는 성별이나 판매 상품명이 아닌 제품의 구조와 디자인 특징을 기준으로 판단한다. 데님·플란넬·옥스퍼드 등의 원단 특성, 오버사이즈 핏, 칼라 형태와 소매 기장은 독립 속성으로 관리하는 방안을 검토한다. 셔츠를 아우터처럼 활용하는 경우에도 기본 세부분류는 유지하며, 레이어링 역할은 코디 구성 규칙에서 별도로 판단한다.
+
+#### 블라우스 — `blouse` (상위 `top`) · 앱 subCategory/blouse/yes · 사람
+
+- **D** 상체를 덮는 독립적인 상의로, 다양한 패턴 설계와 원단의 특성을 활용해 실루엣·드레이프·여유분 및 장식적 요소를 표현하도록 구성된 의류. 풀오버형과 앞여밈형을 모두 포함하며, 구조적인 디자인부터 유연하고 장식적인 디자인까지 폭넓게 포함한다.
+- **G** 셔링, 개더, 러플, 드레이프, 퍼프 소매, 타이넥 등 디자인 요소가 적용된 블라우스와 장식이 적은 미니멀 블라우스를 포함한다. 원단의 드레이프성, 몸판의 패턴 구성, 여유분 처리, 넥라인 및 여밈 구조를 종합적으로 판단한다. 일반적인 셔츠와 유사한 제품은 칼라·요크·커프스 등 셔츠형 패턴 구조와 블라우스 특유의 실루엣·디자인 구성을 비교해 대표 유형을 결정한다. 단순히 여성용 제품이거나 얇고 부드러운 원단이라는 이유만으로 블라우스로 분류하지 않으며, 일반 티셔츠·니트·폴로셔츠 및 원피스는 제외한다.
+- **E** 타이넥 블라우스 → blouse / 셔링 블라우스 → blouse / 퍼프 소매 블라우스 → blouse / 드레이프 블라우스 → blouse / 미니멀 풀오버 블라우스 → blouse
+- **N** 셔츠(shirt)와 블라우스(blouse)는 일부 패턴 구조와 디자인이 중첩되므로, 성별·상품명만으로 판단하지 않고 실제 제품 구조와 실루엣을 기준으로 구분한다. 러플·셔링·퍼프 소매·타이넥 등의 장식 요소, 소매 형태, 넥라인 및 소재감은 독립 속성으로 관리하는 방안을 검토한다. 판단이 모호한 제품은 대표 세부분류 하나를 선정하고 경계 사례로 기록한다.
+
+#### 니트 — `knit` (상위 `top`) · 앱 subCategory/knit/yes · 사람
+
+- **D** 편성 조직으로 형성된 원단을 주된 몸판으로 사용하며, 스웨터 및 풀오버 등 니트웨어 특유의 구조와 착용 형태를 가진 상체 의류. 편성 조직의 신축성과 질감, 두께, 게이지 및 실루엣에 따라 다양한 형태로 구성된다.
+- **G** 라운드넥 니트, 브이넥 니트, 터틀넥 니트, 케이블 니트, 리브 니트, 니트 풀오버 등을 포함한다. 원단의 편성 조직과 제품의 패턴 구조, 주된 착용 목적을 종합적으로 판단한다. 일반적인 저지 티셔츠는 편성 원단으로 제작되었더라도 티셔츠로 분류하며, 스웨트셔츠와 후디는 각각 별도의 세부분류로 구분한다. 니트 베스트는 신규 세부분류 knit-vest로 구분하고, 카디건은 현재의 별도 cardigan 분류를 따른다. 니트 원단으로 제작되었다는 이유만으로 원피스나 하의 등 다른 유형을 knit으로 분류하지 않는다.
+- **E** 라운드넥 니트 풀오버 → knit / 케이블 니트 스웨터 → knit / 터틀넥 니트 → knit / 브이넥 니트 풀오버 → knit / 리브 니트 톱 → knit
+- **N** [독립 속성 개선 검토] '니트'는 의류 유형이 아니라 편성(소재) 명칭이라 소재 속성(knit)과 겹친다. 세부분류는 풀오버 스웨터라는 유형으로 보고, 소매 형태(민소매·반팔·긴팔)는 소매 형태 독립 속성으로, 크루넥·브이넥·터틀넥은 넥라인 속성 후보로 분리하는 방안을 검토한다. [세부분류 경계 검토] STYLESEED의 knit은 니트 소재 전체가 아닌 스웨터·니트 풀오버 계열의 상의를 의미한다. 일반 저지 티셔츠, 스웨트셔츠, 후디, 니트 베스트(knit-vest), 카디건(cardigan)과 구분한다. 니트의 게이지, 편성 조직, 소재 혼용률, 두께, 넥라인 및 핏은 별도 속성으로 표현하는 방안을 검토한다. 기존 영문 키 knit은 앱 호환성을 위해 유지하며, 향후 표시명을 '니트 풀오버·스웨터'로 명확하게 변경할지 공동창업자가 검토한다.
+
+#### 맨투맨 — `sweatshirt` (상위 `top`) · 앱 subCategory/sweatshirt/yes · 사람
+
+- **D** 주로 스웨트 원단(플리스·프렌치 테리 등)으로 제작되며, 일반적으로 후드 없이 풀오버 형태로 착용하는 캐주얼 상의. 몸판과 소매를 기본 구조로 하며, 넥라인·핏·기장·원단의 두께와 안쪽 가공 방식에 따라 다양한 형태로 구성된다.
+- **G** 라운드넥 맨투맨, 브이넥 스웨트셔츠, 오버사이즈 맨투맨, 크롭 맨투맨, 그래픽 맨투맨 등을 포함한다. 스웨트 원단의 조직과 표면 특성, 몸판 구조, 넥라인 및 착용 방식을 종합하여 판단한다. 후드가 있는 스웨트 상의는 후디(hoodie)로, 일반적인 얇은 저지 티셔츠는 티셔츠(tshirt)로 구분한다. 스웨터형 편성 조직과 구조가 중심인 제품은 니트(knit)로 분류한다. 기모 유무, 원단 두께, 그래픽 프린트, 크롭 기장만으로 세부분류를 변경하지 않는다.
+- **E** 라운드넥 맨투맨 → sweatshirt / 오버사이즈 스웨트셔츠 → sweatshirt / 크롭 맨투맨 → sweatshirt / 기모 맨투맨 → sweatshirt / 그래픽 맨투맨 → sweatshirt
+- **N** [세부분류 경계 검토] 스웨트셔츠는 스웨트 원단과 의류 구조를 기준으로 티셔츠(tshirt), 니트(knit), 후디(hoodie)와 구분한다. 후드가 없는 풀오버 스웨트 상의를 기본 대상으로 하되, 반집업·풀집업 등 여밈 방식이 다른 스웨트 제품은 제품 구조와 기존 세부분류 체계를 함께 검토한다.  [독립 속성 개선 검토] 원단 내부의 기모 가공 여부, 두께감, 소매 형태, 넥라인, 의류 기장, 핏 및 그래픽 프린트는 별도 속성으로 관리하는 방안을 검토한다. 특히 기모 유무는 보온성과 계절 적합도에 영향을 줄 수 있으므로 향후 의류 분석 및 추천 규칙과 연계할 필요가 있다.
+
+#### 후드티 — `hoodie` (상위 `top`) · 앱 subCategory/hoodie/yes · 사람
+
+- **D** 주로 스웨트 원단(프렌치 테리·플리스 등)으로 제작되며, 스웨트셔츠형 몸판에 머리를 덮을 수 있는 후드가 결합된 캐주얼 상의. 풀오버형과 지퍼 여밈형을 포함하며, 핏·기장·원단 두께·안감 가공 및 여밈 방식에 따라 다양한 형태로 구성된다.
+- **G** 풀오버 후드티, 후드 집업, 크롭 후드티, 오버사이즈 후드티 등을 포함한다. 후드의 존재와 스웨트셔츠형 몸판 구조, 원단 특성 및 여밈 방식을 종합해 판단한다. 후드가 없는 스웨트 상의는 맨투맨(sweatshirt)으로 구분하며, 방풍·방수 기능을 중심으로 설계된 후드 재킷이나 바람막이는 아우터(outer)의 해당 세부분류로 분류한다. 니트 스웨터 구조에 후드만 결합된 제품은 니트(knit)와의 경계를 검토한다. 지퍼 유무나 크롭 기장만으로 별도 세부분류를 생성하지 않는다.
+- **E** 풀오버 후드티 → hoodie / 후드 집업 → hoodie / 크롭 후드티 → hoodie / 오버사이즈 후드티 → hoodie / 기모 후드티 → hoodie
+- **N** [세부분류 경계 검토] 후드티는 단순한 후드 유무가 아니라 스웨트셔츠형 몸판 구조와 원단 특성을 기준으로 판단한다. 후드 집업은 앞여밈이 있어 겉옷으로 착용할 수 있지만 기본 세부분류는 hoodie로 유지하고, 실제 코디에서의 이너·아우터 역할은 레이어링 규칙에서 별도로 판단한다. 후드가 달린 바람막이·패딩·재킷과는 구분한다.  [독립 속성 개선 검토] 후드 유무, 풀오버·반집업·풀집업 등 여밈 방식, 원단 기모 가공, 두께감, 핏, 소매 형태 및 의류 기장은 별도 속성으로 관리하는 방안을 검토한다. 특히 후드 집업의 개폐 여부와 레이어링 가능성은 스타일링 추천 규칙에서 별도로 고려할 필요가 있다.
+
+#### 민소매 — `sleeveless` (상위 `top`) · 앱 subCategory/sleeveless/yes · 사람
+
+- **D** 소매가 없고 어깨와 팔 부위가 노출되도록 암홀을 구성한 상체 중심의 의류. 탱크톱, 캐미솔 등 소매 없는 기본 상의를 포함하며, 어깨끈의 형태와 넥라인, 몸판 구조에 따라 다양한 디자인으로 구분된다.
+- **G** 탱크톱, 캐미솔, 기본 슬리브리스 톱 등 민소매 구조 자체가 제품의 주된 형태인 상의를 포함한다. 어깨끈의 폭, 암홀 형태, 몸판 구조 및 착용 목적을 종합적으로 판단한다. 민소매라는 특징만으로 모든 의류를 이 분류에 포함하지 않는다. 민소매 니트 베스트는 knit-vest, 테일러드 베스트는 tailored-vest, 패딩 베스트는 padded-vest로 분류한다. 소매가 없는 블라우스나 셔츠도 해당 의류 유형의 특징이 뚜렷하면 각각 blouse, shirt로 분류한다. 슬리브리스 원피스는 원피스 대분류에 속한다.
+- **E** 기본 탱크톱 → sleeveless / 스파게티 스트랩 캐미솔 톱 → sleeveless / 기본 슬리브리스 톱 → sleeveless / 홀터넥 슬리브리스 톱 → sleeveless
+- **N** [독립 속성 개선 검토] '민소매'는 의류 유형이 아니라 소매 형태라 블라우스·니트·셔츠·원피스와 중첩된다. 소매 형태(민소매·캡·반팔·7부·긴팔) 독립 속성을 두고, 이 값은 탱크톱·캐미솔 같은 유형으로 좁히는 방안을 검토한다. 넥라인(라운드·스퀘어·홀터)·어깨끈 형태도 속성 후보. 앱 날씨 규칙이 이 키를 쓰므로 키는 유지한다. [세부분류 경계 검토] sleeveless는 모든 민소매 의류를 포괄하는 값이 아니라 탱크톱·캐미솔 등 기본 슬리브리스 상의의 대표 유형으로 사용한다. 니트 베스트, 테일러드 베스트, 패딩 베스트 및 민소매 블라우스·원피스와 구분한다. 향후 독립적인 소매 형태 속성이 도입되면 의류 유형과 소매 유무를 별도로 판정한다.
+
+#### 폴로셔츠 — `polo-shirt` (상위 `top`) · 앱 none/·/no · Claude 초안
+
+- **D** 칼라와 앞여밈 플래킷(단추 2~3개)이 있는 풀오버형 반팔·긴팔 상의. 티셔츠의 편안한 착용감에 셔츠의 칼라 구조를 더한 세미 캐주얼 아이템이다.
+- **G** 포함: 니트 칼라·짧은 버튼 플래킷이 있는 풀오버 상의(피케·저지·니트 소재 모두). 제외: 앞판 전체가 단추로 열리면 shirt, 칼라가 없으면 tshirt. 니트 소재 폴로는 polo-shirt로 두고 소재는 소재 속성(knit)으로 기록한다.
+- **E** 피케 폴로 반팔 → polo-shirt / 니트 폴로 → polo-shirt / 긴팔 럭비 셔츠 → polo-shirt / 오픈칼라 반팔 셔츠 → shirt / 헨리넥 티셔츠 → tshirt
+- **N** 현재 앱 subCategory에 없음(앱 지원 아니요). 앱 연동 시 tshirt 또는 shirt로 변환할지 결정 필요. 니트 폴로는 knit와, 럭비 셔츠는 sweatshirt와 겹칠 수 있어 '칼라+짧은 플래킷' 구조를 대표값 기준으로 둔다.
+
+#### 바디수트 — `bodysuit` (상위 `top`) · 앱 none/·/no · Claude 초안
+
+- **D** 상체를 덮는 몸판이 가랑이 아래까지 이어져 스냅·후크로 여미는 밀착형 상의. 하의 안에 넣어 입었을 때 상의가 빠지지 않고 매끈한 라인을 유지하도록 설계되었다.
+- **G** 포함: 가랑이 여밈이 있고 하의와 함께 상의로 입는 제품(반팔·긴팔·민소매). 제외: 다리까지 이어지면 jumpsuit/romper, 수영복·보정 속옷·레오타드(운동복)는 제외. 겉으로 입는 상의 기능이 주목적일 때만 bodysuit로 본다.
+- **E** 스퀘어넥 긴팔 바디수트 → bodysuit / 터틀넥 바디수트 → bodysuit / 보정용 바디셰이퍼 → 제외(이너웨어) / 원피스 수영복 → 제외
+- **N** 분류 결정] 바디수트는 상체에서 가랑이까지 연결되는 몸판 구조를 기준으로 하는 독립 상의 유형으로 유지한다. 소매 유무와 넥라인, 가랑이 여밈 방식은 독립 속성으로 구분한다. 다리통을 구성하지 않는다는 점에서 점프수트·롬퍼와 구분하고, 가랑이까지 연결되지 않은 일반 민소매 상의와도 구분한다. 세부분류 bodysuit와 대분류 top을 유지한다.
+
+#### 뷔스티에·코르셋 탑 — `bustier-top` (상위 `top`) · 앱 none/·/no · Claude 초안
+
+- **D** 몸판에 본(boning)·패널 절개·레이스업 등 구조를 넣어 상체를 조이고 형태를 잡아 주는 상의. 란제리에서 유래했으며 단독 상의나 셔츠·티셔츠 위 레이어로 입는다.
+- **G** 포함: 본·코르셋 패널로 형태가 고정된 상의(스트랩리스·끈 있는 형태 모두). 제외: 구조 없이 얇은 끈만 있는 캐미솔·탱크톱은 sleeveless, 속옷으로 판매되는 브라·코르셋은 제외. 셔츠 위에 덧입는 코르셋 벨트는 belt로 본다.
+- **E** 스트랩리스 뷔스티에 → bustier-top / 레이스업 코르셋 탑 → bustier-top / 셔츠 위 코르셋 베스트 → bustier-top / 새틴 캐미솔 → sleeveless / 코르셋 벨트 → belt
+- **N** [분류 결정] 뷔스티에·코르셋 탑은 가슴 컵, 몸판 절개, 보강 패널, 본(boning), 레이싱 등 상체 형태를 잡는 구조적 설계가 주요 특징인 상의로 구분한다. 본의 유무만으로 포함 여부를 결정하지 않으며, 단순히 몸에 밀착되거나 코르셋 프린트가 있다는 이유만으로 해당 세부분류에 포함하지 않는다. 의류 위에 착용하는 코르셋형 탑은 상체를 덮는 독립된 의류라면 포함할 수 있지만, 허리만 감싸는 코르셋 벨트는 belt로 구분한다. 뷔스티에와 코르셋의 세부 구조는 향후 독립 속성으로 분리하며, 현재 bustier-top과 대분류 top을 유지한다.
+
+#### 니트 베스트 — `knit-vest` (상위 `top`) · 앱 none/·/no · 사람
+
+- **D** 편성된 니트 조직을 주된 몸판 구조로 사용하며, 소매 없이 상체를 덮도록 설계된 베스트형 상의.
+- **G** 풀오버형 또는 앞여밈형 니트 베스트를 포함한다. 제품의 주된 몸판이 니트 조직으로 구성되어 있는 지를 기준으로 판단하며, 단독 착용이나 셔츠 위 레이어링 여부에 따라 대분류를 변경하지 않는다. 충전재를 넣어 보온 기능을 강화한 패딩 베스트와 테일러드 구조의 수트 베스트는 제외한다.
+- **E** 케이블 니트 베스트 → knit-vest / 브이넥 니트 베스트 → knit-vest / 버튼 니트 베스트 → knit-vest
+- **N** 기존 니트(knit) 및 조끼(vest)와 중복되는 유형으로, 니트 베스트를 대표 세부분류로 우선 사용할지 검토한다. 니트 조직과 소매 유무는 개별 속성으로도 표현할 수 있다. 기존 vest와의 관계를 내보내기 전에 정리해야 한다.
+
+#### 테일러드 베스트 — `tailored-vest` (상위 `top`) · 앱 none/·/no · 사람
+
+- **D** 수트의 테일러링 기법을 바탕으로 절개선, 형태를 잡는 몸판 및 앞여밈 구조를 갖춘 민소매 상의.
+- **G** 수트 베스트, 웨이스트코트 등 테일러드 구조의 베스트를 포함한다. 몸판의 입체적인 절개, 앞여밈, 안감 또는 형태를 잡는 구조 등을 종합적으로 판단한다. 단순히 단추가 달렸다는 이유만으로 테일러드 베스트로 분류하지 않으며, 니트 베스트와 보온용 패딩 베스트는 제외한다.
+- **E** 수트 베스트 → tailored-vest / 싱글브레스티드 웨이스트코트 → tailored-vest / 더블브레스티드 웨이스트코트 → tailored-vest
+- **N** 단독 상의 또는 수트의 구성품으로 착용할 수 있으므로, 코디에서의 레이어링 역할과 의류 자체의 대분류를 구분한다. 재킷과 함께 착용하거나 셋업으로 판매되더라도 기본 세부분류는 유지한다. 테일러드 베스트의 대분류는 상의로 제안하되 기존 vest 매핑과의 호환성을 검토한다.
+
+#### 청바지 — `jeans` (상위 `bottom`) · 앱 subCategory/jeans/yes · 사람
+
+- **D** 주로 데님 직물로 제작되며, 진(Jeans) 특유의 바지 구조와 봉제 방식, 디테일을 가진 하의. 전형적으로 허리밴드, 포켓, 앞여밈 및 견고한 봉제 구조를 갖추며, 핏과 기장, 워싱 및 가공 방식에 따라 다양한 형태로 구성된다.
+- **G** 스트레이트 진, 스키니 진, 와이드 진, 부츠컷 진, 배기 진 등 데님 팬츠를 포함한다. 데님 원단의 조직과 표면, 진 특유의 패턴 구조, 포켓 및 봉제 디테일을 종합적으로 판단한다. 단순히 파란색이거나 워싱 효과가 있다는 이유만으로 청바지로 분류하지 않는다. 데님 소재로 제작된 스커트, 셔츠, 재킷은 각각 해당 의류 유형으로 분류한다. 데님이 아닌 원단으로 제작되었더라도 전형적인 진 구조를 가진 제품은 경계 사례로 검토한다. 핏, 워싱, 컬러 및 기장 차이는 독립 속성으로 구분한다.
+- **E** 스트레이트 데님 진 → jeans / 와이드 데님 진 → jeans / 부츠컷 진 → jeans / 워싱 블랙 진 → jeans / 배기 데님 진 → jeans
+- **N** Numbers의 denim [독립 속성 개선 검토] 청바지는 소재(데님)가 유형 이름이 된 값으로 소재·스타일·구조가 섞인 이름이다. 세부분류는 바지라는 의류 유형으로 보고 소재(데님·울·면)·핏·실루엣·스타일(포멀·캐주얼)은 독립 속성으로 구분하는 방안을 검토한다. 여밈(지퍼·밴딩)·포켓 구조(5포켓·카고)도 속성 후보. [세부분류 경계 검토] 현재 앱 호환성을 위해 jeans를 데님 진 계열의 대표 세부분류로 유지한다. 원단의 데님 여부뿐 아니라 진 특유의 구조와 착용 목적을 함께 판단한다. 향후 데님 소재 속성과 진 유형을 분리할 경우 기존 데이터와의 매핑 변경이 필요하다.
+
+#### 슬랙스 — `slacks` (상위 `bottom`) · 앱 subCategory/slacks/yes · 사람
+
+- **D** 비교적 단정하고 구조적인 실루엣을 갖추도록 설계된 바지로, 테일러링 요소와 정돈된 허리·앞여밈 구조를 중심으로 구성되는 하의. 비즈니스 캐주얼부터 포멀한 착장까지 활용되며, 소재와 핏, 주름 및 디테일에 따라 다양한 형태로 구성된다.
+- **G** 테일러드 슬랙스, 핀턱 슬랙스, 와이드 슬랙스, 스트레이트 슬랙스 등을 포함한다. 허리밴드와 앞여밈 구조, 프레스 주름, 소재의 드레이프와 봉제 방식 등을 종합해 판단한다. 반드시 정장 세트에 포함되어야 하거나 센터 프레스가 있어야 하는 것은 아니다. 데님 진 특유의 구조가 중심인 제품은 청바지(jeans)로 구분한다. 치노 팬츠, 일반 코튼 팬츠 등 캐주얼 구조가 두드러진 제품은 trousers와 비교해 판단한다. 핏·실루엣·소재·포멀도는 독립 속성으로 구분한다.
+- **E** 테일러드 스트레이트 슬랙스 → slacks / 투턱 와이드 슬랙스 → slacks / 울 블렌드 슬랙스 → slacks / 세미와이드 슬랙스 → slacks
+- **N** [독립 속성 개선 검토] 슬랙스는 스타일(정장풍)이 유형 이름이 된 값으로 소재·스타일·구조가 섞인 이름이다. 세부분류는 바지라는 의류 유형으로 보고 소재(데님·울·면)·핏·실루엣·스타일(포멀·캐주얼)은 독립 속성으로 구분하는 방안을 검토한다. 여밈(지퍼·밴딩)·포켓 구조(5포켓·카고)도 속성 후보. [세부분류 경계 검토] slacks는 STYLESEED에서 단정한 테일러드 팬츠 계열의 대표값으로 운영한다. 바지 전체를 의미할 수 있는 trousers와 의미가 중첩되므로, 소재만으로 구별하지 않는다. 테일러링 구조와 의도된 스타일을 우선 판단하고 모호한 사례는 공동 검토한다.
+
+#### 면바지·트라우저 — `trousers` (상위 `bottom`) · 앱 subCategory/trousers/yes · 사람
+
+- **D** 허리에서 착용하여 양쪽 다리를 각각 감싸도록 설계된 바지형 하의 중, STYLESEED의 청바지·슬랙스·레깅스·반바지 등 다른 대표 세부분류에 해당하지 않는 일반 팬츠 계열. 치노 팬츠와 코튼 트라우저 등을 포함하며, 소재·핏·실루엣 및 디자인에 따라 다양한 유형으로 구성된다.
+- **G** 치노 팬츠, 일반 코튼 팬츠, 캐주얼 트라우저 등을 포함한다. 바지의 구조, 소재, 허리·앞여밈 방식, 포켓 및 봉제 디테일과 주된 디자인 특징을 종합하여 판단한다. 데님 진 특유의 구조를 가진 제품은 jeans, 테일러링 구조와 포멀한 디자인이 중심인 제품은 slacks로 구분한다. 운동복이나 밀착형 레깅스 구조를 가진 제품은 별도 유형을 우선한다. 면 소재만 사용했다는 이유로 무조건 trousers로 분류하지 않으며, 소재와 스타일이 혼합된 경계 사례는 검토 대상으로 기록한다.
+- **E** 베이지 치노 팬츠 → trousers / 코튼 트윌 팬츠 → trousers / 스트레이트 코튼 팬츠 → trousers / 캐주얼 테이퍼드 팬츠 → trousers
+- **N** [독립 속성 개선 검토] 면바지·트라우저는 소재(면)와 포괄 명칭(트라우저)이 섞인 값으로 소재·스타일·구조가 섞인 이름이다. 세부분류는 바지라는 의류 유형으로 보고 소재(데님·울·면)·핏·실루엣·스타일(포멀·캐주얼)은 독립 속성으로 구분하는 방안을 검토한다. 여밈(지퍼·밴딩)·포켓 구조(5포켓·카고)도 속성 후보. [세부분류 경계 검토] trousers는 일반적으로 긴 바지를 폭넓게 지칭하므로 slacks와 의미가 중첩된다. STYLESEED에서는 당분간 치노·일반 코튼 팬츠 등 다른 세부분류로 특정하기 어려운 일반 바지 유형의 대표값으로 사용한다. 이는 내부 운영 기준이며 보편적인 의류학적 정의와 동일하지 않다. 기존 키와 표시 이름을 유지하고, 추후 독립 속성 체계가 정립되면 분류명과 적용 범위를 재검토한다.
+
+#### 반바지 — `shorts` (상위 `bottom`) · 앱 subCategory/shorts/yes · 사람
+
+- **D** 허리 또는 골반에 착용하며 양쪽 다리를 각각 감싸는 바지 구조를 갖추되, 일반적으로 무릎 위 또는 무릎 부근에서 밑단이 끝나도록 설계된 하의. 소재와 실루엣, 착용 목적에 따라 다양한 형태로 구성된다.
+- **G** 데님 쇼츠, 치노 쇼츠, 버뮤다 쇼츠, 테일러드 쇼츠, 러닝 쇼츠 등을 포함한다. 바지 형태의 분리된 두 다리통과 밑단 위치를 중심으로 판단한다. 무릎 위 또는 무릎 부근에서 끝나는 제품을 기본 대상으로 하되, 무릎 아래까지 내려오는 크롭 팬츠나 카프리 팬츠는 반바지로 자동 분류하지 않고 별도로 검토한다. 치마처럼 넓게 퍼지는 쇼츠는 실제 바지 구조를 확인하며, 치마 패널이 결합된 스코트는 skort로 구분한다. 소재, 핏, 여밈 방식 및 세부 기장은 독립 속성으로 판단한다.
+- **E** 데님 쇼츠 → shorts / 치노 쇼츠 → shorts / 버뮤다 쇼츠 → shorts / 테일러드 쇼츠 → shorts / 러닝 쇼츠 → shorts
+- **N** [독립 속성 개선 검토] 반바지는 기본적으로 밑단 길이에 의해 구분되는 바지 유형이다. 허벅지 중간·무릎 위·무릎 부근 등 세부 기장, 핏, 소재, 허리선 및 여밈 방식은 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 버뮤다 쇼츠는 일반적으로 무릎 부근의 기장을 가지며, 크롭 팬츠·카프리 팬츠와 경계가 겹칠 수 있다. 스코트(skort)는 치마 패널과 바지 구조가 결합된 별도 세부분류로 구분한다. 데님 소재 쇼츠는 현재 기장 기준을 우선해 shorts로 분류하며, 데님 여부는 소재 속성으로 기록하는 방향을 검토한다.
+
+#### 스커트 — `skirt` (상위 `bottom`) · 앱 subCategory/skirt/yes · 사람
+
+- **D** 허리 또는 골반에 착용하며 하체를 덮되, 양쪽 다리를 각각 감싸는 바지통 구조 없이 하나의 하단 공간을 형성하는 하의. 밑단의 형태, 실루엣, 길이 및 패턴 구성에 따라 다양한 유형으로 구분된다.
+- **G** A라인 스커트, H라인 스커트, 플리츠 스커트, 플레어 스커트, 랩스커트, 티어드 스커트 등을 포함한다. 하단이 하나의 공간으로 연결되는 구조인지 확인하며, 허리선에서 시작하는 독립적인 하의인지 판단한다. 데님 소재여도 스커트 구조라면 skirt로 분류한다. 치마형 겉감 아래에 쇼츠가 결합된 스코트는 skort로 구분한다. 상체와 연결된 원피스, 하단이 바지통으로 분리된 큐롯은 각각 별도 유형으로 구분한다. 미니·미디·맥시 기장, 플리츠 및 실루엣은 독립 속성으로 관리하는 방안을 검토한다.
+- **E** A라인 미니스커트 → skirt / 데님 미디스커트 → skirt / 플리츠 스커트 → skirt / 맥시 플레어 스커트 → skirt / 랩스커트 → skirt
+- **N** [독립 속성 개선 검토] 미니·미디·맥시 기장, A라인·H라인·플레어 실루엣, 플리츠·셔링·랩 구조, 소재 및 여밈 방식은 독립 속성으로 구분하는 방안을 검토한다.  [세부분류 경계 검토] 스커트는 밑단 구조를 기준으로 바지 및 스코트와 구분한다. 다만 플리츠, 랩, 티어드 같은 디자인은 동시에 존재할 수 있으므로 독립 속성으로 관리하는 편이 유리하다. 큐롯은 바지통이 분리되어 있는 바지형 하의이고, 스코트는 치마형 외관과 쇼츠 구조가 결합된 유형으로 구분한다.
+
+#### 레깅스 — `leggings` (상위 `bottom`) · 앱 subCategory/leggings/yes · 사람
+
+- **D** 신축성 있는 소재와 몸에 밀착되는 패턴 구조를 기반으로 허리부터 양쪽 다리를 감싸도록 설계된 하의. 일반 바지보다 신체 윤곽을 밀착하여 따르는 형태가 특징이며, 운동용·일상용·레이어링용 등 다양한 목적으로 착용된다.
+- **G** 애슬레저 레깅스, 요가 레깅스, 데일리 레깅스, 7부 레깅스, 플레어 레깅스 등을 포함한다. 원단의 신축성과 복원력, 허리·골반·다리의 밀착 정도 및 패턴 구조를 종합해 판단한다. 몸에 밀착된다는 이유만으로 스키니 진이나 스트레치 팬츠를 레깅스로 분류하지 않으며, 바지의 허리밴드·포켓·앞여밈 구조가 중심인 제품은 해당 바지 유형으로 구분한다. 얇은 스타킹이나 타이츠는 레깅스와 구분하며, 레깅스의 세부 기장과 밑단 실루엣은 독립 속성으로 판단한다.
+- **E** 하이웨이스트 요가 레깅스 → leggings / 7부 스포츠 레깅스 → leggings / 플레어 레깅스 → leggings / 기본 코튼 레깅스 → leggings
+- **N** [독립 속성 개선 검토] 레깅스의 길이, 두께, 신축성, 압박 정도, 기모 유무, 밑단 실루엣 및 착용 목적은 별도 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 스키니 진과 스트레치 팬츠는 일반 바지 구조를 유지하므로 레깅스와 구분한다. 플레어 레깅스는 허벅지까지 밀착되고 무릎 아래로 퍼지는 구조를 포함할 수 있으므로, 전체 바지 형태와 원단 특성을 함께 확인한다. 타이츠·스타킹은 두께, 발 덮음 여부 및 사용 목적에 따라 별도 분류가 필요하다.
+
+#### 큐롯 팬츠 — `culottes` (상위 `bottom`) · 앱 none/·/no · Claude 초안
+
+- **D** 밑단이 넓게 퍼져 스커트처럼 보이는 바지로, 기장은 주로 무릎 아래~종아리 사이다. 서 있을 때 스커트처럼 보이지만 다리가 양쪽으로 분리된 바지 구조다.
+- **G** 포함: 분리된 넓은 바지통이 스커트형 실루엣을 이루는 바지(기장만으로 판단하지 않음). 제외: 스커트형 실루엣이 두드러지지 않는 와이드 팬츠는 기장과 관계없이 slacks/trousers(실루엣 속성 wide), 앞판에 스커트 패널을 덧댄 반바지는 skort, 무릎 위 기장은 shorts.
+- **E** 린넨 큐롯 → culottes / 와이드 크롭 슬랙스(종아리 기장, 스커트형 실루엣 아님) → slacks / 와이드 롱 슬랙스 → slacks / 데님 버뮤다 → shorts
+- **N** [분류 결정] 큐롯 팬츠는 양쪽 바지통이 분리되어 있으면서 넓은 폭과 풍성한 실루엣으로 스커트와 유사한 외관을 형성하는 바지 유형으로 유지한다. 일반적으로 무릎 아래에서 종아리 부근의 기장이 많으나, 기장만으로 판단하지 않는다. 일반 와이드 슬랙스·트라우저는 스커트형 외관이 두드러지지 않으면 각각 해당 유형으로 분류한다. 스커트 패널이나 겉감이 쇼츠 위에 결합된 스코트는 skort로, 실제 바지통이 없는 스커트는 skirt로 구분한다. 세부 기장과 바지통 너비는 독립 속성으로 관리하는 방안을 검토하며, 현재 culottes와 대분류 bottom을 유지한다.
+
+#### 스코트(치마형 반바지) — `skort` (상위 `bottom`) · 앱 none/·/no · Claude 초안
+
+- **D** 겉에서는 스커트로 보이고 안쪽에 반바지가 붙어 있는 하의. 스커트의 외형과 반바지의 활동성을 결합한 구조다.
+- **G** 포함: 앞판(또는 전체)이 스커트 패널이고 안에 쇼츠가 결합된 제품, 골프·테니스 스코트. 제외: 다리가 겉으로 분리되어 보이는 와이드 바지는 culottes, 안감 쇼츠가 없는 스커트는 skirt.
+- **E** 테니스 스코트 → skort / 랩 스타일 스코트 → skort / 플리츠 미니스커트(속바지 없음) → skirt / 린넨 큐롯 → culottes
+- **N** [분류 결정] skort의 한국어 표시명은 '스코트(치마형 반바지)'로 유지한다. 스코트는 치마형 겉감 또는 패널과 쇼츠 구조가 결합된 의류를 의미한다. 앞면에만 치마 패널이 있는 비대칭 스코트와 전체 스커트 안쪽에 쇼츠가 결합된 제품을 포함한다. 넓게 퍼지는 바지통 때문에 치마처럼 보이는 큐롯은 culottes로 구분하고, 별도 쇼츠 구조가 없는 스커트는 skirt로 분류한다. 현재 skort와 대분류 bottom을 유지한다.
+
+#### 미니 원피스 — `mini-dress` (상위 `dress`) · 앱 subCategory/mini-dress/yes · 사람
+
+- **D** 상체와 하체가 하나의 구조로 연결되며, 밑단이 일반적으로 무릎 위에서 끝나는 짧은 기장의 원피스. 패턴 구조와 실루엣, 소재 및 디자인에 따라 다양한 형태로 구성된다.
+- **G** 일반적으로 허벅지 중간부터 무릎 위까지의 짧은 원피스를 포함한다. 상체와 하체가 연결된 일체형 의류인지, 하단이 바지통으로 분리되지 않은 드레스형 구조인지, 밑단 위치가 무릎 위인지 확인한다. 셔츠 원피스·슬립 드레스 구조가 뚜렷하면 shirt-dress·slip-dress를 우선하고, 기장은 독립 속성 후보로 관리한다. 무릎 부근에 걸치는 제품은 미디 원피스와 비교하고, 점프수트·롬퍼는 별도 대분류로 구분한다.
+- **E** A라인 미니 원피스 → mini-dress / 셔츠형 미니 원피스 → shirt-dress / 미니 슬립 드레스 → slip-dress / 니트 미니 원피스 → mini-dress
+- **N** [독립 속성 개선 검토] 의류 유형이 아니라 기장으로 나눈 값이라 셔츠 원피스·슬립 드레스 같은 유형 세부분류와 동시에 해당한다. 의류 기장(미니·무릎·미디·맥시) 독립 속성을 두고 세부분류는 원피스의 구조적 유형으로 정리하는 방안을 검토한다. 앱 추천·날씨 규칙이 이 키를 쓰므로 키는 유지한다. [세부분류 경계 검토] mini-dress는 현재 기장 중심의 기존 앱 지원값으로 유지한다. 셔츠 원피스(shirt-dress), 슬립 드레스(slip-dress)처럼 구조적 유형과 동시에 해당할 수 있으므로, 장기적으로는 구조적 유형과 기장 속성을 분리할 필요가 있다. 기장 측정은 착용자의 신장과 체형에 따라 달라질 수 있으므로 사진 분석에서 경계 사례로 관리한다.
+
+#### 미디 원피스 — `midi-dress` (상위 `dress`) · 앱 subCategory/midi-dress/yes · 사람
+
+- **D** 상체와 하체가 하나의 구조로 연결되며, 밑단이 일반적으로 무릎 부근부터 종아리 중간까지 이어지는 중간 기장의 원피스. 셔츠 원피스·슬립 드레스 등 구조형 세부분류에 해당하지 않으면 소재, 실루엣에 관계없이 기장을 기준으로 구분한다.
+- **G** 무릎선 부근부터 종아리 중간까지 내려오는 원피스를 포함한다. 상체와 하체가 연결된 드레스형 구조를 갖추고 있는지 확인하며, 밑단 위치와 전체 신체 비율을 종합적으로 판단한다. 미니 원피스와 맥시 원피스의 중간 기장을 기본 기준으로 삼는다. 셔츠 원피스·슬립 드레스 구조가 뚜렷하면 shirt-dress·slip-dress를 우선하고 기장은 독립 속성 후보로 관리하며, 니트 원피스처럼 구조형 세부분류가 없는 유형은 midi-dress로 분류한다. 무릎선이나 종아리 하단에 걸치는 경계 사례는 별도로 검토한다.
+- **E** 플리츠 미디 원피스 → midi-dress / 셔츠형 미디 원피스 → shirt-dress / 니트 미디 원피스 → midi-dress / 슬립 미디 드레스 → slip-dress
+- **N** [독립 속성 개선 검토] 의류 유형이 아니라 기장으로 나눈 값이라 셔츠 원피스·슬립 드레스 같은 유형 세부분류와 동시에 해당한다. 의류 기장(미니·무릎·미디·맥시) 독립 속성을 두고 세부분류는 원피스의 구조적 유형으로 정리하는 방안을 검토한다. 앱 추천·날씨 규칙이 이 키를 쓰므로 키는 유지한다. [세부분류 경계 검토] midi-dress는 현재 앱의 기장 기반 분류를 유지하기 위한 값이다. 미니·맥시 원피스와 경계가 겹칠 수 있으므로 밑단 위치를 기준으로 일관되게 판단해야 한다. 무릎 바로 위 또는 발목 바로 위까지 내려오는 제품은 착용자의 체형과 실제 밑단 위치를 함께 확인한다. 구조적 유형은 추후 독립적으로 관리하는 방안을 검토한다.
+
+#### 맥시 원피스 — `maxi-dress` (상위 `dress`) · 앱 subCategory/maxi-dress/yes · 사람
+
+- **D** 상체와 하체가 하나의 구조로 연결되며, 밑단이 일반적으로 종아리 하단부터 발목 또는 발등 부근까지 이어지는 긴 기장의 원피스. 셔츠 원피스·슬립 드레스 등 구조형 세부분류에 해당하지 않으면 소재와 실루엣과 관계없이 하단의 기장을 기준으로 구분한다.
+- **G** 종아리 하단에서 발목 또는 발등까지 내려오는 긴 원피스를 포함한다. 상체와 하체가 연결된 드레스형 구조인지 확인하고, 밑단 위치와 전체 길이를 중심으로 판단한다. 발목 위에서 끝나는 롱 원피스라도 충분히 긴 비율을 형성하면 맥시 원피스로 분류할 수 있다. 셔츠 원피스·슬립 드레스 구조가 뚜렷하면 shirt-dress·slip-dress를 우선하고 기장은 독립 속성 후보로 관리하며, 니트 원피스처럼 구조형 세부분류가 없는 유형은 maxi-dress로 분류한다. 종아리 중간에서 끝나는 제품은 미디 원피스와 비교하고, 바지통으로 분리된 점프수트는 제외한다.
+- **E** 플로럴 맥시 원피스 → maxi-dress / 롱 슬립 드레스 → slip-dress / 맥시 셔츠 원피스 → shirt-dress / 니트 맥시 원피스 → maxi-dress
+- **N** [독립 속성 개선 검토] 의류 유형이 아니라 기장으로 나눈 값이라 셔츠 원피스·슬립 드레스 같은 유형 세부분류와 동시에 해당한다. 의류 기장(미니·무릎·미디·맥시) 독립 속성을 두고 세부분류는 원피스의 구조적 유형으로 정리하는 방안을 검토한다. 앱 추천·날씨 규칙이 이 키를 쓰므로 키는 유지한다. [세부분류 경계 검토] maxi-dress는 현재 앱의 기장 기반 분류를 유지하기 위한 값으로, 미디 원피스와 구별할 때 밑단 위치와 전체 신체 비율을 함께 고려한다. 체형과 착용자의 신장에 따라 동일한 원피스의 밑단 위치가 달라질 수 있으므로 경계 사례를 기록한다. 향후 구조적 유형과 기장 속성을 분리하면 셔츠·슬립·니트 원피스 등과의 중복을 줄일 수 있다.
+
+#### 셔츠 원피스 — `shirt-dress` (상위 `dress`) · 앱 none/·/no · Claude 초안
+
+- **D** 셔츠의 칼라·앞여밈 단추·커프스 구조를 원피스 기장으로 늘린 일체형 의류. 단독 착용하거나 벨트로 허리를 잡아 입는다.
+- **G** 포함: 칼라와 앞여밈(전체 또는 허리까지)이 있는 원피스. 기장(미니·미디·맥시)과 관계없이 셔츠 구조가 대표값이다. 제외: 엉덩이를 겨우 덮는 롱셔츠로 판매되는 상의는 shirt, 칼라 없는 단추 원피스는 기장 세부분류.
+- **E** 스트라이프 셔츠 원피스 → shirt-dress / 데님 셔츠 원피스 → shirt-dress / 롱 셔츠(하의와 착용) → shirt / 칼라 없는 단추 미디 원피스 → midi-dress
+- **N** [분류 결정] 셔츠 원피스는 셔츠형 칼라, 앞중심 여밈, 커프스 또는 셔츠형 몸판 구조 등 셔츠의 패턴 특성을 원피스 길이로 확장한 구조적 유형으로 분류한다. 단순히 셔츠를 길게 제작한 상품이라도 독립적인 원피스로 착용하도록 설계된 경우에 포함한다. 상의용 롱 셔츠와 구분하기 위해 전체 기장과 단독 착용 가능성을 함께 판단한다. 미니·미디·맥시 기장과 중복될 경우 구조적 세부분류 shirt-dress를 우선하고 기장은 독립 속성 후보로 관리한다. 단, 현재 앱의 기장형 분류와 충돌할 수 있으므로 내보내기·앱 매핑 변경은 호환성 검토 후 수행한다.
+
+#### 슬립 드레스 — `slip-dress` (상위 `dress`) · 앱 none/·/no · Claude 초안
+
+- **D** 가는 어깨끈과 몸을 따라 흐르는 바이어스 재단의 원피스. 란제리 슬립에서 유래했으며 새틴·실크처럼 광택과 드레이프가 있는 소재가 많다.
+- **G** 포함: 가는 스트랩, 장식이 적은 몸판, 흐르는 실루엣의 원피스. 제외: 두꺼운 어깨 몸판의 민소매 원피스는 기장 세부분류, 속옷으로 판매되는 슬립(이너)은 제외. 소재(새틴)는 소재 속성으로 기록한다.
+- **E** 새틴 슬립 드레스 → slip-dress / 캐미솔 맥시 원피스(가는 끈) → slip-dress / 탱크 민소매 미니 원피스 → mini-dress / 이너용 슬립 → 제외
+- **N** [분류 결정] 슬립 드레스는 란제리 슬립에서 유래한 가는 어깨끈, 간결한 몸판 구조, 유연한 드레이프와 자연스럽게 흐르는 실루엣을 특징으로 하는 원피스 유형으로 분류한다. 새틴 소재 여부만으로 판단하지 않으며, 소재와 기장은 독립 속성으로 구분한다. 일반 민소매 원피스와는 몸판 구조 및 슬립형 디자인의 특징을 기준으로 구별한다. 속옷용 슬립은 외출용 원피스와 사용 목적이 다르므로 STYLESEED의 분류 대상에 포함할지 별도로 판단한다. 미니·미디·맥시 기장과 중복될 경우 구조적 세부분류 slip-dress를 우선하고 기장은 독립 속성 후보로 관리한다. 앱의 기존 기장형 분류 및 코디 추천 규칙은 호환성 검토 전까지 변경하지 않는다.
+
+#### 재킷 — `jacket` (상위 `outer`) · 앱 subCategory/jacket/yes · 사람
+
+- **D** 기본 착장 위에 겹쳐 입도록 설계된 상체 중심의 외부 의류로, 일반적으로 허리에서 엉덩이 부근까지의 기장과 독립적인 몸판·소매·여밈 구조를 갖는 아우터. 소재와 용도, 패턴 설계에 따라 다양한 형태로 구성된다.
+- **G** 데님 재킷, 레더 재킷, 봄버 재킷, 바이커 재킷, 트러커 재킷, 크롭 재킷 등을 포함한다. 독립적인 외부 레이어 구조, 여밈 방식, 몸판의 패턴 및 주된 착용 목적을 기준으로 판단한다. 기장만으로 코트와 절대적으로 구분하지 않으며, 제품의 전체적인 설계 특징을 종합해 판단한다. 블레이저는 기존 별도 세부분류인 blazer, 충전재를 중심으로 한 패딩 아우터는 padding, 방풍 기능을 중심으로 설계된 윈드브레이커는 windbreaker로 구분한다. 데님 원단이나 가죽 소재 여부만으로 재킷의 유형을 결정하지 않는다.
+- **E** 데님 트러커 재킷 → jacket / 레더 바이커 재킷 → jacket / 봄버 재킷 → jacket / 크롭 집업 재킷 → jacket
+- **N** [독립 속성 개선 검토] 재킷의 소재, 기장, 핏, 칼라, 여밈 방식, 안감, 충전재 유무 및 디자인 구조는 개별 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 재킷과 코트는 길이만으로 구분하기 어려우므로, 의도된 착용 목적과 패턴 구조를 함께 확인한다. 블레이저는 별도 세부분류로 유지하고, 충전재를 주요 구조로 사용하는 패딩 및 경량 방풍 셸은 해당 세부분류를 우선 적용한다. 데님·레더·스웨이드 등 소재 명칭은 재킷의 세부 특징으로 기록하는 방향을 검토한다.
+
+#### 코트 — `coat` (상위 `outer`) · 앱 subCategory/coat/yes · 사람
+
+- **D** 기본 착장 위에 겹쳐 입어 신체를 보호하거나 보온하고, 착장의 외부 실루엣을 형성하도록 설계된 아우터. 일반적으로 엉덩이 아래에서 무릎 또는 발목까지 이어지는 기장이 많으며, 재킷보다 넓은 신체 부위를 덮는 구조를 갖는다.
+- **G** 울 코트, 오버코트, 트렌치코트, 더플코트, 체스터필드코트, 피코트 등을 포함한다. 외부 레이어로서의 착용 목적, 몸판의 길이와 패턴 구조, 칼라·라펠·여밈 방식 및 전체 실루엣을 종합적으로 판단한다. 코트는 반드시 무릎 아래까지 내려와야 하는 것은 아니며, 피코트처럼 비교적 짧은 제품도 구조와 설계 목적에 따라 코트로 분류한다. 데님 재킷·바이커 재킷 등 재킷 특유의 구조가 두드러지는 제품은 jacket으로, 충전재 중심의 패딩 코트는 padding과의 경계를 검토한다. 소재 및 세부 기장만으로 분류를 결정하지 않는다.
+- **E** 울 오버코트 → coat / 클래식 트렌치코트 → coat / 더플코트 → coat / 체스터필드코트 → coat / 피코트 → coat
+- **N** [독립 속성 개선 검토] 코트의 기장, 소재, 두께감, 안감·충전재 유무, 칼라·라펠 형태, 여밈 방식 및 핏은 별도 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 재킷과 코트는 기장만으로 명확하게 구분되지 않는다. 피코트는 상대적으로 짧지만 코트로 취급되며, 롱 재킷은 길더라도 재킷의 패턴 구조를 유지할 수 있다. 트렌치코트는 전형적인 코트 유형이나, 기능성 셸 아우터 및 패딩 코트는 설계 목적에 따라 다른 세부분류와 경계가 발생할 수 있다.
+
+#### 가디건 — `cardigan` (상위 `outer`) · 앱 subCategory/cardigan/yes · 사람
+
+- **D** 주로 니트 편성 조직으로 제작되며, 앞중심에 단추·지퍼·후크 등의 여밈 또는 개방된 구조를 갖추어 다른 의류 위에 겹쳐 입거나 단독으로 착용할 수 있도록 설계된 상체 의류.
+- **G** 버튼 가디건, 브이넥 가디건, 크롭 가디건, 롱 가디건, 오픈 프런트 가디건 등을 포함한다. 니트 편성 조직으로 구성된 몸판과 앞중심 개방 또는 여밈 구조를 주요 기준으로 판단한다. 단추를 모두 잠가 단독 상의로 착용하더라도 기본 세부분류는 가디건으로 유지한다. 앞여밈이 없는 풀오버 스웨터는 knit으로, 스웨트 원단으로 제작된 후드 집업은 hoodie로 구분한다. 제품의 착용 위치만으로 상의와 아우터를 변경하지 않는다.
+- **E** 버튼 니트 가디건 → cardigan / 브이넥 가디건 → cardigan / 크롭 가디건 → cardigan / 오픈 프런트 롱 가디건 → cardigan
+- **N** [분류 검토 보류] 가디건은 단추를 채워 단독 상의로 입는 경우와 셔츠·티셔츠 위에 걸치는 아우터로 입는 경우가 있어 착용 방식 구분이 필요하다. 공동창업자 결정 전까지 대분류(outer)와 키를 유지하고, 착용 방식은 코디 규칙 또는 별도 속성으로 다루는 방안을 검토한다. [세부분류 경계 검토] 가디건은 knit과 편성 조직을 공유하지만, 앞중심 개방·여밈 구조를 기준으로 구분한다. 단독 착용 시 상의 역할을 할 수 있으며, 이너 위에 착용하면 외부 레이어 역할을 할 수 있다. 현재 대분류 outer와 영문 키 cardigan은 앱 호환성을 위해 유지하고, 코디 구성에서 실제 레이어 역할을 별도로 판단하도록 검토한다.  [독립 속성 개선 검토] 편성 조직, 게이지, 두께, 기장, 넥라인, 여밈 방식 및 레이어링 역할을 별도 속성으로 관리하는 방안을 검토한다.
+
+#### 블레이저 — `blazer` (상위 `outer`) · 앱 subCategory/blazer/yes · 사람
+
+- **D** 테일러링 기법을 기반으로 어깨선, 라펠, 앞여밈 및 몸판 구조를 설계한 재킷형 아우터. 정장용 재킷과 유사한 구조를 가지며, 단독 착장부터 수트 스타일링까지 활용할 수 있는 의류.
+- **G** 싱글 브레스티드 블레이저, 더블 브레스티드 블레이저, 오버사이즈 블레이저, 크롭 블레이저 등을 포함한다. 라펠, 어깨 구조, 앞여밈, 다트·절개·패널 등 테일러링 요소와 전체적인 재킷 구조를 종합적으로 판단한다. 반드시 정장 세트에 포함되어야 하는 것은 아니며, 캐주얼 소재로 제작되더라도 테일러드 구조가 중심이면 블레이저로 분류한다. 데님 트러커 재킷, 봄버 재킷, 바이커 재킷 등 테일러링 구조가 중심이 아닌 아우터는 jacket으로 구분한다.
+- **E** 싱글 블레이저 → blazer / 더블 브레스티드 블레이저 → blazer / 오버사이즈 테일러드 블레이저 → blazer / 크롭 블레이저 → blazer
+- **N** [세부분류 경계 검토] 블레이저는 넓은 의미에서 재킷에 속하지만, STYLESEED에서는 테일러드 구조를 기준으로 일반 재킷(jacket)과 구분한다. 수트 재킷과 블레이저는 구조적으로 유사하므로, 세트 상품 여부만으로 분류를 변경하지 않는다.  [독립 속성 개선 검토] 싱글·더블 여밈, 라펠 유형, 어깨 패드, 허리 실루엣, 기장, 핏, 소재, 포멀도 및 수트 세트 관계를 독립 속성으로 관리하는 방안을 검토한다.
+
+#### 패딩 — `padding` (상위 `outer`) · 앱 subCategory/padding/yes · 사람
+
+- **D** 겉감과 안감 또는 원단 층 사이에 다운, 합성섬유 솜 등의 충전재를 넣어 보온성을 높이도록 설계한 아우터. 충전재의 양과 구성, 퀼팅 방식 및 외피 구조에 따라 다양한 형태로 구분된다.
+- **G** 다운 재킷, 퀼팅 패딩, 경량 패딩, 롱 패딩, 숏 패딩 등을 포함한다. 충전재의 존재와 보온 목적, 겉감·안감의 층별 구조, 퀼팅 또는 충전재 고정 방식을 종합하여 판단한다. 단순히 원단이 두껍거나 기모가 있다는 이유만으로 패딩으로 분류하지 않는다. 충전재 없이 방풍·방수 기능을 중심으로 제작된 제품은 windbreaker 또는 jacket으로 구분한다. 소매가 없는 충전재형 조끼는 별도 세부분류 padded-vest로 구분한다.
+- **E** 다운 숏 패딩 → padding / 경량 퀼팅 재킷 → padding / 롱 패딩 → padding / 합성 충전재 패딩 → padding
+- **N** [세부분류 경계 검토] 패딩은 충전재를 주된 구조로 사용한 아우터를 의미한다. 다운과 합성섬유 충전재를 모두 포함하며, 퀼팅 무늬가 있다는 이유만으로 패딩으로 분류하지 않는다. 충전재 없는 누빔 원단 제품은 실제 구조와 보온 목적을 확인한다. 패딩 베스트는 별도 세부분류 padded-vest로 유지한다.  [독립 속성 개선 검토] 충전재 종류, 충전량, 두께, 퀼팅 방식, 겉감 소재, 방풍·방수 기능, 기장, 후드 유무 및 핏은 독립 속성으로 관리하는 방안을 검토한다.
+
+#### 조끼 — `vest` (상위 `outer`) · 앱 subCategory/vest/yes · 사람
+
+- **D** 소매가 없는 몸판 구조로 상체를 덮으며, 다른 의류 위에 겹쳐 입거나 착장의 외부 레이어를 형성하도록 설계된 의류. STYLESEED에서는 구체적인 니트·테일러드·패딩 베스트 유형을 제외한 범용 베스트를 의미한다.
+- **G** 유틸리티 베스트, 피싱 베스트, 경량 패브릭 베스트 등 기존 세부분류에 속하지 않는 베스트형 의류를 포함한다. 소매 없는 몸판 구조와 주요 착용 목적, 소재 및 여밈 방식 등을 종합적으로 판단한다. 니트 조직을 중심으로 구성된 니트 베스트는 knit-vest, 테일러링 구조의 수트 베스트는 tailored-vest, 충전재로 보온성을 강화한 패딩 베스트는 padded-vest로 구분한다. 단순한 민소매 탑이나 캐미솔은 sleeveless로 분류하며, 조끼라는 판매명만으로 판단하지 않는다.
+- **E** 유틸리티 베스트 → vest / 피싱 베스트 → vest / 멀티포켓 패브릭 베스트 → vest
+- **N** [베스트 분류 현황] 니트 베스트(knit-vest, 대분류 top), 테일러드 베스트(tailored-vest, 대분류 top), 패딩 베스트(padded-vest, 대분류 outer)가 별도 세부분류로 등록되어 있다(2026-10-21). 기존 vest는 범용 분류로 대분류(outer)와 키를 유지하며, 신규 베스트 세부분류와의 중복 정리와 앱 매핑(현재 앱은 vest만 지원)은 추후 검토한다. [추가 메모]  [세부분류 경계 검토] vest는 세부 유형으로 특정하기 어려운 외부 레이어형 베스트의 대표값으로 사용한다. 니트·테일러드·패딩 베스트에 해당하는 제품은 해당 세부분류를 우선 적용한다. 현재 앱의 vest 지원 범위가 연구용 분류보다 넓으므로 내보내기 시 신규 베스트 3종의 매핑을 별도로 검증해야 한다.  [독립 속성 개선 검토] 베스트의 소재, 여밈 방식, 주머니 구조, 두께, 충전재 유무, 착용 목적 및 레이어링 역할은 독립 속성으로 관리하는 방안을 검토한다.
+
+#### 윈드브레이커 — `windbreaker` (상위 `outer`) · 앱 none/·/no · Claude 초안
+
+- **D** 나일론·폴리 등 얇고 촘촘한 직물로 만들어 바람과 가벼운 비를 막는 경량 아우터. 충전재가 없고 후드·스트링·밴딩 밑단이 있는 경우가 많다.
+- **G** 포함: 충전재 없는 얇은 방풍 쉘 재킷, 아노락(풀오버형), 트랙 재킷 중 방풍 소재. 제외: 충전재가 있으면 padding, 두꺼운 기능성 등산 하드쉘·가죽·데님 등 일반 재킷은 jacket.
+- **E** 나일론 후드 윈드브레이커 → windbreaker / 아노락 → windbreaker / 경량 패딩 재킷 → padding / 데님 재킷 → jacket / 사파리 재킷 → jacket
+- **N** 기존 jacket이 포괄 범주라 겹침. 앱 연동 시 jacket으로 변환(converted) 후보이나 현재는 앱 지원 아니요·앱 필드 없음으로 둠. 계절·날씨 규칙에서 바람막이 기능을 별도로 쓸 수 있음.
+
+#### 케이프·판초 — `cape-poncho` (상위 `outer`) · 앱 none/·/no · Claude 초안
+
+- **D** 소매 없이 어깨에서 몸을 감싸며 늘어지는 아우터. 케이프는 앞이 트여 어깨에 걸치고, 판초는 머리 구멍이 있어 뒤집어써 입는다.
+- **G** 포함: 일반적인 소매 구조 없이 어깨에서 몸을 감싸며 내려오는 외부 레이어형 의류로, 울 케이프·니트 판초·레인 판초 등을 포함한다. 케이프는 앞중심이 열리거나 어깨에 걸치는 구조, 판초는 머리 구멍을 통해 착용하는 구조가 특징이며, 두 유형은 `cape-poncho`로 통합한다. 제외: 독립된 소매가 있는 외투는 `coat`·`jacket`, 직사각형 천을 두르는 숄·머플러는 `scarf`, 앞여밈이 있는 일반 니트 가디건은 `cardigan`으로 구분한다. 판단 원칙: 소재보다 의류의 구조적 형태와 주된 착용 방식을 우선하며, 케이프와 판초의 세부 차이는 독립 속성으로 관리한다.
+- **E** 울 케이프 코트 → cape-poncho / 니트 판초 → cape-poncho / 레인 판초 → cape-poncho / 캐시미어 숄 → scarf / 케이프 칼라 트렌치(소매 있음) → coat
+- **N** [독립 속성 개선 검토] 케이프·판초의 형태, 머리 구멍 유무, 앞중심 개방 여부, 소매 구조, 소재, 두께, 기장 및 여밈 방식은 독립 속성으로 관리하는 방안을 검토한다. 현재 대분류 outer와 세부분류 키 cape-poncho를 유지한다.
+
+#### 패딩 베스트 — `padded-vest` (상위 `outer`) · 앱 none/·/no · 사람
+
+- **D** 몸판 내부에 보온용 충전재를 넣어 제작하며, 소매 없이 상체를 감싸도록 설계된 아우터.
+- **G** 다운 베스트, 퀼팅 패딩 베스트, 합성 충전재 베스트 등 보온용 충전재가 들어간 제품을 포함한다. 외부 레이어로 착용하도록 설계된 구조와 충전재 유무를 중심으로 판단한다. 충전재가 없는 일반 니트 베스트, 테일러드 베스트 및 단순 퀼팅 장식만 있는 의류는 제외한다.
+- **E** 다운 베스트 → padded-vest / 퀼팅 패딩 베스트 → padded-vest / 신슐레이트 베스트 → padded-vest
+- **N** 퀼팅은 봉제 구조이고 패딩은 충전재의 존재와 관련되므로 두 개념을 구분한다. 가벼운 패딩 베스트를 이너로 활용할 수 있어도 의류 자체의 기본 대분류는 아우터로 유지한다. 기존 조끼(vest) 및 패딩(padding) 세부분류와 중복될 수 있으므로 대표 세부분류 선택 기준을 마련해야 한다.
+
+#### 스니커즈 — `sneakers` (상위 `shoes`) · 앱 subCategory/sneakers/yes · 사람
+
+- **D** 일반적으로 고무·합성수지 등 유연한 밑창과 발을 감싸는 갑피를 결합하여 보행과 일상 활동에 적합하도록 설계한 캐주얼 신발. 운동화에서 발전한 형태를 포함하며, 소재·실루엣·밑창 구조 및 여밈 방식에 따라 다양한 유형으로 구성된다.
+- **G** 로우톱 스니커즈, 하이톱 스니커즈, 러닝화, 코트 스니커즈, 캔버스 스니커즈 등을 포함한다. 갑피와 밑창의 구조, 쿠셔닝, 접지면, 발을 고정하는 방식 및 전체적인 운동화형 디자인을 기준으로 판단한다. 가죽 소재라도 스니커즈 구조라면 포함하며, 단순히 밑창이 평평하다는 이유로 플랫슈즈(flats)로 분류하지 않는다. 로퍼형 갑피나 구두 구조가 중심이면 loafer 등 해당 유형과 비교한다.
+- **E** 레더 로우톱 스니커즈 → sneakers / 캔버스 하이톱 스니커즈 → sneakers / 러닝화 → sneakers / 코트 스니커즈 → sneakers
+- **N** [독립 속성 개선 검토] 로우톱·미드톱·하이톱 높이, 밑창 두께, 쿠셔닝, 소재, 끈·벨크로·슬립온 여밈 방식, 앞코 형태 및 운동 기능은 별도 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 스니커즈는 운동화형 갑피와 밑창 구조를 기준으로 판단한다. 평평한 밑창, 가죽 소재, 슬립온 형태만으로 플랫슈즈나 로퍼로 재분류하지 않는다. 스니커즈와 구두의 디자인이 혼합된 제품은 주된 구조와 착용 목적에 따라 경계 사례로 기록한다.
+
+#### 로퍼 — `loafer` (상위 `shoes`) · 앱 subCategory/loafer/yes · 사람
+
+- **D** 일반적으로 끈 없이 발을 넣어 착용하며, 발등을 덮는 갑피와 구두형 밑창 구조를 특징으로 하는 슬립온 구두. 모카신에서 발전한 디자인을 포함하며, 발등 장식·굽 형태·앞코 및 소재에 따라 다양한 유형으로 구성된다.
+- **G** 페니 로퍼, 태슬 로퍼, 홀스빗 로퍼, 플랫폼 로퍼, 청키 로퍼 등을 포함한다. 발등을 덮는 갑피 구조, 끈이 없는 착화 방식 및 로퍼 특유의 구두 형태를 기준으로 판단한다. 굽이 높거나 플랫폼 솔을 사용해도 로퍼의 구조가 유지되면 loafer로 분류한다. 운동화형 밑창과 갑피가 중심인 제품은 sneakers, 발뒤꿈치가 개방된 로퍼형 제품은 mules와 비교해 판단한다.
+- **E** 페니 로퍼 → loafer / 태슬 로퍼 → loafer / 홀스빗 로퍼 → loafer / 청키 플랫폼 로퍼 → loafer
+- **N** [독립 속성 개선 검토] 굽 높이, 굽 형태, 플랫폼 유무, 앞코 형태, 소재 및 발등 장식은 별도 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 로퍼는 굽의 높이가 아니라 발등 갑피와 슬립온 구두 구조를 기준으로 분류한다. 굽이 높은 로퍼도 heels로 자동 변경하지 않으며, 굽 높이는 독립 속성으로 기록한다. 뒤축이 없는 로퍼형 뮬은 mules와의 우선순위를 검토한다.
+
+#### 부츠 — `boots` (상위 `shoes`) · 앱 subCategory/boots/yes · 사람
+
+- **D** 발과 발목을 감싸며, 디자인에 따라 종아리 또는 무릎 위까지 연장되는 샤프트(shaft, 부츠의 발목 위 몸통)를 가진 신발. 샤프트의 높이와 형태, 굽 구조, 여밈 방식 및 소재에 따라 다양한 유형으로 구성된다.
+- **G** 앵클부츠, 첼시부츠, 워커부츠, 미들부츠, 롱부츠, 니하이부츠, 웨스턴부츠 등을 포함한다. 발목 위로 이어지는 샤프트 구조가 부츠를 구분하는 핵심 기준이다. 굽이 높은 부츠도 boots로 분류하며, 굽 높이와 형태는 독립 속성으로 기록한다. 발목을 충분히 감싸지 않는 일반 구두나 스니커즈는 해당 유형으로 구분한다. 샤프트가 발목 부근에 걸치는 하이톱 스니커즈와 앵클부츠는 갑피·밑창 구조를 함께 비교한다.
+- **E** 블랙 앵클부츠 → boots / 첼시부츠 → boots / 레더 롱부츠 → boots / 스틸레토 힐 부츠 → boots / 웨스턴부츠 → boots
+- **N** [독립 속성 개선 검토] 샤프트 높이(앵클·미들·니하이·오버니), 굽 높이, 굽 형태, 앞코 형태, 소재, 여밈 방식 및 방수·보온 기능은 개별 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 부츠는 발목 이상을 덮는 샤프트 구조를 우선 기준으로 하며, 굽이 높다는 이유로 heels로 분류하지 않는다. 하이톱 스니커즈는 운동화형 갑피와 밑창 구조가 중심이면 sneakers로 유지한다. 부츠의 길이와 굽 높이는 독립적으로 기록하는 방안을 검토한다.
+
+#### 힐 — `heels` (상위 `shoes`) · 앱 subCategory/heels/yes · 사람
+
+- **D** 발을 감싸는 구두형 갑피와 높이가 있는 굽을 결합하여 발뒤꿈치를 앞부분보다 높게 지지하도록 설계한 신발. STYLESEED에서는 펌프스·드레스 힐 등 독립적인 힐 구두 유형을 중심으로 구분한다.
+- **G** 스틸레토 펌프스, 키튼힐 펌프스, 블록힐 펌프스, 플랫폼 펌프스 등을 포함한다. 구두형 갑피 구조, 발의 노출 범위, 굽의 높이와 형태 및 착화 목적을 종합적으로 판단한다. 굽이 있다는 이유만으로 부츠(boots), 로퍼(loafer), 샌들(sandals)을 모두 힐로 분류하지 않는다. 굽이 높은 부츠는 boots, 스트랩형 오픈 슈즈는 sandals, 로퍼형 구두는 loafer를 우선한다. 굽의 높이와 형태는 독립 속성으로 구분한다.
+- **E** 스틸레토 펌프스 → heels / 키튼힐 펌프스 → heels / 블록힐 펌프스 → heels / 플랫폼 펌프스 → heels
+- **N** [독립 속성 개선 검토] 신발 유형이 아니라 굽 높이로 정의된 값이라 메리제인·뮬·샌들·부츠·로퍼와 중첩된다. 굽 높이(플랫·로우·미드·하이)와 굽 형태(스틸레토·청키·웨지)를 독립 속성으로 분리하고, 앞코 형태(라운드·포인티드·스퀘어)·여밈 방식(스트랩·슬링백·끈)도 디자인 특징 속성 후보로 검토한다. [세부분류 경계 검토] 현재 heels는 펌프스와 드레스 힐 계열의 대표값으로 사용한다. 굽이 있는 모든 신발을 포괄하는 상위 유형으로 사용하지 않으며, 부츠·로퍼·샌들·메리제인·뮬 등은 신발 구조를 우선해 분류한다. 굽 높이 및 굽 형태는 향후 모든 신발 유형에 공통 적용하는 독립 속성으로 관리하는 방안을 검토한다.
+
+#### 샌들 — `sandals` (상위 `shoes`) · 앱 subCategory/sandals/yes · 사람
+
+- **D** 발등 또는 발의 일부를 노출하는 개방형 갑피와 밑창을 결합하여 제작한 신발. 일반적으로 스트랩·밴드 등을 이용해 발을 고정하며, 굽 높이와 밑창 구조, 착용 목적에 따라 다양한 유형으로 구성된다.
+- **G** 스트랩 샌들, 피셔맨 샌들, 스포츠 샌들, 웨지 샌들, 힐 샌들 등을 포함한다. 발등 또는 발가락 주변의 개방형 구조, 발을 고정하는 스트랩·밴드의 배치, 밑창과 갑피의 연결 방식을 종합하여 판단한다. 굽이 높더라도 샌들 구조가 중심이면 sandals로 유지한다. 발가락을 끼우는 플립플롭은 별도 운영 기준에 따라 샌들에 포함하거나 독립 후보로 검토할 수 있다. 뒤축이 없고 앞부분을 덮는 뮬은 mules와 구분한다.
+- **E** 스트랩 샌들 → sandals / 피셔맨 샌들 → sandals / 스포츠 샌들 → sandals / 웨지힐 샌들 → sandals / 스트래피 힐 샌들 → sandals
+- **N** [독립 속성 개선 검토] 굽 높이·형태, 발가락 노출 여부, 뒤축 유무, 스트랩 구조, 여밈 방식, 밑창 두께 및 소재를 별도 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 샌들은 개방형 갑피와 발 고정 구조를 기준으로 판단한다. 힐 샌들은 굽의 높이와 관계없이 sandals를 우선 적용하고, 굽 높이는 독립 속성으로 기록한다. 플립플롭과 슬라이드 샌들은 착화 구조에 따라 별도 세부분류가 필요할 수 있으므로, 현재 앱 분류 및 신규 후보의 적용 범위를 함께 검토한다.
+
+#### 플랫 — `flats` (상위 `shoes`) · 앱 subCategory/flats/yes · 사람
+
+- **D** 굽이 없거나 낮은 굽을 갖춘 구두형 신발 중, 발등이 비교적 개방되어 있고 납작한 밑창과 간결한 갑피 구조를 특징으로 하는 신발. STYLESEED에서는 발레 플랫과 플랫 펌프스 계열을 중심으로 분류한다.
+- **G** 발레 플랫, 라운드토 플랫슈즈, 포인티드토 플랫슈즈, 스퀘어토 플랫슈즈 등을 포함한다. 낮은 굽과 구두형 갑피의 형태, 발등 노출 범위 및 밑창 구조를 함께 확인한다. 굽이 낮더라도 로퍼형 갑피와 구조를 가지면 loafer, 운동화형 구조면 sneakers, 개방형 스트랩 구조면 sandals로 구분한다. 메리제인형 스트랩이 있는 제품은 별도 세부분류 mary-jane과 비교해 판단한다. 굽 높이만으로 플랫슈즈를 정의하지 않는다.
+- **E** 레더 발레 플랫 → flats / 포인티드토 플랫 → flats / 스퀘어토 발레 플랫 → flats / 리본 장식 플랫슈즈 → flats
+- **N** [독립 속성 개선 검토] 신발 유형이 아니라 '굽 없음'으로 정의된 값이라 메리제인·뮬·로퍼·옥스퍼드와 중첩된다. 굽 높이(플랫·로우·미드·하이)와 굽 형태(스틸레토·청키·웨지)를 독립 속성으로 분리하고, 앞코 형태(라운드·포인티드·스퀘어)·여밈 방식(스트랩·슬링백·끈)도 디자인 특징 속성 후보로 검토한다. [세부분류 경계 검토] flats는 모든 낮은 굽의 신발이 아니라 발레 플랫·플랫 펌프스 계열의 대표값으로 사용한다. 로퍼·메리제인·옥스퍼드·뮬·스니커즈·샌들과 중복될 때는 굽 높이보다 갑피 및 여밈 구조를 우선 판단한다. 향후 굽 높이 독립 속성이 도입되면 플랫이라는 명칭의 적용 범위를 재검토한다.
+
+#### 뮬 — `mules` (상위 `shoes`) · 앱 none/·/no · Claude 초안
+
+- **D** 앞코와 발등은 감싸고 뒤꿈치가 완전히 트인 슬립온 신발. 굽 높이는 플랫부터 하이힐까지 다양하다.
+- **G** 포함: 뒤축이 없고 앞부분이 막혀 있거나 넓은 갑피로 덮인 신발(블로퍼·힐 뮬·클로그 포함). 제외: 끈·스트랩만으로 발을 고정하는 오픈형(슬라이드 포함)은 sandals, 뒤축이 있는 로퍼는 loafer. 굽 높이는 별도 속성으로 기록한다.
+- **E** 가죽 블로퍼 → mules / 포인티드 힐 뮬 → mules / 클로그 → mules / 스트랩 슬라이드 → sandals / 페니 로퍼 → loafer
+- **N** 뮬은 뒤꿈치를 감싸는 뒤축이나 발뒤꿈치 고정 스트랩 없이 착용하는 백리스(backless) 신발 유형으로 유지한다. 앞코가 막혀 있는 클래식 뮬, 로퍼형 뮬, 굽이 있는 힐 뮬을 포함한다. 굽 높이와 굽 형태는 뮬 여부를 결정하는 기준이 아니며, 별도 속성으로 구분한다. [경계 기준 확정] 앞코가 막혀 있거나 발등을 상당 부분 덮는 백리스 구조를 mules의 대표 범위로 정한다. 앞코가 개방된 스트랩형 신발은 sandals를 우선 적용하며, 단순한 슬라이드 샌들도 샌들로 분류한다. 로퍼형 갑피가 있더라도 뒤축이 없으면 mules로 분류하고, 뒤꿈치에 고정 스트랩이 있는 슬링백은 뮬에서 제외한다. 구분이 어려운 제품은 앞코·발등·뒤꿈치 구조를 함께 확인한다. [독립 속성 개선 검토] 뒤축 유무, 앞코 개방 여부, 앞코 형태, 굽 높이와 형태, 발등 덮음 정도, 소재 및 장식 구조를 독립 속성으로 관리하는 방안을 검토한다. 현재 대분류 shoes와 세부분류 키 mules를 유지한다.
+
+#### 옥스퍼드화 — `oxford-shoes` (상위 `shoes`) · 앱 none/·/no · Claude 초안
+
+- **D** 발등을 폐쇄형 끈 여밈(closed lacing)으로 묶어 고정하는 낮은 가죽 구두. 클래식 포멀·비즈니스 착장의 기본 구두다.
+- **G** 포함: 폐쇄형 끈 여밈의 로우컷 가죽 구두(캡토·플레인토·브로그 옥스퍼드). 제외: 개방형 끈 여밈의 더비슈즈(브로그 장식이 있어도 제외), 끈 없는 슬립온은 loafer, 고무창·캔버스 운동화형은 sneakers, 발목을 덮으면 boots.
+- **E** 캡토 옥스퍼드 → oxford-shoes / 더비 슈즈 → 제외(개방형 여밈) / 윙팁 브로그 옥스퍼드 → oxford-shoes / 페니 로퍼 → loafer / 레더 스니커즈 → sneakers
+- **N** [담당자 분류 결정] 옥스퍼드화는 신발의 앞중심에서 끈을 통과시키는 아일렛 부분이 뱀프(vamp) 아래로 연결되는 폐쇄형 끈 여밈(closed lacing) 구조를 핵심 기준으로 하는 구두 유형으로 유지한다. 캡토 옥스퍼드, 플레인토 옥스퍼드, 브로그 장식 옥스퍼드 등을 포함하며, 장식의 유무와 소재만으로 분류하지 않는다.  [경계 기준 확정] 끈을 조절했을 때 아일렛이 달린 부분이 바깥으로 자유롭게 벌어지는 개방형 여밈(open lacing)의 더비슈즈는 옥스퍼드화에서 제외한다. 브로그 장식은 옥스퍼드와 더비 모두에 적용될 수 있으므로 독립 유형을 결정하는 기준으로 사용하지 않는다. 끈이 없는 로퍼는 loafer로 구분한다.  [독립 속성 개선 검토] 끈 여밈 구조(폐쇄형·개방형), 앞코 형태, 브로그 장식 유무, 가죽 종류, 굽 높이, 밑창 구조 및 포멀도는 독립 속성으로 관리하는 방안을 검토한다. 현재 대분류 shoes와 세부분류 키 oxford-shoes를 유지한다.
+
+#### 메리제인 — `mary-jane` (상위 `shoes`) · 앱 none/·/no · Claude 초안
+
+- **D** 발등을 가로지르는 스트랩(버클·단추)으로 고정하는 앞코가 막힌 낮은 갑피의 신발. 플랫부터 힐까지 굽 높이가 다양하다.
+- **G** 포함: 발등 가로 스트랩이 있는 클로즈드 토 신발(플랫·청키힐·하이힐 모두). 제외: 스트랩 없는 발레 플랫은 flats, 발목을 감는 스트랩 샌들은 sandals, 스트랩 운동화형은 sneakers. 굽 높이는 별도 속성으로 기록한다.
+- **E** 레더 메리제인 플랫 → mary-jane / 청키힐 메리제인 → mary-jane / 메리제인 스니커즈 → sneakers / 발레 플랫 → flats / 앵클 스트랩 펌프스 → heels
+- **N** 메리제인은 발등을 가로지르는 하나 이상의 스트랩으로 발을 고정하는 앞코가 막힌 구두형 신발로 분류한다. 플랫 메리제인, 청키힐 메리제인, 플랫폼 메리제인, 더블 스트랩 메리제인 등을 모두 포함한다. 굽의 높이와 형태는 메리제인 여부를 결정하지 않으며, 독립 속성으로 기록한다. 메리제인형 발등 스트랩과 구두형 갑피를 갖춘 제품은 mary-jane을 우선 적용한다. 스트랩이 없는 일반 발레 플랫은 flats, 발가락이 개방된 스트랩 샌들은 sandals, 운동화형 밑창과 갑피 구조가 중심인 스트랩 스니커즈는 sneakers로 구분한다. 발등 스트랩이 있더라도 메리제인 특유의 갑피와 구두 형태가 없는 제품은 해당 신발 유형을 우선한다.[독립 속성 개선 검토] 발등 스트랩 개수와 배치, 버클·단추 등의 고정 방식, 앞코 형태, 굽 높이와 형태, 플랫폼 유무, 소재 및 장식 요소는 독립 속성으로 관리하는 방안을 검토한다. 현재 대분류 shoes와 세부분류 키 mary-jane을 유지한다.
+
+#### 숄더백 — `shoulder-bag` (상위 `bag`) · 앱 subCategory/shoulder-bag/yes · 사람
+
+- **D** 어깨에 걸어 휴대하도록 설계된 스트랩과 수납용 몸통 구조를 갖춘 가방. 일반적으로 한쪽 어깨에 메는 방식을 기본으로 하며, 스트랩 길이·몸통 형태·수납 구조 및 소재에 따라 다양한 유형으로 구성된다.
+- **G** 바게트백, 클래식 숄더백, 체인 숄더백 등을 포함한다. 몸통이 부드럽게 처지는 호보형 가방은 어깨에 메더라도 hobo-bag으로 구분한다. 스트랩의 부착 위치와 기본 길이, 가방 몸통의 구조, 제품이 의도한 주요 휴대 방식을 종합적으로 판단한다. 한쪽 어깨에 걸도록 설계된 제품을 우선 포함하며, 크로스바디 착용을 주된 목적으로 설계한 가방은 crossbody-bag으로 구분한다. 조절식 스트랩을 사용해 두 방식 모두 가능한 경우에는 제품의 기본 설계와 구조를 기준으로 대표 세부분류를 선택한다.
+- **E** 클래식 레더 숄더백 → shoulder-bag / 바게트 숄더백 → shoulder-bag / 체인 숄더백 → shoulder-bag / 슬라우치 호보 숄더백 → hobo-bag
+- **N** [독립 속성 개선 검토] 휴대 방식(손·어깨·크로스·등·허리)과 구조적 형태(버킷·호보·클러치·사각 오픈형)가 한 목록에 섞여 있다. 휴대 방식을 독립 속성으로 분리하고 세부분류는 구조적 형태 중심으로 정리하는 방안을 검토한다. 투웨이 가방은 휴대 방식 속성에 여러 값을 허용하는 안도 검토한다. [세부분류 경계 검토] shoulder-bag은 한쪽 어깨에 걸도록 설계된 가방의 대표값으로 사용한다. 숄더백과 크로스백은 휴대 방식이 중첩될 수 있으므로, 현재는 기본 스트랩 구조와 주된 착용 방식을 기준으로 분류한다. 조절 가능한 스트랩으로 두 방식 모두 가능한 제품은 대표 유형을 하나 지정하되, 향후 복수 휴대 방식 속성으로 표현하는 방안을 검토한다. 호보·바게트 등 몸통의 형태는 별도 구조 속성으로 관리할 수 있다.
+
+#### 크로스백 — `crossbody-bag` (상위 `bag`) · 앱 subCategory/crossbody-bag/yes · 사람
+
+- **D** 긴 스트랩을 몸통을 가로질러 착용하도록 설계하여, 가방 본체가 신체의 옆면 또는 앞·뒤쪽에 위치하도록 구성한 가방. 양손을 자유롭게 사용하는 휴대 방식을 특징으로 하며, 몸통의 크기와 형태·스트랩 구조·소재 및 수납 방식에 따라 다양한 유형으로 구분된다.
+- **G** 미니 크로스백, 메신저백, 새들형 크로스백, 플랩 크로스백 등을 포함한다. 몸을 가로지르는 스트랩의 길이와 부착 구조, 가방 본체의 착용 위치 및 주된 휴대 목적을 기준으로 판단한다. 스트랩을 길게 늘일 수 있다는 이유만으로 모든 숄더백을 크로스백으로 분류하지 않는다. 어깨에 거는 착용 방식이 기본이면 shoulder-bag, 등 양쪽 어깨에 메는 구조면 backpack, 허리에 고정하는 벨트형 구조가 주된 형태이면 belt-bag과 비교한다. 투웨이 제품은 기본 설계를 중심으로 분류한다.
+- **E** 미니 레더 크로스백 → crossbody-bag / 메신저백 → crossbody-bag / 새들 크로스백 → crossbody-bag / 플랩 크로스백 → crossbody-bag
+- **N** [독립 속성 개선 검토] 가방의 휴대 방식(숄더·크로스·백팩·핸드·웨이스트)은 독립 속성으로 관리하고, 몸통 형태(호보·버킷·사각형 등)와 별도로 구분하는 방안을 검토한다. 스트랩의 조절 가능 여부와 복수 휴대 방식도 속성 후보로 관리한다.  [세부분류 경계 검토] crossbody-bag은 몸을 가로질러 메는 방식이 제품의 기본 설계에 반영된 가방의 대표값이다. 숄더백과 겸용 가능한 제품은 주된 스트랩 구조와 기본 휴대 목적을 고려해 분류하고, 경계가 모호한 경우 복수 휴대 방식 속성 도입 전까지 검토 사례로 기록한다. 가방의 몸통 형태와 휴대 방식은 서로 다른 판단 차원이므로 장기적으로 분리 관리하는 방안을 검토한다.
+
+#### 토트백 — `tote-bag` (상위 `bag`) · 앱 subCategory/tote-bag/yes · 사람
+
+- **D** 일반적으로 가방 몸통 상단에 두 개의 손잡이가 부착되어 손으로 들거나 팔에 걸어 휴대하도록 설계된 가방. 비교적 단순한 몸통 구조와 상단 개구부를 특징으로 하며, 크기·형태·소재·수납 구조에 따라 다양한 유형으로 구성된다.
+- **G** 캔버스 토트백, 레더 토트백, 쇼퍼백, 미니 토트백, 구조적인 사각 토트백 등을 포함한다. 상단 손잡이의 배치와 가방 몸통의 구조, 개구부 및 기본 휴대 방식을 종합적으로 판단한다. 지퍼나 자석 여밈이 있어도 토트백 구조를 유지하면 포함한다. 긴 스트랩이 추가되어 숄더백이나 크로스백으로도 사용할 수 있더라도 기본 설계가 토트백이면 tote-bag으로 분류한다. 등에 메는 구조의 백팩이나 손잡이 없이 손에 쥐는 클러치는 제외한다.
+- **E** 캔버스 토트백 → tote-bag / 레더 쇼퍼백 → tote-bag / 미니 핸드 토트백 → tote-bag / 사각 구조형 토트백 → tote-bag
+- **N** [독립 속성 개선 검토] 휴대 방식(손·어깨·크로스·등·허리)과 구조적 형태(버킷·호보·클러치·사각 오픈형)가 한 목록에 섞여 있다. 휴대 방식을 독립 속성으로 분리하고 세부분류는 구조적 형태 중심으로 정리하는 방안을 검토한다. 투웨이 가방은 휴대 방식 속성에 여러 값을 허용하는 안도 검토한다. [세부분류 경계 검토] 토트백은 상단 손잡이와 몸통 구조를 중심으로 판단한다. 숄더 스트랩이나 크로스 스트랩이 추가되어도 토트백의 기본 구조가 유지되면 대표 세부분류는 변경하지 않는다. 손잡이 길이, 개구부 형태, 크기, 소재, 수납 구조 및 복수 휴대 방식은 향후 독립 속성으로 관리하는 방안을 검토한다.
+
+#### 백팩 — `backpack` (상위 `bag`) · 앱 subCategory/backpack/yes · 사람
+
+- **D** 가방 몸통의 뒷면에 일반적으로 두 개의 어깨끈이 부착되어, 등에 메고 휴대하도록 설계된 가방. 신체에 무게를 분산하는 착용 구조를 특징으로 하며, 크기·소재·수납 방식 및 디자인에 따라 다양한 형태로 구성된다.
+- **G** 데이팩, 레더 백팩, 나일론 백팩, 롤톱 백팩, 미니 백팩 등을 포함한다. 등판 구조와 어깨끈의 부착 위치, 가방 몸통의 방향 및 기본 휴대 방식을 종합적으로 판단한다. 손잡이가 추가되거나 숄더백 겸용으로 제작되어도 두 어깨에 메는 것이 기본 설계라면 backpack으로 분류한다. 하나의 긴 스트랩으로 몸을 가로질러 메는 슬링백은 별도 검토하며, 일반 크로스백과 구분한다.
+- **E** 나일론 데이팩 → backpack / 레더 미니 백팩 → backpack / 롤톱 백팩 → backpack / 캔버스 백팩 → backpack
+- **N** [독립 속성 개선 검토] 수납 용량, 크기, 소재, 등판 구조, 어깨끈 수, 개폐 방식, 노트북 수납 여부 및 방수 기능은 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 백팩의 핵심은 등에 메는 것을 목적으로 설계된 몸통과 어깨끈 구조이다. 미니 백팩처럼 크기가 작거나 손잡이가 있어도 기본 착용 구조가 유지되면 백팩으로 분류한다. 원숄더 슬링백과 투웨이 가방은 스트랩 구조 및 주요 착용 방식을 확인하고 경계 사례로 기록한다.
+
+#### 클러치 — `clutch` (상위 `bag`) · 앱 subCategory/clutch/yes · 사람
+
+- **D** 일반적으로 손에 쥐거나 팔 아래에 끼워 휴대하도록 설계된 소형 또는 중형 가방. 긴 어깨 스트랩 없이 사용할 수 있는 몸통 구조를 기본으로 하며, 형태·여밈 방식·소재 및 장식에 따라 다양한 유형으로 구성된다.
+- **G** 레더 클러치, 엔벨로프 클러치, 프레임 클러치, 파우치형 클러치, 이브닝 클러치 등을 포함한다. 손으로 쥐거나 팔에 끼는 기본 휴대 방식, 독립된 몸통 구조 및 스트랩의 구성 여부를 확인한다. 탈부착 가능한 체인이나 손목 스트랩이 있어도 기본 설계가 클러치라면 clutch로 분류할 수 있다. 손목에 거는 방식을 기본으로 설계한 리스트릿, 지퍼 파우치 등은 사용 목적과 구조를 함께 검토한다. 휴대 방식보다 지갑 기능이 중심인 제품은 일반 패션 가방과 구분한다.
+- **E** 레더 엔벨로프 클러치 → clutch / 프레임 이브닝 클러치 → clutch / 소프트 파우치형 클러치 → clutch / 미니 레더 클러치 → clutch
+- **N** [독립 속성 개선 검토] 크기, 손목 스트랩 유무, 체인 탈부착 여부, 소재, 여밈 방식 및 몸통 형태를 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 클러치는 손으로 쥐거나 팔에 끼어 휴대하도록 설계된 구조를 기준으로 분류한다. 체인 스트랩이 추가되었다는 이유만으로 숄더백으로 변경하지 않으며, 기본 휴대 방식과 제품 구조를 우선 확인한다. 작은 파우치와 지갑은 수납 목적과 착용·휴대 구조를 기준으로 구분한다.
+
+#### 버킷백 — `bucket-bag` (상위 `bag`) · 앱 none/·/no · Claude 초안
+
+- **D** 바닥이 둥글거나 평평하고 몸통이 원통형인 양동이 모양 가방. 입구를 스트링으로 조이거나 열어 두는 형태가 많다.
+- **G** 포함: 원통형 몸통 + 넓은 입구(드로스트링 포함) 가방. 숄더·크로스·핸드 등 휴대 방식과 관계없이 형태가 대표값이다. 제외: 납작한 사각 몸통의 오픈백은 tote-bag, 초승달처럼 처지는 가방은 hobo-bag.
+- **E** 드로스트링 버킷백 → bucket-bag / 미니 버킷 크로스백 → bucket-bag / 캔버스 토트 → tote-bag / 슬라우치 호보 → hobo-bag
+- **N** 가방 세부분류는 휴대 방식(숄더·크로스·토트)과 형태(버킷·호보)가 섞여 있음. 형태가 뚜렷하면 형태값 우선을 제안하며 휴대 방식 속성 신설을 개선안으로 둠. 현재 앱에 없음(앱 지원 아니요). [독립 속성 개선 검토] 구조적 형태(원통형) 값. 휴대 방식(손·어깨·크로스)을 독립 속성으로 분리하면 이 값은 형태만 나타내도록 정리한다.
+
+#### 호보백 — `hobo-bag` (상위 `bag`) · 앱 none/·/no · Claude 초안
+
+- **D** 부드러운 소재로 만들어 내려놓으면 아래로 처지는 초승달 모양의 가방(주로 어깨에 멘다). 넉넉한 수납과 캐주얼한 실루엣이 특징이다.
+- **G** 포함: 구조 보강이 적고 반달·초승달 실루엣으로 늘어지는 가방(주로 어깨 착용). 제외: 각이 잡힌 숄더백은 shoulder-bag, 원통형은 bucket-bag. 형태가 뚜렷하면 휴대 방식보다 형태를 대표값으로 둔다.
+- **E** 슬라우치 레더 호보 → hobo-bag / 부드럽게 처지는 크레센트 숄더백 → hobo-bag / 단단한 크레센트백 → shoulder-bag / 각진 체인 숄더백 → shoulder-bag / 버킷백 → bucket-bag
+- **N** 호보백은 부드러운 몸통이 자연스럽게 아래로 처지거나 곡선을 형성하는 가방의 구조적 유형으로 유지한다. 일반적으로 한쪽 어깨에 메는 방식으로 사용하지만, 숄더 착용 여부만으로 분류하지 않는다. 초승달형 또는 유연한 곡선형 몸통 구조가 대표적인 특징이며, 반드시 반달형이어야 하는 것은 아니다. 숄더백과 호보백의 특징이 중첩될 경우 휴대 방식보다 가방 몸통의 형태와 유연한 구조를 우선한다. 부드럽게 처지는 호보형 몸통이 뚜렷하면 `hobo-bag`, 형태가 고정된 일반 숄더백은 `shoulder-bag`으로 구분한다. 초승달 형태이더라도 몸통이 단단하게 고정된 구조라면 자동으로 호보백으로 분류하지 않는다. 원통형 수납공간과 조임끈이 중심인 버킷백은 `bucket-bag`으로 구분한다.[독립 속성 개선 검토] 몸통 형태, 구조적 유연성, 소재, 스트랩 길이, 휴대 방식 및 크기는 독립 속성으로 관리하는 방안을 검토한다. 현재 대분류 `bag`과 세부분류 키 `hobo-bag`을 유지한다.
+
+#### 벨트백 — `belt-bag` (상위 `bag`) · 앱 none/·/no · Claude 초안
+
+- **D** 허리에 두르거나 몸에 사선으로 메도록 짧은 벨트형 스트랩이 달린 작은 가방. 웨이스트백·패니팩·슬링백을 포함한다.
+- **G** 포함: 허리 착용용 벨트 스트랩이 있는 소형 가방(허리·가슴 사선 착용 모두). 제외: 긴 스트랩으로 몸을 가로지르는 일반 소형 가방은 crossbody-bag, 장식용 체인 벨트는 belt.
+- **E** 나일론 웨이스트백 → belt-bag / 레더 벨트백 → belt-bag / 슬링백(가슴 착용) → belt-bag / 미니 크로스백 → crossbody-bag / 체인 벨트 → belt
+- **N** 벨트백은 허리 또는 몸통에 밀착해 고정하도록 설계된 벨트형 스트랩과 소형 수납공간을 갖춘 가방 유형으로 유지한다. 웨이스트백·퍼니팩·벨트형 미니백 등을 포함하며, 허리에 착용하거나 스트랩을 늘려 몸을 가로질러 착용할 수 있다. 벨트형 스트랩과 몸통 밀착형 수납 구조가 제품의 기본 설계에 반영되어 있으면 belt-bag으로 분류한다. 크로스바디로 착용했다는 이유만으로 crossbody-bag으로 변경하지 않는다. 일반적인 긴 어깨 스트랩에 매달리는 크로스백은 crossbody-bag, 수납공간이 없는 장식용 또는 허리 고정용 벨트는 belt로 구분한다. 스트랩 착용 위치만으로 판단하지 않고 제품의 구조와 주된 설계 목적을 우선한다. [독립 속성 개선 검토] 착용 위치(허리·가슴·등), 스트랩 길이 및 조절 가능 여부, 수납공간 크기, 소재, 몸통 형태 및 여밈 방식은 독립 속성으로 관리하는 방안을 검토한다. 현재 대분류 bag과 세부분류 키 belt-bag을 유지한다.
+
+#### 모자 — `hat` (상위 `accessory`) · 앱 subCategory/hat/yes · 사람
+
+- **D** 머리의 전체 또는 일부를 덮도록 설계된 착용형 패션 액세서리. 햇빛 차단, 보온, 보호 또는 장식적 목적을 가지며, 크라운(머리를 감싸는 부분), 챙 및 소재·형태에 따라 다양한 유형으로 구성된다.
+- **G** 베이스볼 캡, 버킷햇, 비니, 베레모, 페도라, 보닛 등을 포함한다. 머리에 착용하도록 설계된 구조인지, 크라운과 챙의 형태 및 주된 착용 목적을 기준으로 판단한다. 챙이 없어도 비니나 베레모처럼 머리를 덮는 구조가 있으면 hat으로 분류한다. 머리카락을 고정하거나 장식하는 헤어핀·헤어밴드·스크런치·터번형 헤드밴드는 hair-accessory로 구분하고, 머리를 감싸 덮는 모자형 터번은 hat으로 분류한다. 보호장비로 설계된 헬멧은 일반 패션 모자와 별도로 검토한다.
+- **E** 베이스볼 캡 → hat / 버킷햇 → hat / 니트 비니 → hat / 울 베레모 → hat / 페도라 → hat
+- **N** [독립 속성 개선 검토] 크라운 높이와 형태, 챙 유무·폭, 소재, 사이즈 조절 방식, 귀 덮개 유무 및 보온·차광 기능은 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 모자는 머리를 덮는 구조를 기준으로 헤어 액세서리와 구분한다. 비니는 니트 소재이더라도 knit이 아닌 hat에 속하며, 소재는 별도 속성으로 기록한다. 헤어 장식만을 목적으로 하는 헤드밴드와 보닛형 모자 사이의 경계는 실제 머리 덮음 구조를 확인한다.
+
+#### 벨트 — `belt` (상위 `accessory`) · 앱 subCategory/belt/yes · 사람
+
+- **D** 허리 또는 골반 부위를 감싸거나 의류 위에 착용하여 고정·실루엣 조절·장식 기능을 수행하도록 설계된 띠 형태의 패션 액세서리. 소재, 폭, 버클 구조 및 착용 방식에 따라 다양한 유형으로 구성된다.
+- **G** 레더 벨트, 체인 벨트, 웨이스트 벨트, 코르셋형 벨트, 패브릭 벨트 등을 포함한다. 의류와 분리된 독립 액세서리인지, 허리·골반에 둘러 착용하도록 설계되었는지 확인한다. 팬츠의 허리 고정용 또는 원피스·재킷 위 장식용 제품을 모두 포함한다. 의류에 봉제되어 일체형으로 부착된 허리끈이나 스트랩은 별도의 벨트 아이템으로 분류하지 않고 해당 의류의 디자인 속성으로 기록한다. 가방형 수납공간을 중심으로 설계된 벨트백은 belt-bag으로 구분한다.
+- **E** 클래식 레더 벨트 → belt / 메탈 체인 벨트 → belt / 와이드 웨이스트 벨트 → belt / 패브릭 링 벨트 → belt
+- **N** [독립 속성 개선 검토] 벨트 폭, 소재, 길이, 버클 형태, 착용 위치, 장식 유무 및 기능적 목적을 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 독립적으로 탈착 가능한 벨트와 의류에 일체형으로 부착된 허리끈을 구분한다. 벨트형 스트랩과 벨트백은 수납 기능의 존재를 기준으로 분류하며, 가방의 어깨끈이나 일반 의류 스트랩은 벨트로 취급하지 않는다.
+
+#### 스카프 — `scarf` (상위 `accessory`) · 앱 subCategory/scarf/yes · 사람
+
+- **D** 목·어깨·머리 또는 의류와 가방 등에 둘러 매거나 드리워 장식·보온 기능을 수행하는 유연한 직물 또는 편물 형태의 패션 액세서리. 크기·형태·소재 및 착용 방식에 따라 다양한 유형으로 구성된다.
+- **G** 실크 스카프, 트윌리 스카프, 롱 스카프, 니트 머플러, 사각 스카프, 숄 등을 포함한다. 유연한 원단 형태로 제작되었으며 신체 또는 소지품에 둘러 매거나 드리울 수 있는지 확인한다. 목에 착용하는 제품뿐 아니라 헤드스카프, 가방 손잡이에 묶는 트윌리도 포함한다. 고정된 머리 장식 구조를 가진 헤어밴드는 hair-accessory로 구분한다. 의류에 영구적으로 부착된 스카프형 장식은 별도 액세서리가 아니라 해당 의류의 디자인 속성으로 기록한다.
+- **E** 실크 사각 스카프 → scarf / 트윌리 스카프 → scarf / 울 니트 머플러 → scarf / 헤드스카프 → scarf / 캐시미어 숄 → scarf
+- **N** [독립 속성 개선 검토] 소재, 크기, 폭, 길이, 형태(사각·직사각·삼각), 두께, 패턴, 착용 위치 및 보온 기능은 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 스카프와 머플러·숄은 크기 및 주된 착용 목적이 다를 수 있으나 현재 앱의 대표 분류 scarf로 관리한다. 목·머리·가방 등에 사용하는 방식은 독립 속성으로 구분한다. 의류에 봉제된 스카프형 장식은 별도 아이템으로 등록하지 않는다.
+
+#### 목걸이 — `necklace` (상위 `accessory`) · 앱 subCategory/necklace/yes · 사람
+
+- **D** 목둘레에 착용하여 장식적 효과를 주도록 설계된 주얼리. 체인, 끈, 비즈 또는 기타 연결 구조를 기반으로 하며, 길이·소재·펜던트·장식 형태에 따라 다양한 유형으로 구성된다.
+- **G** 체인 목걸이, 펜던트 목걸이, 초커, 비즈 목걸이, 진주 목걸이, 레이어드 목걸이 등을 포함한다. 목에 착용하도록 설계된 장식 구조인지, 연결 방식과 길이 및 착용 위치를 중심으로 판단한다. 초커처럼 목에 밀착되는 짧은 형태도 necklace에 포함한다. 목에 두르더라도 직물형 패션 액세서리인 스카프는 scarf로 구분한다. 의류에 일체형으로 부착된 체인이나 목걸이형 장식은 독립된 주얼리인지 확인한다.
+- **E** 실버 체인 목걸이 → necklace / 펜던트 목걸이 → necklace / 진주 초커 → necklace / 비즈 목걸이 → necklace
+- **N** [독립 속성 개선 검토] 목걸이 길이(초커·프린세스·매티니·오페라 등), 체인 구조, 소재, 펜던트 유무, 장식 형태 및 레이어링 개수는 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 목걸이는 목에 착용하는 독립 주얼리라는 구조적 특성을 기준으로 판단한다. 초커와 일반 목걸이의 길이 차이는 별도 속성으로 분리하고, 직물형 스카프나 의류 부착 장식과는 구분한다. 여러 개가 연결된 레이어드 목걸이는 실제 상품 단위와 개별 아이템 수를 고려해 관리한다.
+
+#### 팔찌 — `bracelet` (상위 `accessory`) · 앱 subCategory/bracelet/yes · 사람
+
+- **D** 손목 또는 팔의 일부를 둘러 착용하도록 설계된 장식용 주얼리. 체인·링·밴드·비즈 등의 구조를 가지며, 소재·두께·여밈 방식 및 장식 형태에 따라 다양한 유형으로 구성된다.
+- **G** 체인 팔찌, 뱅글, 커프 브레이슬릿, 비즈 팔찌, 참 팔찌 등을 포함한다. 손목이나 팔에 착용하는 독립적인 장식품인지, 착용 부위와 연결 구조를 기준으로 판단한다. 고정된 링 형태의 뱅글이나 개방형 커프도 포함한다. 손목시계는 시간 표시 기능이 중심인 별도 제품으로 구분하고, 의류 소매에 부착된 장식은 독립 팔찌로 분류하지 않는다. 손가락에 착용하는 반지는 ring으로 구분한다.
+- **E** 실버 체인 팔찌 → bracelet / 골드 뱅글 → bracelet / 비즈 팔찌 → bracelet / 와이드 커프 팔찌 → bracelet
+- **N** [독립 속성 개선 검토] 체인·뱅글·커프 등 구조 유형, 소재, 두께, 폭, 장식 유무, 여밈 방식 및 착용 위치를 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 팔찌는 손목과 팔을 둘러 착용하는 독립 주얼리로 정의한다. 뱅글과 커프는 구조적 차이가 있지만 같은 대표 세부분류로 유지하고 세부 구조 속성으로 구분한다. 스마트워치·손목시계 및 의류 부착 장식은 별도 검토 대상으로 관리한다.
+
+#### 귀걸이 — `earrings` (상위 `accessory`) · 앱 subCategory/earrings/yes · 사람
+
+- **D** 귓불 또는 귀의 일부에 착용하여 장식적 효과를 주도록 설계된 주얼리. 피어싱 침, 클립, 커프 등의 고정 구조를 가지며, 크기·소재·형태 및 장식 구성에 따라 다양한 유형으로 구분된다.
+- **G** 스터드 귀걸이, 후프 귀걸이, 드롭 귀걸이, 샹들리에 귀걸이, 클립형 귀걸이, 이어커프 등을 포함한다. 귀에 고정하도록 설계된 구조인지, 고정 방식과 장식 형태를 중심으로 판단한다. 귀에 구멍을 뚫지 않고 착용하는 이어커프와 클립형 귀걸이도 포함한다. 머리카락에 고정하는 헤어핀이나 헤어 장식은 hair-accessory로 구분한다. 한쪽만 사용하는 싱글 이어링과 양쪽 세트 제품은 동일한 유형으로 관리하되 구성 수량을 별도 기록할 수 있다.
+- **E** 진주 스터드 귀걸이 → earrings / 실버 후프 귀걸이 → earrings / 크리스털 드롭 귀걸이 → earrings / 골드 이어커프 → earrings
+- **N** [독립 속성 개선 검토] 고정 방식(피어싱·클립·커프), 구조(스터드·후프·드롭), 길이, 크기, 소재, 장식 형태 및 세트 구성은 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 귀걸이는 귀에 직접 고정되는 독립 주얼리라는 구조를 기준으로 판단한다. 이어커프는 피어싱 침이 없어도 귀에 착용하는 장식이므로 현재 대표값에 포함한다. 헤어 액세서리 및 얼굴에 부착되는 기타 장식과는 착용 위치와 고정 구조를 기준으로 구분한다.
+
+#### 안경 — `glasses` (상위 `accessory`) · 앱 subCategory/glasses/yes · 사람
+
+- **D** 코와 귀를 지지점으로 하여 얼굴에 착용하도록 설계된 프레임 및 렌즈 구조의 패션 액세서리. 시력 보정, 햇빛 차단, 보호 또는 장식적 목적을 가지며, 프레임 형태·소재·렌즈 특성에 따라 다양한 유형으로 구성된다.
+- **G** 일반 안경, 패션 안경, 선글라스, 틴트 렌즈 안경, 무테 안경 등을 포함한다. 코받침과 템플(안경다리), 렌즈 또는 렌즈형 구조를 갖추고 얼굴에 착용하도록 설계되었는지 확인한다. 선글라스는 차광 기능이 있지만 현재 별도 세부분류가 없으므로 glasses로 포함한다. 프레임 형태가 유사해도 보호용 고글이나 스포츠 전용 고글은 기능성과 착용 구조를 확인해 별도 검토한다. 프레임에 렌즈가 없는 패션용 안경도 안경 구조를 갖추면 포함할 수 있다.
+- **E** 라운드 메탈 안경 → glasses / 스퀘어 뿔테 안경 → glasses / 캣아이 선글라스 → glasses / 오벌 틴트 안경 → glasses / 무테 안경 → glasses
+- **N** [독립 속성 개선 검토] 프레임 형태(라운드·오벌·스퀘어·캣아이), 프레임 소재, 렌즈 색상·투명도, 차광 기능, 프레임 두께, 크기 및 장식 요소는 독립 속성으로 관리하는 방안을 검토한다.  [세부분류 경계 검토] 현재 glasses는 일반 안경과 선글라스를 함께 포함하는 대표 세부분류로 유지한다. 시력 보정 여부만으로 유형을 변경하지 않으며, 프레임과 렌즈의 구조를 기준으로 판단한다. 선글라스 여부, 렌즈 색상 및 프레임 형태는 별도 속성으로 기록하는 방안을 검토한다. 스포츠 고글이나 전문 보호안경은 일반 패션 안경과 기능적 차이가 크므로 별도 범위 검토가 필요하다.
+
+#### 반지 — `ring` (상위 `accessory`) · 앱 none/·/no · Claude 초안
+
+- **D** 손가락에 끼워 착용하는 고리 형태의 주얼리. 단일 링부터 레이어드·시그닛 링까지 포함한다.
+- **G** 포함: 손가락에 끼우는 링(밴드·시그닛·스톤·너클 링·레이어드 세트). 제외: 손목 주얼리는 bracelet, 귀 주얼리는 earrings. 발가락 링은 합의 전까지 제외.
+- **E** 실버 밴드 링 → ring / 골드 시그닛 링 → ring / 레이어드 링 세트 → ring / 체인 팔찌 → bracelet
+- **N** 주얼리 계열(necklace·bracelet·earrings·ring)은 착용 위치로 구분하므로 중복이 적음. 소재(금·은)와 크기는 별도 속성 후보. 현재 앱에 없음(앱 지원 아니요).
+
+#### 헤어 액세서리 — `hair-accessory` (상위 `accessory`) · 앱 none/·/no · Claude 초안
+
+- **D** 머리카락을 고정하거나 장식하기 위해 머리에 꽂거나 묶는 소품. 헤어핀·집게핀·곱창 밴드·헤어밴드·리본 등을 포함한다.
+- **G** 포함: 머리카락에 직접 고정하는 소품(핀·클립·끈·밴드·헤드밴드·리본). 제외: 머리 전체를 덮는 모자·비니·버킷햇은 hat, 머리에 두르는 큰 천(반다나)은 scarf, 머리를 감싸 덮는 모자형 터번은 hat. 머리카락 고정·장식이 중심인 터번형 헤드밴드는 hair-accessory.
+- **E** 집게핀 → hair-accessory / 곱창 밴드 → hair-accessory / 벨벳 헤어밴드 → hair-accessory / 반다나 → scarf / 볼캡 → hat / 터번형 헤드밴드 → hair-accessory / 모자형 터번 → hat
+- **N** 헤어 액세서리는 머리카락을 고정·정리하거나 장식하는 독립적인 패션 소품으로, 헤어핀·집게핀·헤어밴드·스크런치·리본 장식 등을 포함한다. 머리카락을 고정하거나 장식하는 헤드밴드·터번형 헤어밴드는 `hair-accessory`, 머리 전체 또는 상당 부분을 덮는 비니·보닛·캡은 `hat`, 독립된 천 형태의 스카프는 `scarf`로 구분한다. 스카프형이라도 헤어 고정 구조가 중심이면 `hair-accessory`로 분류한다. 실제 착용 방식보다 제품의 구조와 설계 목적을 우선한다.[독립 속성 개선 검토] 고정 방식, 형태, 크기, 소재, 장식 유형, 머리 덮음 범위 및 착용 위치는 독립 속성으로 관리하는 방안을 검토한다. 대분류 `accessory`와 세부분류 키 `hair-accessory`는 유지한다.
+
+#### 장갑 — `gloves` (상위 `accessory`) · 앱 none/·/no · Claude 초안
+
+- **D** 손을 덮어 보온·보호하거나 착장을 장식하는 소품. 손가락이 나뉜 장갑, 벙어리장갑, 손가락이 트인 장갑을 포함한다.
+- **G** 포함: 손과 손가락을 덮는 패션·보온 장갑(가죽·니트·레이스·핑거리스). 제외: 작업·의료용 기능 장갑, 팔을 덮는 암워머는 별도 합의 전까지 제외.
+- **E** 가죽 장갑 → gloves / 니트 벙어리장갑 → gloves / 핑거리스 장갑 → gloves / 레이스 이브닝 글로브 → gloves
+- **N** 계절 규칙(겨울)에서 활용 가능. 암워머·토시의 위치는 미정. 현재 앱에 없음(앱 지원 아니요).
+
+#### 점프수트 — `jumpsuit` (상위 `jumpsuit`) · 앱 subCategory/jumpsuit/yes · 사람
+
+- **D** 상체와 하체가 하나의 구조로 연결되어 있으며, 하단이 양쪽 다리를 각각 감싸는 바지 형태로 구성된 일체형 의류. 몸판의 연결 구조와 바지통 형태를 특징으로 하며, 소매 및 기장, 소재, 실루엣 및 여밈 방식에 따라 다양한 형태로 구성된다.
+- **G** 롱 점프수트, 데님 점프수트, 테일러드 점프수트, 와이드 점프수트 등을 포함한다. 상체와 하체가 분리되지 않은 단일 의류인지, 하단에 양쪽 다리를 구분하는 바지통 구조가 존재하는지 확인한다. 하단이 스커트 형태인 원피스와 구분하며, 상하의가 별도 제품으로 구성된 세트업은 제외한다. 반바지 기장의 일체형 의류인 롬퍼는 별도 세부분류로 구분한다. 소매, 넥라인, 바지 실루엣 및 기장은 독립 속성으로 관리하는 방안을 검토한다.
+- **E** 데님 롱 점프수트 → jumpsuit / 와이드 레그 점프수트 → jumpsuit / 테일러드 점프수트 → jumpsuit / 카고 점프수트 → jumpsuit
+- **N** [앱 호환성 불일치] 세부분류 jumpsuit는 앱 매핑(subCategory: jumpsuit, 앱 지원 예)을 유지하지만 상위 대분류 jumpsuit는 앱 지원 아니요다. 현재 앱은 jumpsuit를 dress의 세부분류로 처리하므로 앱으로 보낼 때 대분류를 dress로 변환해야 한다. Claude A의 앱 호환성 검토가 끝나기 전까지 앱 매핑은 바꾸지 않는다. [독립 속성 개선 검토] 점프수트의 바지 기장, 소매 유무, 넥라인, 허리선, 바지 실루엣, 소재, 여밈 방식 및 레이어링 가능성은 별도 속성으로 관리하는 방안을 검토한다. 점프수트는 코디에서 기본적으로 상의와 하의를 대체하는 일체형 의류로 취급하되, 추가 이너·아우터 착용 가능성은 별도의 코디 구성 규칙에서 판단한다.
+
+#### 롬퍼·플레이수트 — `romper` (상위 `jumpsuit`) · 앱 none/·/no · Claude 초안
+
+- **D** 상의와 반바지가 하나로 연결된 짧은 기장의 일체형 의류. 점프수트와 구조는 같고 하단이 쇼츠 길이라는 점이 다르다.
+- **G** 포함: 상체와 하체가 하나로 연결되고, 하단이 양쪽 다리로 분리된 쇼츠 형태의 일체형 의류(롬퍼·플레이수트). 일반적으로 허벅지부터 무릎 위까지의 짧은 바지 기장을 기준으로 한다. 제외: 종아리부터 발목까지 이어지는 긴 바지형 일체형은 `jumpsuit`, 하단이 스커트 형태이면 `dress`, 상·하의가 분리된 세트업은 각각 `top`과 `bottom`으로 구분한다. 판단 원칙: 상·하의의 연결 여부와 하단의 바지통 구조를 우선 확인한다. 무릎 부근의 경계 사례는 실제 패턴 구조와 주된 설계 목적을 종합하여 판단한다.
+- **E** 린넨 반바지 롬퍼 → romper / 플레이수트 → romper / 롱 데님 점프수트 → jumpsuit(세부) / 셔츠+반바지 세트업 → shirt+shorts
+- **N** [담당자 분류 결정] 롬퍼와 플레이수트는 패션 시장에서 명칭과 구조가 상당 부분 중첩되므로 하나의 세부분류로 통합한다. 한국어 표시명은 '롬퍼·플레이수트', 영문 키는 romper, 대분류는 jumpsuit로 유지한다.  [앱 호환성 기록] Knowledge Lab에서는 대분류 jumpsuit에 연결하지만, 현재 STYLESEED 앱은 해당 대분류와 세부분류를 직접 지원하지 않는다. 앱으로 내보낼 때 기존 dress 계열로 변환하거나 적용을 보류하는 방식은 Claude A의 호환성 검증 후 결정한다. 분류 기준 확정과 앱 매핑 변경은 별개로 관리한다.  [독립 속성 개선 검토] 하단 기장, 소매 유무, 넥라인, 허리 구조, 소재, 핏 및 여밈 방식은 향후 독립 속성으로 관리하는 방안을 검토한다.

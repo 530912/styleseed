@@ -1,0 +1,53 @@
+# STYLESEED 백엔드 — 국내 가상서버(Ubuntu 24.04, 8GB) 배포 (2026-11 사용자 조사)
+# Railway 대신 쓰는 구성. 앱 코드는 바꾸지 않고 저장소 루트 Dockerfile을 그대로 빌드한다.
+#   api   : Express + SlimSAM (포트 3001, 외부에 직접 열지 않음)
+#   caddy : HTTPS(Let's Encrypt 자동 발급·갱신). /api/* → api, 그 외 → Expo Web 정적 파일(./web)
+#           X-Forwarded-For 1단계 → TRUST_PROXY=1
+# 실행: deploy/vm/README.md
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: styleseed-backend:mvp-2026-11
+    restart: unless-stopped
+    env_file: ./api.env
+    environment:
+      PORT: "3001"
+      TRUST_PROXY: "1"
+    # 8GB 서버: OS·Caddy 몫을 남기고 6GB. SlimSAM은 대기열로 동시 1건(1건 최대 약 2.3GB, macOS 측정)
+    mem_limit: 6g
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "10"
+
+  caddy:
+    image: caddy:2.8.4
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?API_DOMAIN을 deploy/vm/.env에 지정}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./web:/srv/web:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

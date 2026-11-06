@@ -1,0 +1,54 @@
+{
+ "same-person-approval": [
+  "E_APPROVAL_SAME_PERSON"
+ ],
+ "approver-without-authority": [
+  "E_APPROVER_AUTHORITY"
+ ],
+ "unconfirmed-value-in-approved-rule": [
+  "E_UNCONFIRMED_VALUE"
+ ],
+ "claude-draft-approved": [
+  "E_APPROVAL_ORIGIN"
+ ],
+ "exception-base-not-approved": [
+  "E_EXCEPTION_BASE_NOT_APPROVED"
+ ],
+ "korean-label-in-json": [
+  "E_ENUM"
+ ],
+ "int-as-string-in-json": [
+  "E_JSON_INVALID"
+ ],
+ "retired-value-used": [
+  "E_TAXONOMY_VALUE"
+ ],
+ "subcategory-parent-mismatch": [
+  "E_PARENT_MISMATCH"
+ ],
+ "unknown-garment-in-outfit": [
+  "E_REF"
+ ],
+ "submitted-evaluation-missing-score": [
+  "E_REQUIRED"
+ ],
+ "duplicate-rule-version": [
+  "E_DUPLICATE_KEY"
+ ],
+ "rule-id-prefix-mismatch": [
+  "E_RULE_PREFIX"
+ ],
+ "contract-major-mismatch": [
+  "E_CONTRACT_MAJOR"
+ ],
+ "jumpsuit-category-marked-app-supported": [
+  "E_APP_VALUE",
+  "E_APP_PARENT_MISMATCH"
+ ],
+ "romper-marked-app-supported": [
+  "E_APP_VALUE"
+ ],
+ "jumpsuit-category-without-app-mapping": [
+  "E_APP_PARENT_MISMATCH"
+ ]
+}

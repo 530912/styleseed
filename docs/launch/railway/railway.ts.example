@@ -1,0 +1,32 @@
+// Railway Infrastructure as Code 초안 (Beta Launch) — 적용하지 않음
+//
+// 쓰려면: 이 파일을 .railway/railway.ts로 옮기고 `npm install railway`(개발 의존성) 후
+//   npx railway config plan    # 변경 내용만 출력(읽기 전용)
+//   npx railway config apply   # ⛔ 실제 적용 — PO 승인 후
+//
+// 키 이름은 docs.railway.com/infrastructure-as-code/reference(2026-10-19 조회) 기준.
+// 리전 이름·메모리 한도·비밀값은 문서에 키가 없어 대시보드에서 설정한다.
+// 비밀값(GEMINI_API_KEY 등)은 preserve()로 남겨 두고 값은 대시보드에서 직접 넣는다.
+import { defineRailway, preserve, project, service } from "railway/iac";
+
+export default defineRailway((ctx) => {
+  const production = ctx.environment === "production";
+
+  const api = service("styleseed-api", {
+    // 저장소 루트의 Dockerfile로 빌드된다(별도 build 명령 없음)
+    healthcheck: "/healthz",
+    healthcheckTimeout: 300,
+    replicas: 1, // SlimSAM 메모리 때문에 1개로 시작(docs/launch/BACKEND_DEPLOY.md 4장)
+    env: {
+      TRUST_PROXY: "1",
+      SUPABASE_URL: preserve(),
+      SUPABASE_PUBLISHABLE_KEY: preserve(),
+      SUPABASE_SECRET_KEY: preserve(),
+      GEMINI_API_KEY: preserve(),
+      BRIA_API_TOKEN: preserve(),
+      ALLOW_TOKENLESS_GUEST: production ? preserve() : "true",
+    },
+  });
+
+  return project("styleseed", { resources: [api] });
+});

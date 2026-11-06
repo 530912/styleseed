@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from "react-native";
+
 import {
   CLOTHING_CATEGORIES,
   CLOTHING_COLORS,
@@ -47,6 +49,18 @@ export type Clothing = {
   style: ClothingStyle[];
 
   imageUri?: string;
+
+  // 옷장 조회 시 함께 내려오는 두 가지 이미지 (사진 수정 화면에서 전환)
+  originalImageUri?: string;
+
+  cutoutImageUri?: string;
+
+  box2d?: ClothingBox2D;
+
+  mask?: ClothingMaskPoint[];
+
+  // 분류 호환 계층(src/utils/taxonomyCompat.ts)이 값을 바꿨을 때의 원래 분류. DB에는 열이 없어 저장하지 않는다
+  taxonomySource?: { category: string; subCategory: string };
 };
 
 export type Outfit = {
@@ -70,6 +84,8 @@ export type Product = {
 
   name: string;
 
+  brand: string;
+
   category: ClothingCategory;
 
   subCategory: string;
@@ -81,6 +97,12 @@ export type Product = {
   style: ClothingStyle;
 
   price: number;
+
+  // Core 점수 계산에 쓰는 계절 정보 (없으면 계절 점수 0)
+  season?: ClothingSeason[];
+
+  // assets/images/products 의 상품 사진 (없으면 품목 이름으로 대체 표시)
+  image?: ImageSourcePropType;
 };
 
 export type ClothingAnalysis = {
@@ -93,4 +115,13 @@ export type ClothingAnalysis = {
   season: ClothingSeason[];
   tpo: ClothingTPO[];
   style: ClothingStyle[];
+  box2d: ClothingBox2D;
+  mask: ClothingMaskPoint[];
+
+  // 분석 결과의 분류를 앱 값으로 정리했을 때의 원래 분류(정리하지 않았으면 없음)
+  taxonomySource?: { category: string; subCategory: string };
 };
+
+export type ClothingBox2D = [number, number, number, number];
+
+export type ClothingMaskPoint = [number, number];

@@ -1,0 +1,4 @@
+브랜드 ID [brand_id],브랜드명 [brand_name],브랜드 유형 [brand_type],상품 정보 사용 허가 [data_permission],상품 이미지 사용 허가 [image_permission],UTM 파라미터 허용 [utm_permission],주문 확인 회신 동의 [purchase_report],허가 확인일 [permission_date],허가 근거 [permission_evidence],메모 [notes]
+BRA,(예시) 여성복 A,womenswear,yes,yes,yes,yes,2026-10-24,이메일 회신 2026-10-24,
+BRB,(예시) 여성복 B,womenswear,yes,no,no,no,2026-10-25,이메일 회신 2026-10-25,
+JWL,(예시) 주얼리 C,jewelry,pending,pending,pending,pending,,,
